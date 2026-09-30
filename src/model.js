@@ -47,12 +47,12 @@ export function validateDataset(data) {
   }
   for (const evidence of maps.evidence.values()) {
     strings(evidence, ['statement', 'scope', 'independentCheck']); dates(evidence, ['asOf']);
-    if (!(evidence.type in EVIDENCE_TYPES)) fail(`${evidence.id}: invalid evidence type.`);
+    if (!Object.hasOwn(EVIDENCE_TYPES, evidence.type)) fail(`${evidence.id}: invalid evidence type.`);
     refs(evidence, 'sourceIds', 'sources'); refs(evidence, 'organizationIds', 'organizations');
   }
   for (const org of maps.organizations.values()) {
     strings(org, ['name', 'shortName', 'relationshipSummary', 'relevance', 'uncertainty']); dates(org, ['asOf']);
-    if (!(org.relationship in RELATIONSHIPS) || !LANES.includes(org.lane)) fail(`${org.id}: invalid relationship/lane.`);
+    if (!Object.hasOwn(RELATIONSHIPS, org.relationship) || !LANES.includes(org.lane)) fail(`${org.id}: invalid relationship/lane.`);
     ['markets', 'products', 'nextQuestions'].forEach(key => list(org, key));
     refs(org, 'evidenceIds', 'evidence'); refs(org, 'relationshipEvidenceIds', 'evidence'); refs(org, 'priorityIds', 'priorities', false);
     for (const id of array(org.relationshipEvidenceIds)) if (!array(org.evidenceIds).includes(id)) fail(`${org.id}: relationship evidence must be in evidenceIds.`);
@@ -107,7 +107,7 @@ export function filterOrganizations(data, { query = '', lane = '', relationship 
 export function blankWorkspace() { return { schemaVersion: 1, decisions: {}, reviews: {}, activity: [] }; }
 export function validateWorkspace(workspace, data) {
   const errors = [];
-  if (!workspace || workspace.schemaVersion !== 1 || !workspace.decisions || !workspace.reviews || !Array.isArray(workspace.activity)) return ['Invalid workspace.'];
+  if (!workspace || workspace.schemaVersion !== 1 || !workspace.decisions || Array.isArray(workspace.decisions) || !workspace.reviews || Array.isArray(workspace.reviews) || !Array.isArray(workspace.activity)) return ['Invalid workspace.'];
   const decisionIds = new Set(data.decisions.map(d => d.id));
   const priorityIds = new Set(data.priorities.map(p => p.id));
   for (const [id, d] of Object.entries(workspace.decisions)) {
