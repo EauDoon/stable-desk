@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-09-30T17:26:39.072Z",
+  "build": "dist/",
+  "checks": [
+    {
+      "viewport": "desktop",
+      "allViews": true,
+      "overflow": false,
+      "revisionCommit": true,
+      "reloadPersistence": true
+    },
+    {
+      "viewport": "mobile",
+      "allViews": true,
+      "overflow": false,
+      "revisionCommit": true,
+      "reloadPersistence": true
+    }
+  ],
+  "errors": [],
+  "passed": true
+}

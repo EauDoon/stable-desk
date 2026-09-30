@@ -38,8 +38,11 @@ export function validateDataset(data) {
   const fail = (message) => errors.push(message);
   if (!data || typeof data !== "object" || Array.isArray(data))
     return ["Dataset must be an object."];
-  if (data.meta?.schemaVersion !== 1 || data.meta?.collectionMode !== "manual")
-    fail("Expected schemaVersion 1 and manual collection.");
+  if (
+    ![1, 2].includes(data.meta?.schemaVersion) ||
+    data.meta?.collectionMode !== "manual"
+  )
+    fail("Expected schemaVersion 1 or 2 and manual collection.");
   if (data.meta?.datasetId !== "generic-stable-demo")
     fail("Expected the generic demo dataset identity.");
   const profile = data.profile;
@@ -162,6 +165,11 @@ export function validateDataset(data) {
   for (const evidence of maps.evidence.values()) {
     strings(evidence, ["statement", "scope", "independentCheck"]);
     dates(evidence, ["asOf"]);
+    if (
+      evidence.status !== undefined &&
+      !["active", "unknown", "withdrawn"].includes(evidence.status)
+    )
+      fail(`${evidence.id}: invalid evidence status.`);
     if (!Object.hasOwn(EVIDENCE_TYPES, evidence.type))
       fail(`${evidence.id}: invalid evidence type.`);
     const synthetic = evidence.type === "synthetic_example";
@@ -264,6 +272,50 @@ export function validateDataset(data) {
       (c.kind === "manual_update" && typeof c.before !== "string")
     )
       fail(`${c.id}: invalid before/after version.`);
+  }
+  if (data.meta.schemaVersion === 2) {
+    const assumptions = Array.isArray(data.assumptions) ? data.assumptions : [];
+    const ids = new Set();
+    if (!assumptions.length) fail("Missing v2 assumption records.");
+    for (const a of assumptions) {
+      if (!a || !/^[a-zA-Z0-9-]+$/.test(a.id ?? "") || ids.has(a.id)) {
+        fail("Invalid/duplicate assumption ID.");
+        continue;
+      }
+      ids.add(a.id);
+      strings(a, ["statement"]);
+      refs(a, "evidenceIds", "evidence");
+      dates(a, ["evidenceReviewedAt", "reviewBy"]);
+      if (a.reviewBy < a.evidenceReviewedAt)
+        fail(`${a.id}: review date precedes review.`);
+      if (
+        a.evidenceSnapshot !== null &&
+        !/^[0-9a-f]{8}$/.test(a.evidenceSnapshot ?? "")
+      )
+        fail(`${a.id}: invalid reviewed fingerprint.`);
+      if (!maps.priorities.has(a.priorityId))
+        fail(`${a.id}: unresolved priority.`);
+    }
+    for (const p of maps.priorities.values()) {
+      if (
+        !Array.isArray(p.assumptionIds) ||
+        !p.assumptionIds.length ||
+        new Set(p.assumptionIds).size !== p.assumptionIds.length ||
+        p.assumptionIds.some(
+          (id) =>
+            !ids.has(id) ||
+            assumptions.find((a) => a.id === id).priorityId !== p.id,
+        )
+      )
+        fail(`${p.id}: invalid assumption lineage.`);
+      if (
+        assumptions.some(
+          (a) =>
+            a?.priorityId === p.id && !array(p.assumptionIds).includes(a.id),
+        )
+      )
+        fail(`${p.id}: missing linked assumption.`);
+    }
   }
   return errors;
 }

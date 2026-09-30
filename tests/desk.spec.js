@@ -38,7 +38,7 @@ test("desktop/mobile layout, all views, genuine baseline, no JS errors", async (
     page.getByRole("heading", { name: "Generic demo baseline" }),
   ).toBeVisible();
   await expect(
-    page.getByText("No local edits yet.", { exact: false }),
+    page.getByText("No committed local revisions", { exact: false }),
   ).toBeVisible();
   await noOverflow(page);
   await page.screenshot({
@@ -50,6 +50,15 @@ test("desktop/mobile layout, all views, genuine baseline, no JS errors", async (
   await noOverflow(page);
   await page.screenshot({
     path: `artifacts/${testInfo.project.name}-decisions.png`,
+    fullPage: true,
+  });
+  await page.getByRole("link", { name: "Evidence", exact: true }).click();
+  await expect(
+    page.locator("#evidence-results > .evidence-ledger > .evidence-record"),
+  ).toHaveCount(13);
+  await noOverflow(page);
+  await page.screenshot({
+    path: `artifacts/${testInfo.project.name}-evidence.png`,
     fullPage: true,
   });
   expect(errors).toEqual([]);
@@ -169,6 +178,7 @@ test("save local assessment, reload, export and restore in another browser conte
     .getByLabel("Research notes", { exact: true })
     .fill("Check repeat merchants and settlement requirements.");
   await page.getByRole("button", { name: "Save local assessment" }).click();
+  await expect(page.locator("#detail-dialog")).not.toBeVisible();
   await page.reload();
   await expect(page.locator(".decision-card").first()).toContainText(
     "Investigating",
@@ -183,7 +193,10 @@ test("save local assessment, reload, export and restore in another browser conte
   const download = await downloadPromise;
   const exportPath = await download.path();
   const exported = JSON.parse(await readFile(exportPath, "utf8"));
-  expect(exported.workspace.decisions["D-G01"].owner).toBe("Researcher");
+  expect(
+    exported.workspace.events.find((e) => e.type === "decision_saved").after
+      .owner,
+  ).toBe("Researcher");
   expect(exported.dataset.sources).toHaveLength(baseline.sources.length);
   const context = await browser.newContext();
   const second = await context.newPage();
@@ -199,9 +212,7 @@ test("save local assessment, reload, export and restore in another browser conte
   );
   await second.getByRole("link", { name: "Changes", exact: true }).click();
   await expect(second).toHaveURL(/#changes$/);
-  await expect(second.locator(".activity-list")).toContainText(
-    "saved local assessment",
-  );
+  await expect(second.locator(".history-list")).toContainText("decision saved");
   await context.close();
 });
 test("changed evidence flags assumptions; explicit review needs reasoning and persists", async ({
@@ -224,7 +235,7 @@ test("changed evidence flags assumptions; explicit review needs reasoning and pe
   );
   await page.getByRole("button", { name: "Use in this browser" }).click();
   await expect(page.locator(".priority-card").first()).toContainText(
-    "Evidence changed",
+    "Needs assumption review",
   );
   await page.getByRole("link", { name: "Decisions", exact: true }).click();
   await page.getByRole("button", { name: "Review assessment" }).first().click();
@@ -350,13 +361,11 @@ test("fictional identity, provenance labels and legacy workspace isolation", asy
   await page
     .getByRole("button", { name: "Workspace backup and import" })
     .click();
-  await page
-    .locator("#import-file")
-    .setInputFiles({
-      name: "legacy.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(legacy)),
-    });
+  await page.locator("#import-file").setInputFiles({
+    name: "legacy.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(legacy)),
+  });
   await expect(page.locator("#import-error")).toContainText(
     "fictional demo profile",
   );
@@ -371,13 +380,11 @@ test("configured fictional placeholder updates labels and flags profile assumpti
   await page
     .getByRole("button", { name: "Workspace backup and import" })
     .click();
-  await page
-    .locator("#import-file")
-    .setInputFiles({
-      name: "profile.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(changed)),
-    });
+  await page.locator("#import-file").setInputFiles({
+    name: "profile.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(changed)),
+  });
   await expect(page.locator("#import-preview")).toContainText(
     "3 proposals need assumption review",
   );

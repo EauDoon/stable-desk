@@ -19,7 +19,7 @@ test("baseline coverage and lineage are valid, with a genuine first snapshot", (
   assert.deepEqual(validateDataset(baseline), []);
   assert.equal(baseline.organizations.length, 10);
   assert.equal(baseline.priorities.length, 3);
-  assert.equal(baseline.changes.length, 1);
+  assert.equal(baseline.changes.length, 2);
   assert.equal(baseline.changes[0].kind, "baseline");
   assert.equal(baseline.changes[0].before, null);
   assert.ok(baseline.sources.every((s) => s.accessedAt === "2026-09-30"));

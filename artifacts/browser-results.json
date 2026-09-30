@@ -101,12 +101,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1560,
+                  "duration": 2029,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:53:51.104Z",
+                  "startTime": "2026-09-30T17:24:52.045Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -135,12 +135,12 @@
                   "workerIndex": 1,
                   "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 1071,
+                  "duration": 1124,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:53:51.114Z",
+                  "startTime": "2026-09-30T17:24:52.047Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -150,7 +150,7 @@
           ],
           "id": "8074e1259f63eca8872d-99ea5554e4e61a4edac5",
           "file": "desk.spec.js",
-          "line": 57,
+          "line": 66,
           "column": 1
         },
         {
@@ -169,12 +169,12 @@
                   "workerIndex": 1,
                   "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 1172,
+                  "duration": 1104,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:53:52.749Z",
+                  "startTime": "2026-09-30T17:24:53.716Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -184,7 +184,7 @@
           ],
           "id": "8074e1259f63eca8872d-10b2352f3c6e49935fc3",
           "file": "desk.spec.js",
-          "line": 85,
+          "line": 94,
           "column": 1
         },
         {
@@ -203,12 +203,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1056,
+                  "duration": 1127,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:53:53.228Z",
+                  "startTime": "2026-09-30T17:24:54.642Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -218,7 +218,7 @@
           ],
           "id": "8074e1259f63eca8872d-a5928e039a07a900ec19",
           "file": "desk.spec.js",
-          "line": 127,
+          "line": 136,
           "column": 1
         },
         {
@@ -237,12 +237,12 @@
                   "workerIndex": 1,
                   "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 2169,
+                  "duration": 2331,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:53:53.948Z",
+                  "startTime": "2026-09-30T17:24:54.848Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -252,7 +252,7 @@
           ],
           "id": "8074e1259f63eca8872d-b3ec1edcc96eef787fc2",
           "file": "desk.spec.js",
-          "line": 158,
+          "line": 167,
           "column": 1
         },
         {
@@ -271,12 +271,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1624,
+                  "duration": 1836,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:53:54.309Z",
+                  "startTime": "2026-09-30T17:24:55.796Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -286,7 +286,7 @@
           ],
           "id": "8074e1259f63eca8872d-37c3f8d431e4e9c8b4af",
           "file": "desk.spec.js",
-          "line": 207,
+          "line": 218,
           "column": 1
         },
         {
@@ -302,15 +302,15 @@
               "projectName": "desktop",
               "results": [
                 {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 1019,
+                  "duration": 898,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:53:55.965Z",
+                  "startTime": "2026-09-30T17:24:57.202Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -320,7 +320,7 @@
           ],
           "id": "8074e1259f63eca8872d-5ee341f51211c3797f8a",
           "file": "desk.spec.js",
-          "line": 252,
+          "line": 263,
           "column": 1
         },
         {
@@ -336,15 +336,15 @@
               "projectName": "desktop",
               "results": [
                 {
-                  "workerIndex": 1,
-                  "parallelIndex": 1,
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 662,
+                  "duration": 755,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:53:56.151Z",
+                  "startTime": "2026-09-30T17:24:57.643Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -354,7 +354,7 @@
           ],
           "id": "8074e1259f63eca8872d-0d894108da11edb56b4d",
           "file": "desk.spec.js",
-          "line": 286,
+          "line": 297,
           "column": 1
         },
         {
@@ -373,12 +373,12 @@
                   "workerIndex": 1,
                   "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 1227,
+                  "duration": 1210,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:53:56.859Z",
+                  "startTime": "2026-09-30T17:24:58.114Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -388,7 +388,7 @@
           ],
           "id": "8074e1259f63eca8872d-f2525fa7c362ca8fcf85",
           "file": "desk.spec.js",
-          "line": 307,
+          "line": 318,
           "column": 1
         },
         {
@@ -407,12 +407,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 998,
+                  "duration": 862,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:53:56.998Z",
+                  "startTime": "2026-09-30T17:24:58.434Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -422,7 +422,7 @@
           ],
           "id": "8074e1259f63eca8872d-48b4f899f66edccf62c6",
           "file": "desk.spec.js",
-          "line": 365,
+          "line": 374,
           "column": 1
         },
         {
@@ -441,12 +441,12 @@
                   "workerIndex": 2,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1069,
+                  "duration": 1314,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:53:58.957Z",
+                  "startTime": "2026-09-30T17:25:14.156Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -475,12 +475,12 @@
                   "workerIndex": 3,
                   "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 927,
+                  "duration": 1006,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:53:59.052Z",
+                  "startTime": "2026-09-30T17:25:15.234Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -490,7 +490,7 @@
           ],
           "id": "8074e1259f63eca8872d-0739c76c274ee3dc81f1",
           "file": "desk.spec.js",
-          "line": 57,
+          "line": 66,
           "column": 1
         },
         {
@@ -506,15 +506,15 @@
               "projectName": "mobile",
               "results": [
                 {
-                  "workerIndex": 3,
-                  "parallelIndex": 1,
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 942,
+                  "duration": 1039,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:54:00.505Z",
+                  "startTime": "2026-09-30T17:25:16.011Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -524,7 +524,7 @@
           ],
           "id": "8074e1259f63eca8872d-c87b588f1da3b7727e51",
           "file": "desk.spec.js",
-          "line": 85,
+          "line": 94,
           "column": 1
         },
         {
@@ -540,15 +540,15 @@
               "projectName": "mobile",
               "results": [
                 {
-                  "workerIndex": 2,
-                  "parallelIndex": 0,
+                  "workerIndex": 3,
+                  "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 1123,
+                  "duration": 1030,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:54:00.524Z",
+                  "startTime": "2026-09-30T17:25:16.844Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -558,7 +558,7 @@
           ],
           "id": "8074e1259f63eca8872d-530104ce94bba0e81122",
           "file": "desk.spec.js",
-          "line": 127,
+          "line": 136,
           "column": 1
         },
         {
@@ -574,15 +574,15 @@
               "projectName": "mobile",
               "results": [
                 {
-                  "workerIndex": 3,
-                  "parallelIndex": 1,
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1905,
+                  "duration": 1932,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:54:01.464Z",
+                  "startTime": "2026-09-30T17:25:17.078Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -592,7 +592,7 @@
           ],
           "id": "8074e1259f63eca8872d-9298bf4b79e1e283bd70",
           "file": "desk.spec.js",
-          "line": 158,
+          "line": 167,
           "column": 1
         },
         {
@@ -608,15 +608,15 @@
               "projectName": "mobile",
               "results": [
                 {
-                  "workerIndex": 2,
-                  "parallelIndex": 0,
+                  "workerIndex": 3,
+                  "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 1185,
+                  "duration": 1329,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:54:01.669Z",
+                  "startTime": "2026-09-30T17:25:17.899Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -626,7 +626,7 @@
           ],
           "id": "8074e1259f63eca8872d-743ed00cee1de25d499d",
           "file": "desk.spec.js",
-          "line": 207,
+          "line": 218,
           "column": 1
         },
         {
@@ -645,12 +645,12 @@
                   "workerIndex": 2,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 662,
+                  "duration": 834,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:54:02.901Z",
+                  "startTime": "2026-09-30T17:25:19.027Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -660,7 +660,7 @@
           ],
           "id": "8074e1259f63eca8872d-9cec556aa23a1fe1f75f",
           "file": "desk.spec.js",
-          "line": 252,
+          "line": 263,
           "column": 1
         },
         {
@@ -679,12 +679,12 @@
                   "workerIndex": 3,
                   "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 595,
+                  "duration": 626,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:54:03.389Z",
+                  "startTime": "2026-09-30T17:25:19.266Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -694,7 +694,7 @@
           ],
           "id": "8074e1259f63eca8872d-d9ff6d034bcd73a58cc1",
           "file": "desk.spec.js",
-          "line": 286,
+          "line": 297,
           "column": 1
         },
         {
@@ -713,12 +713,12 @@
                   "workerIndex": 2,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1033,
+                  "duration": 1055,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:54:03.588Z",
+                  "startTime": "2026-09-30T17:25:19.876Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -728,7 +728,7 @@
           ],
           "id": "8074e1259f63eca8872d-eba0a0168d8187f159b0",
           "file": "desk.spec.js",
-          "line": 307,
+          "line": 318,
           "column": 1
         },
         {
@@ -747,12 +747,12 @@
                   "workerIndex": 3,
                   "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 642,
+                  "duration": 720,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:54:04.020Z",
+                  "startTime": "2026-09-30T17:25:19.910Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -762,7 +762,899 @@
           ],
           "id": "8074e1259f63eca8872d-8bfe629c6b62abcca518",
           "file": "desk.spec.js",
-          "line": 365,
+          "line": 374,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "workflow.spec.js",
+      "file": "workflow.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "independent profiles, intended settings and deliberate real-mode enablement",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3123,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:24:59.367Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-631b9a2dd49da8bfa5bd",
+          "file": "workflow.spec.js",
+          "line": 115,
+          "column": 1
+        },
+        {
+          "title": "unchanged and unreachable checks preserve original dates, claims and reviewed assumptions",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 1510,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:24:59.374Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-2e341779482f3e145fe1",
+          "file": "workflow.spec.js",
+          "line": 203,
+          "column": 1
+        },
+        {
+          "title": "source revision preview, exact impact, stale decision and inspectable atomic history",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 2775,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:00.897Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-3b67f3931803dfb96edc",
+          "file": "workflow.spec.js",
+          "line": 253,
+          "column": 1
+        },
+        {
+          "title": "withdrawal blocks endorsement; dependency revision and review retain earlier decisions",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3140,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:02.509Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-6ca41950fe5d88d9a00c",
+          "file": "workflow.spec.js",
+          "line": 313,
+          "column": 1
+        },
+        {
+          "title": "add original source and claim with mandatory explicit assumption dependencies",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 2705,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:03.689Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-7ae7563385780a3f05ea",
+          "file": "workflow.spec.js",
+          "line": 375,
+          "column": 1
+        },
+        {
+          "title": "interrupted drafts recover and repeated commits produce one revision",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2024,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:05.667Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-4729428d7d833cdc6103",
+          "file": "workflow.spec.js",
+          "line": 450,
+          "column": 1
+        },
+        {
+          "title": "two-tab conflict retains draft and explicit rebase previews the actual latest basis",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 3952,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:06.425Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-9b65cffc1f38be4a9864",
+          "file": "workflow.spec.js",
+          "line": 490,
+          "column": 1
+        },
+        {
+          "title": "validated import rejects tampered and divergent histories without replacing saved work",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1215,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:07.705Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-59cb4f20cb340976b9b9",
+          "file": "workflow.spec.js",
+          "line": 544,
+          "column": 1
+        },
+        {
+          "title": "generic v1 migration preserves exact notes, reviews and original activity; reset archives v2",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1699,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:08.935Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-bcbf1bf29e93c7b66ade",
+          "file": "workflow.spec.js",
+          "line": 585,
+          "column": 1
+        },
+        {
+          "title": "browser-storage failure leaves coherent memory state and truthful export",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 1298,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:10.400Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-1e1691ffe86260730c23",
+          "file": "workflow.spec.js",
+          "line": 651,
+          "column": 1
+        },
+        {
+          "title": "invalid saved cache stays intact until explicit archive/reset and raw recovery",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1190,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:10.648Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-3c76ba089da882b34851",
+          "file": "workflow.spec.js",
+          "line": 681,
+          "column": 1
+        },
+        {
+          "title": "maintenance uses local interactions without automatic third-party collection",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 2370,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:11.715Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-a890db474799debfd09f",
+          "file": "workflow.spec.js",
+          "line": 716,
+          "column": 1
+        },
+        {
+          "title": "a cache corrupted during editing is retained rather than mistaken for storage failure",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1259,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:11.861Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-05ef577f06b9964727a1",
+          "file": "workflow.spec.js",
+          "line": 737,
+          "column": 1
+        },
+        {
+          "title": "independent profiles, intended settings and deliberate real-mode enablement",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 2181,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:20.669Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-28d1de90f2895d6856b6",
+          "file": "workflow.spec.js",
+          "line": 115,
+          "column": 1
+        },
+        {
+          "title": "unchanged and unreachable checks preserve original dates, claims and reviewed assumptions",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1226,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:20.985Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-e1311a5aa00bc3585c7d",
+          "file": "workflow.spec.js",
+          "line": 203,
+          "column": 1
+        },
+        {
+          "title": "source revision preview, exact impact, stale decision and inspectable atomic history",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2219,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:22.228Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-a6fa56c06513aa9ac245",
+          "file": "workflow.spec.js",
+          "line": 253,
+          "column": 1
+        },
+        {
+          "title": "withdrawal blocks endorsement; dependency revision and review retain earlier decisions",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 2585,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:22.864Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-cb0580b94ee4ff1339c2",
+          "file": "workflow.spec.js",
+          "line": 313,
+          "column": 1
+        },
+        {
+          "title": "add original source and claim with mandatory explicit assumption dependencies",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2991,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:24.467Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-32605c5aa048939c38fa",
+          "file": "workflow.spec.js",
+          "line": 375,
+          "column": 1
+        },
+        {
+          "title": "interrupted drafts recover and repeated commits produce one revision",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 1518,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:25.465Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-2fe99c691dc0c564071c",
+          "file": "workflow.spec.js",
+          "line": 450,
+          "column": 1
+        },
+        {
+          "title": "two-tab conflict retains draft and explicit rebase previews the actual latest basis",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 3368,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:26.997Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-b292fa15dc9196d3ec9a",
+          "file": "workflow.spec.js",
+          "line": 490,
+          "column": 1
+        },
+        {
+          "title": "validated import rejects tampered and divergent histories without replacing saved work",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1036,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:27.478Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-66ff68e361861bc3c2a7",
+          "file": "workflow.spec.js",
+          "line": 544,
+          "column": 1
+        },
+        {
+          "title": "generic v1 migration preserves exact notes, reviews and original activity; reset archives v2",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1167,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:28.533Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-23b31c2484a1f2791308",
+          "file": "workflow.spec.js",
+          "line": 585,
+          "column": 1
+        },
+        {
+          "title": "browser-storage failure leaves coherent memory state and truthful export",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 898,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:29.720Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-7fe24c0fc6d1f247ab46",
+          "file": "workflow.spec.js",
+          "line": 651,
+          "column": 1
+        },
+        {
+          "title": "invalid saved cache stays intact until explicit archive/reset and raw recovery",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 854,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:30.375Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-e0d30c26df0ac923aafb",
+          "file": "workflow.spec.js",
+          "line": 681,
+          "column": 1
+        },
+        {
+          "title": "maintenance uses local interactions without automatic third-party collection",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1855,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:30.642Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-ae3c399d8d0517ea520e",
+          "file": "workflow.spec.js",
+          "line": 716,
+          "column": 1
+        },
+        {
+          "title": "a cache corrupted during editing is retained rather than mistaken for storage failure",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 743,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T17:25:31.239Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93da89c2ff21c8134e9c-77ad156877afdda6a3e3",
+          "file": "workflow.spec.js",
+          "line": 737,
           "column": 1
         }
       ]
@@ -770,9 +1662,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-09-30T15:53:50.129Z",
-    "duration": 14655.211,
-    "expected": 20,
+    "startTime": "2026-09-30T17:24:50.949Z",
+    "duration": 41641.645000000004,
+    "expected": 46,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

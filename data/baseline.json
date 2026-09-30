@@ -1,8 +1,8 @@
 {
   "meta": {
-    "schemaVersion": 1,
+    "schemaVersion": 2,
     "datasetId": "generic-stable-demo",
-    "version": "2026-09-30.generic.1",
+    "version": "2026-09-30.generic.2",
     "asOf": "2026-09-30",
     "title": "Generic stablecoin ecosystem research",
     "collectionMode": "manual",
@@ -17,7 +17,13 @@
     "mode": "fictional_demo",
     "issuer": null,
     "currency": null,
-    "networks": []
+    "markets": [],
+    "networks": [],
+    "useCase": null,
+    "constraints": [
+      "Eligibility unknown",
+      "Redemption terms unknown"
+    ]
   },
   "sources": [
     {
@@ -727,7 +733,11 @@
       "reviewBy": "2026-10-30",
       "confidence": "Illustrative only",
       "confidenceReason": "Public market context is documented. Fit for the fictional profile is synthetic; no acceptance, partnership, demand or commercial readiness is evidenced.",
-      "evidenceSnapshot": "dcb23eef"
+      "evidenceSnapshot": "d26e9585",
+      "assumptionIds": [
+        "A-P-G01-1",
+        "A-P-G01-2"
+      ]
     },
     {
       "id": "P-G02",
@@ -763,7 +773,11 @@
       "reviewBy": "2026-10-30",
       "confidence": "Illustrative only",
       "confidenceReason": "Public market context is documented. Fit for the fictional profile is synthetic; no acceptance, partnership, demand or commercial readiness is evidenced.",
-      "evidenceSnapshot": "dbf80f92"
+      "evidenceSnapshot": "949d2db4",
+      "assumptionIds": [
+        "A-P-G02-1",
+        "A-P-G02-2"
+      ]
     },
     {
       "id": "P-G03",
@@ -797,7 +811,11 @@
       "reviewBy": "2026-10-30",
       "confidence": "Illustrative only",
       "confidenceReason": "Public market context is documented. Fit for the fictional profile is synthetic; no acceptance, partnership, demand or commercial readiness is evidenced.",
-      "evidenceSnapshot": "c954702e"
+      "evidenceSnapshot": "6c2a2748",
+      "assumptionIds": [
+        "A-P-G03-1",
+        "A-P-G03-2"
+      ]
     }
   ],
   "decisions": [
@@ -880,6 +898,100 @@
       ],
       "before": null,
       "after": "2026-09-30.generic.1"
+    },
+    {
+      "id": "B-G02",
+      "kind": "manual_update",
+      "recordedAt": "2026-09-30",
+      "title": "Core v2 research workflow",
+      "summary": "Added explicit assumption IDs and dependencies for profile-scoped manual revisions and auditable reviews. Public source content is unchanged. No source refresh or monitoring is claimed.",
+      "evidenceIds": [
+        "E-G11",
+        "E-G12",
+        "E-G13"
+      ],
+      "priorityIds": [
+        "P-G01",
+        "P-G02",
+        "P-G03"
+      ],
+      "before": "2026-09-30.generic.1",
+      "after": "2026-09-30.generic.2"
+    }
+  ],
+  "assumptions": [
+    {
+      "id": "A-P-G01-1",
+      "priorityId": "P-G01",
+      "statement": "A real, eligible issuer and target buyer would be specified before a commercial recommendation.",
+      "evidenceIds": [
+        "E-G11"
+      ],
+      "evidenceSnapshot": "d5d730a3",
+      "evidenceReviewedAt": "2026-09-30",
+      "reviewBy": "2026-10-30"
+    },
+    {
+      "id": "A-P-G01-2",
+      "priorityId": "P-G01",
+      "statement": "A distinct merchant need would remain after comparing existing products.",
+      "evidenceIds": [
+        "E-G02",
+        "E-G03",
+        "E-G10"
+      ],
+      "evidenceSnapshot": "2c156f2b",
+      "evidenceReviewedAt": "2026-09-30",
+      "reviewBy": "2026-10-30"
+    },
+    {
+      "id": "A-P-G02-1",
+      "priorityId": "P-G02",
+      "statement": "A real profile would have a supportable issuance and redemption model.",
+      "evidenceIds": [
+        "E-G12"
+      ],
+      "evidenceSnapshot": "ef22c88c",
+      "evidenceReviewedAt": "2026-09-30",
+      "reviewBy": "2026-10-30"
+    },
+    {
+      "id": "A-P-G02-2",
+      "priorityId": "P-G02",
+      "statement": "A provider would permit the intended token and use case under documented conditions.",
+      "evidenceIds": [
+        "E-G01",
+        "E-G04",
+        "E-G05",
+        "E-G06"
+      ],
+      "evidenceSnapshot": "f453f7cf",
+      "evidenceReviewedAt": "2026-09-30",
+      "reviewBy": "2026-10-30"
+    },
+    {
+      "id": "A-P-G03-1",
+      "priorityId": "P-G03",
+      "statement": "A real asset and authentic contracts would be identified before measurement.",
+      "evidenceIds": [
+        "E-G13"
+      ],
+      "evidenceSnapshot": "1a43c547",
+      "evidenceReviewedAt": "2026-09-30",
+      "reviewBy": "2026-10-30"
+    },
+    {
+      "id": "A-P-G03-2",
+      "priorityId": "P-G03",
+      "statement": "A user conversion or redemption bottleneck would be evidenced.",
+      "evidenceIds": [
+        "E-G07",
+        "E-G08",
+        "E-G09"
+      ],
+      "evidenceSnapshot": "a9de8a7e",
+      "evidenceReviewedAt": "2026-09-30",
+      "reviewBy": "2026-10-30"
     }
   ]
 }
