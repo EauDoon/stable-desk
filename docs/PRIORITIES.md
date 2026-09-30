@@ -1,4 +1,4 @@
-# Three investigations for the XSGD ecosystem
+# Stable Desk research priorities
 
 As of September 30, 2026. Analyst proposals based on a public-source baseline; no commercial terms, outreach or employer-private material. The rank is a qualitative research sequence, not a forecast or a commercial score.
 

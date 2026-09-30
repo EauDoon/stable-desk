@@ -1,4 +1,4 @@
-# Verification record
+# Stable Desk verification record
 
 September 30, 2026. Initial release tests are recorded here after execution. The deliverable uses public primary-source research and deterministic/browser checks; no independent multi-agent review panel or financial/regulatory assurance is claimed.
 

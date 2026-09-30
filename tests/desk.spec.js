@@ -5,6 +5,8 @@ const baseline = JSON.parse(
 );
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
+  await expect(page).toHaveTitle("Stable Desk · XSGD ecosystem research");
+  await expect(page.locator(".brand")).toContainText("Stable Desk");
   await expect(
     page.getByRole("heading", { name: "Where should XSGD go next?" }),
   ).toBeVisible();

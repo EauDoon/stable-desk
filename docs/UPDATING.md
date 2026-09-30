@@ -1,4 +1,4 @@
-# Incorporating new public evidence
+# Updating Stable Desk
 
 The repository dataset is the public research source of truth; a browser import is a review workspace. Neither workflow collects automatically. Never add private employer/Current material or use notes to imply confidential relationship knowledge.
 

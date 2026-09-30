@@ -1,4 +1,4 @@
-# Architecture, data and coverage
+# Stable Desk architecture and coverage
 
 The app uses browser ES modules, semantic HTML and responsive CSS. No application framework, backend, database, credentials or AI endpoint is required. The small Node HTTP server is a local preview utility; deployment uses the static `dist/` output.
 

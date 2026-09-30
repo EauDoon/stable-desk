@@ -1,4 +1,4 @@
-# stable-desk
+# Stable Desk
 
 Daniel Oon's public-evidence research desk for XSGD distribution, issuer partnerships and liquidity. First release: **September 30, 2026**. This is a manually maintained baseline, with ten organizations, seventeen primary sources and three proposed investigations.
 
@@ -20,7 +20,7 @@ npm run build
 npm run preview -- --host 0.0.0.0
 ```
 
-`dist/` contains the complete static app. Preview also uses port 4173; stop the dev server first or pass another port. Any static HTTP host can serve it. No publication, source push, access change, subscription or recurring collection was performed. An owner-only Sites deployment is a proposed delivery route for the parent to review; no Site was registered or published by this task.
+`dist/` contains the complete static app. Preview also uses port 4173; stop the dev server first or pass another port. Any static HTTP host can serve it. Delivery is through the configured [Stable Desk GitHub repository](https://github.com/EauDoon/stable-desk). No hosted-site deployment, access change, subscription or recurring collection is included. No Site was registered or published.
 
 The working slice includes:
 

@@ -240,7 +240,7 @@ function render() {
   const overdue = data.priorities.filter(
     (p) => reviewState(data, p, workspace.reviews).tone === "warn",
   ).length;
-  app.innerHTML = `<div class="desk-shell"><aside class="sidebar"><a class="brand" href="#opportunities"><span class="brand-mark"><i></i><i></i><i></i></span><span>stable<span class="brand-light">desk</span><small>ECOSYSTEM RESEARCH</small></span></a><div class="workspace-label">DANIEL OON'S WORKSPACE</div><nav aria-label="Desk views">${[
+  app.innerHTML = `<div class="desk-shell"><aside class="sidebar"><a class="brand" href="#opportunities"><span class="brand-mark"><i></i><i></i><i></i></span><span>Stable <span class="brand-light">Desk</span><small>ECOSYSTEM RESEARCH</small></span></a><div class="workspace-label">DANIEL OON'S WORKSPACE</div><nav aria-label="Desk views">${[
     ["opportunities", "Opportunities", "grid"],
     ["changes", "Changes", "change"],
     ["decisions", "Decisions", "decision"],
