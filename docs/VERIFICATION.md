@@ -22,6 +22,8 @@ The build is validated independently. A smoke script serves `dist/` on a tempora
 
 ## Evidence coverage and limitations
 
+The deployment-configuration follow-up reran all 29 model tests, all 46 desktop/mobile browser tests, the validated build, byte-identical packaging and desktop/mobile build smoke checks. Static configuration selects Vercel's documented Other preset and `dist/` output without application changes. Vercel publication remains blocked: its connected deployment action is unavailable, CLI authentication is absent and CLI login cannot reach authorization from this environment. No hosted URL, successful Vercel build or live browser verification is inferred from local results. See [deployment status](DEPLOYMENT.md).
+
 The seed contains ten organizations, ten primary sources, ten public-market evidence records, three synthetic records, six assumptions, three synthetic priorities/decisions and two genuine baseline/update entries. V2 records its schema/workflow release without inventing a monitored market change. Sources keep their original real product names/titles/URLs and null dates for undated pages. Fictional relationships have no relationship-evidence lineage; real-mode settings display unverified status.
 
 The ten original pages were reviewed through the web research tool on the baseline date. A fresh `npm run check:links` attempt during v2 verification returned **ten `fetch failed` responses with no HTTP status; exit 2**. `artifacts/source-links.json` preserves the exact client outcomes. Browser target validation does not turn those failures into successful reachability or a new research review. Manual collection remains the supported method.

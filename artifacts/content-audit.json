@@ -1,9 +1,9 @@
 {
-  "checkedAt": "2026-09-30T17:27:08.420270+00:00",
+  "checkedAt": "2026-09-30T17:55:50.304533+00:00",
   "method": "Case-insensitive bytes in current tracked/new files, dist and unpacked ZIP; screenshot OCR when available.",
-  "currentFiles": 52,
-  "buildFiles": 14,
-  "zipMembers": 14,
+  "currentFiles": 54,
+  "buildFiles": 15,
+  "zipMembers": 15,
   "screenshots": 18,
   "screenshotOCREnabled": true,
   "findings": [],
