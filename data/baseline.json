@@ -201,6 +201,18 @@
       "kind": "primary",
       "dateNote": "Official public issuer post; prototype and whitepaper evidence does not establish production adoption.",
       "locator": "New Whitepaper: The Autonomous Economy"
+    },
+    {
+      "id": "S17",
+      "title": "Alipay+ business identity and products",
+      "publisher": "Alipay+ / Ant International",
+      "url": "https://www.alipayplus.com/about-us/",
+      "publishedAt": null,
+      "eventDate": null,
+      "accessedAt": "2026-09-30",
+      "kind": "primary",
+      "dateNote": "Undated official product description; establishes brand identity, not a new StraitsX integration.",
+      "locator": "Who we are; Ant International business pillars paragraph"
     }
   ],
   "evidence": [
@@ -496,6 +508,20 @@
       "scope": "Proposed research sequence; supply, volume and a listing cannot establish payment adoption.",
       "asOf": "2026-09-30",
       "independentCheck": "Would lose priority if independent quotes show sufficient depth and no user conversion bottleneck."
+    },
+    {
+      "id": "E20",
+      "organizationIds": [
+        "ant"
+      ],
+      "sourceIds": [
+        "S17"
+      ],
+      "type": "verified_fact",
+      "statement": "Alipay+ describes itself as a cross-border wallet gateway and a business pillar of Ant International.",
+      "scope": "Product and organization identity; distinguish Alipay+ from the Alipay consumer wallet.",
+      "asOf": "2026-09-30",
+      "independentCheck": "Official brand page read; no operating-volume claims adopted."
     }
   ],
   "organizations": [
@@ -564,7 +590,8 @@
       "evidenceIds": [
         "E02",
         "E03",
-        "E17"
+        "E17",
+        "E20"
       ],
       "priorityIds": [
         "P01"
@@ -884,7 +911,7 @@
       "reviewBy": "2026-10-30",
       "confidence": "Moderate",
       "confidenceReason": "Existing flow described, but adoption figures and new-market economics are not independently verified.",
-      "evidenceSnapshot": "1b4f7aca"
+      "evidenceSnapshot": "e15c623d"
     },
     {
       "id": "P02",

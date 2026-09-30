@@ -1,0 +1,125 @@
+{
+  "checkedAt": "2026-09-30T15:10:16.180Z",
+  "method": "Unauthenticated public GET; separate from browser search-source access.",
+  "results": [
+    {
+      "id": "S01",
+      "url": "https://www.grab.com/sg/press/others/grab-and-straitsx-sign-mou-to-explore-the-development-of-web3-wallets-and-stablecoin-based-settlement-layer-across-asia/",
+      "status": null,
+      "verdict": "unavailable-to-client",
+      "error": "fetch failed"
+    },
+    {
+      "id": "S02",
+      "url": "https://www.straitsx.com/case-study/alipay-grab",
+      "status": null,
+      "verdict": "unavailable-to-client",
+      "error": "fetch failed"
+    },
+    {
+      "id": "S03",
+      "url": "https://www.straitsx.com/partners/cross-border-payments",
+      "status": null,
+      "verdict": "unavailable-to-client",
+      "error": "fetch failed"
+    },
+    {
+      "id": "S04",
+      "url": "https://www.straitsx.com/partners/cards",
+      "status": null,
+      "verdict": "unavailable-to-client",
+      "error": "fetch failed"
+    },
+    {
+      "id": "S05",
+      "url": "https://www.straitsx.com/case-study/from-launch-to-scale-redotpays-wallet-ready-card-program",
+      "status": null,
+      "verdict": "unavailable-to-client",
+      "error": "fetch failed"
+    },
+    {
+      "id": "S06",
+      "url": "https://www.straitsx.com/blog-post/xsgd-live-on-coinbase",
+      "status": null,
+      "verdict": "unavailable-to-client",
+      "error": "fetch failed"
+    },
+    {
+      "id": "S07",
+      "url": "https://www.coinbase.com/xsgd",
+      "status": null,
+      "verdict": "unavailable-to-client",
+      "error": "fetch failed"
+    },
+    {
+      "id": "S08",
+      "url": "https://www.straitsx.com/blog-post/straitsx-to-launch-both-xsgd-and-xusd-on-solanas-public-blockchain",
+      "status": null,
+      "verdict": "unavailable-to-client",
+      "error": "fetch failed"
+    },
+    {
+      "id": "S09",
+      "url": "https://www.straitsx.com/blog-post/xsgd-and-xusd-live-on-solana",
+      "status": null,
+      "verdict": "unavailable-to-client",
+      "error": "fetch failed"
+    },
+    {
+      "id": "S10",
+      "url": "https://www.straitsx.com/partners/defi",
+      "status": null,
+      "verdict": "unavailable-to-client",
+      "error": "fetch failed"
+    },
+    {
+      "id": "S11",
+      "url": "https://docs.straitsx.com/docs/swap-api",
+      "status": null,
+      "verdict": "unavailable-to-client",
+      "error": "fetch failed"
+    },
+    {
+      "id": "S12",
+      "url": "https://www.nium.com/blog/usdc-funding-global-payouts",
+      "status": null,
+      "verdict": "unavailable-to-client",
+      "error": "fetch failed"
+    },
+    {
+      "id": "S13",
+      "url": "https://www.nium.com/newsroom/nium-joins-visa-stablecoin-settlement-cross-border-payments",
+      "status": null,
+      "verdict": "unavailable-to-client",
+      "error": "fetch failed"
+    },
+    {
+      "id": "S14",
+      "url": "https://joinopenstandard.com/blog/introducing-open-usd",
+      "status": null,
+      "verdict": "unavailable-to-client",
+      "error": "fetch failed"
+    },
+    {
+      "id": "S15",
+      "url": "https://www.straitsx.com/blog-post/how-to-get-xsgd",
+      "status": null,
+      "verdict": "unavailable-to-client",
+      "error": "fetch failed"
+    },
+    {
+      "id": "S16",
+      "url": "https://www.linkedin.com/pulse/straitsx-september-2026-newsletter-straitsx-bmdec",
+      "status": null,
+      "verdict": "unavailable-to-client",
+      "error": "fetch failed"
+    },
+    {
+      "id": "S17",
+      "url": "https://www.alipayplus.com/about-us/",
+      "status": null,
+      "verdict": "unavailable-to-client",
+      "error": "fetch failed"
+    }
+  ]
+}
