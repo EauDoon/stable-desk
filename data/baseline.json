@@ -1,778 +1,664 @@
 {
   "meta": {
     "schemaVersion": 1,
-    "version": "2026-09-30.1",
+    "datasetId": "generic-stable-demo",
+    "version": "2026-09-30.generic.1",
     "asOf": "2026-09-30",
-    "title": "XSGD ecosystem research",
+    "title": "Generic stablecoin ecosystem research",
     "collectionMode": "manual",
     "reviewDays": 30,
-    "scope": "Public primary sources only. Initial dated baseline; no commissioned recurring collection.",
-    "coverage": "Announcements, official product pages and partner directories. No authenticated API calls, order-book snapshots, chain verification, private commercial terms or independently audited adoption data."
+    "scope": "Public primary market context plus explicitly synthetic demo examples. No recurring collection.",
+    "coverage": "Ten primary sources and ten named organizations. Market facts concern the original real assets and products; the fictional profile has no issuer, contracts, reserves, listings, partners or adoption."
+  },
+  "profile": {
+    "id": "generic-stable",
+    "name": "Generic Stablecoin",
+    "ticker": "STABLE",
+    "mode": "fictional_demo",
+    "issuer": null,
+    "currency": null,
+    "networks": []
   },
   "sources": [
     {
-      "id": "S01",
-      "title": "Grab–StraitsX Web3 MOU",
-      "publisher": "Grab",
-      "url": "https://www.grab.com/sg/press/others/grab-and-straitsx-sign-mou-to-explore-the-development-of-web3-wallets-and-stablecoin-based-settlement-layer-across-asia/",
-      "publishedAt": "2025-11-18",
-      "eventDate": "2025-11-18",
-      "accessedAt": "2026-09-30",
-      "kind": "primary",
-      "dateNote": "Dated announcement; proposed scope remains conditional.",
-      "locator": "MOU announcement and proposed collaboration paragraphs"
-    },
-    {
-      "id": "S02",
-      "title": "Alipay+ / GrabPay payment case study",
-      "publisher": "StraitsX",
-      "url": "https://www.straitsx.com/case-study/alipay-grab",
-      "publishedAt": null,
-      "eventDate": "2024-10",
-      "accessedAt": "2026-09-30",
-      "kind": "primary",
-      "dateNote": "Undated page; states integration live since October 2024. Growth figures have no explicit measurement window or denominator.",
-      "locator": "StraitsX Approach; Results and Benefits"
-    },
-    {
-      "id": "S03",
-      "title": "Cross-border payment ecosystem",
-      "publisher": "StraitsX",
-      "url": "https://www.straitsx.com/partners/cross-border-payments",
+      "id": "S-G01",
+      "title": "Circle Mint",
+      "publisher": "Circle",
+      "url": "https://www.circle.com/circle-mint",
       "publishedAt": null,
       "eventDate": null,
       "accessedAt": "2026-09-30",
       "kind": "primary",
-      "dateNote": "Undated directory; listing is not proof of a bilateral agreement or every corridor being live.",
-      "locator": "Grab, Alipay, KBank and Q Wallet entries"
+      "dateNote": "Undated product page. Access and operating benefits are company descriptions; institutional and regional eligibility applies.",
+      "locator": "Is Circle Mint right for your business?; mint and redemption sections"
     },
     {
-      "id": "S04",
-      "title": "Stablecoin-backed card ecosystem",
-      "publisher": "StraitsX",
-      "url": "https://www.straitsx.com/partners/cards",
+      "id": "S-G02",
+      "title": "Stablecoin payments",
+      "publisher": "Stripe",
+      "url": "https://docs.stripe.com/payments/stablecoin-payments",
       "publishedAt": null,
       "eventDate": null,
       "accessedAt": "2026-09-30",
       "kind": "primary",
-      "dateNote": "Undated directory; token labels do not establish product-specific settlement currency.",
-      "locator": "Visa and RedotPay entries"
+      "dateNote": "Undated, changeable documentation. Token, network, merchant-location and preview restrictions must be rechecked before real use.",
+      "locator": "Payment method properties; Business locations; Limitations"
     },
     {
-      "id": "S05",
-      "title": "RedotPay wallet-ready card program",
-      "publisher": "StraitsX",
-      "url": "https://www.straitsx.com/case-study/from-launch-to-scale-redotpays-wallet-ready-card-program",
+      "id": "S-G03",
+      "title": "PayPal USD (PYUSD) Stablecoin",
+      "publisher": "PayPal",
+      "url": "https://www.paypal.com/us/digital-wallet/manage-money/crypto/pyusd",
       "publishedAt": null,
       "eventDate": null,
       "accessedAt": "2026-09-30",
       "kind": "primary",
-      "dateNote": "Undated customer story; describes XUSD settlement, not an established XSGD card flow.",
-      "locator": "Card Issuance; USD Access via DVA; Stablecoin-Backed Settlement (XUSD)"
+      "dateNote": "Undated product page. Some market expansion is described as coming soon; eligibility and performance were not tested.",
+      "locator": "Businesses; Where is PYUSD available?; reserve assets FAQ"
     },
     {
-      "id": "S06",
-      "title": "XSGD live on Coinbase announcement",
-      "publisher": "StraitsX",
-      "url": "https://www.straitsx.com/blog-post/xsgd-live-on-coinbase",
-      "publishedAt": "2025-09-24",
-      "eventDate": "2025-09-24",
+      "id": "S-G04",
+      "title": "Visa Stablecoin Platform",
+      "publisher": "Visa",
+      "url": "https://www.visa.com/en-us/products/visa-stablecoin-platform",
+      "publishedAt": null,
+      "eventDate": null,
       "accessedAt": "2026-09-30",
       "kind": "primary",
-      "dateNote": "Publication describes availability while body also uses 'coming'; use current Coinbase page for product confirmation.",
-      "locator": "Opening bullets; strategic partnership paragraph"
+      "dateNote": "Undated product page. Limited availability and beta access apply; API access is described as coming soon. This is not an open-token acceptance guarantee.",
+      "locator": "Sources/Footnotes/Disclaimer; Open USD and API availability FAQ"
     },
     {
-      "id": "S07",
-      "title": "XSGD on Coinbase product page",
+      "id": "S-G05",
+      "title": "Mastercard unveils end-to-end capabilities to power stablecoin transactions – from wallets to checkouts",
+      "publisher": "Mastercard",
+      "url": "https://www.mastercard.com/global/en/news-and-trends/press/2025/april/mastercard-unveils-end-to-end-capabilities-to-power-stablecoin-transactions-from-wallets-to-checkouts.html",
+      "publishedAt": "2025-04-28",
+      "eventDate": "2025-04-28",
+      "accessedAt": "2026-09-30",
+      "kind": "primary",
+      "dateNote": "Historical announcement, not a fresh launch or independently verified production inventory. Merchant settlement scope differs from consumer token spending.",
+      "locator": "Merchant settlement bullet"
+    },
+    {
+      "id": "S-G06",
+      "title": "PayPal USD (PYUSD)",
+      "publisher": "Paxos",
+      "url": "https://www.paxos.com/pyusd",
+      "publishedAt": null,
+      "eventDate": null,
+      "accessedAt": "2026-09-30",
+      "kind": "primary",
+      "dateNote": "Undated issuer page. Real PYUSD/PayPal context only. Eligibility, redemption execution and reserves were not independently checked.",
+      "locator": "Issued by Paxos heading; How to access PayPal USD; redemption section"
+    },
+    {
+      "id": "S-G07",
+      "title": "Introducing USDC",
       "publisher": "Coinbase",
-      "url": "https://www.coinbase.com/xsgd",
+      "url": "https://www.coinbase.com/en-gb/usdc",
       "publishedAt": null,
       "eventDate": null,
       "accessedAt": "2026-09-30",
       "kind": "primary",
-      "dateNote": "Undated page; product presence verified, executable depth and account eligibility untested.",
-      "locator": "Why use XSGD on Coinbase?; fees FAQ"
+      "dateNote": "Undated UK-localized page. Network counts differ between sections; no network count or account eligibility is inferred. No live quotes were taken.",
+      "locator": "What is USDC?; product and regional availability notes"
     },
     {
-      "id": "S08",
-      "title": "Solana Foundation collaboration announcement",
-      "publisher": "StraitsX",
-      "url": "https://www.straitsx.com/blog-post/straitsx-to-launch-both-xsgd-and-xusd-on-solanas-public-blockchain",
-      "publishedAt": "2025-12-16",
-      "eventDate": "2025-12-16",
-      "accessedAt": "2026-09-30",
-      "kind": "primary",
-      "dateNote": "Launch target was early 2026; later launch announcement takes precedence.",
-      "locator": "Collaboration announcement; liquidity plans"
-    },
-    {
-      "id": "S09",
-      "title": "XSGD and XUSD live on Solana",
-      "publisher": "StraitsX",
-      "url": "https://www.straitsx.com/blog-post/xsgd-and-xusd-live-on-solana",
-      "publishedAt": "2026-03-31",
-      "eventDate": "2026-03-31",
-      "accessedAt": "2026-09-30",
-      "kind": "primary",
-      "dateNote": "Issuer launch claim and mint links; no independent chain or executable-liquidity check performed.",
-      "locator": "Opening paragraph; native SGD and USD rails"
-    },
-    {
-      "id": "S10",
-      "title": "DeFi ecosystem directory",
-      "publisher": "StraitsX",
-      "url": "https://www.straitsx.com/partners/defi",
+      "id": "S-G08",
+      "title": "Solana Pay",
+      "publisher": "Solana Pay documentation",
+      "url": "https://docs.solanapay.com/",
       "publishedAt": null,
       "eventDate": null,
       "accessedAt": "2026-09-30",
       "kind": "primary",
-      "dateNote": "Undated protocol directory. Uniswap listing does not establish an agreement with Uniswap Labs.",
-      "locator": "Solana, Base and Uniswap entries"
+      "dateNote": "Undated protocol documentation with older ecosystem examples. Protocol mechanics do not prove current merchant adoption or a Foundation commercial relationship.",
+      "locator": "Introduction; How to use Solana Pay; open standard description"
     },
     {
-      "id": "S11",
-      "title": "StraitsX Swap API documentation",
-      "publisher": "StraitsX",
-      "url": "https://docs.straitsx.com/docs/swap-api",
+      "id": "S-G09",
+      "title": "Concentrated Liquidity",
+      "publisher": "Uniswap developer documentation",
+      "url": "https://developers.uniswap.org/docs/get-started/concepts/liquidity-providers/concentrated-liquidity",
       "publishedAt": null,
       "eventDate": null,
       "accessedAt": "2026-09-30",
       "kind": "primary",
-      "dateNote": "Supported-pair documentation; quotes expire. Access, prices, limits and commercial terms not tested.",
-      "locator": "Supported Swap Pairs and FX Quote; Execute a quote"
+      "dateNote": "Undated protocol documentation. Described mechanics do not establish executable pool depth or a bilateral relationship with Uniswap Labs.",
+      "locator": "How Concentrated Liquidity Works; What Active Liquidity Means"
     },
     {
-      "id": "S12",
-      "title": "Nium launches USDC funding",
-      "publisher": "Nium",
-      "url": "https://www.nium.com/blog/usdc-funding-global-payouts",
-      "publishedAt": "2026-08-19",
-      "eventDate": "2026-08-19",
+      "id": "S-G10",
+      "title": "Visa Expands Stablecoin Settlement Capabilities to Merchant Acquirers",
+      "publisher": "Visa",
+      "url": "https://usa.visa.com/about-visa/newsroom/press-releases.releaseId.19881.html",
+      "publishedAt": "2023-09-05",
+      "eventDate": "2023-09-05",
       "accessedAt": "2026-09-30",
       "kind": "primary",
-      "dateNote": "USDC-funded USD conversion is stated; XSGD acceptance and bilateral StraitsX relationship are not established here.",
-      "locator": "How this works section"
-    },
-    {
-      "id": "S13",
-      "title": "Nium joins Visa stablecoin settlement pilot",
-      "publisher": "Nium",
-      "url": "https://www.nium.com/newsroom/nium-joins-visa-stablecoin-settlement-cross-border-payments",
-      "publishedAt": "2025-11-12",
-      "eventDate": "2025-11-12",
-      "accessedAt": "2026-09-30",
-      "kind": "primary",
-      "dateNote": "An alternate locale displayed August 2026 metadata; canonical body and dateline say November 12, 2025. Pilot is not an XSGD commitment.",
-      "locator": "Singapore dateline and pilot description"
-    },
-    {
-      "id": "S14",
-      "title": "Introducing Open USD",
-      "publisher": "Open Standard",
-      "url": "https://joinopenstandard.com/blog/introducing-open-usd",
-      "publishedAt": "2026-06-30",
-      "eventDate": "2026-06-30",
-      "accessedAt": "2026-09-30",
-      "kind": "primary",
-      "dateNote": "Announced participant list includes StraitsX and Nium. Shared membership does not establish bilateral terms or XSGD distribution.",
-      "locator": "Design principles and businesses signed up list"
-    },
-    {
-      "id": "S15",
-      "title": "How to get XSGD",
-      "publisher": "StraitsX",
-      "url": "https://www.straitsx.com/blog-post/how-to-get-xsgd",
-      "publishedAt": "2026-01-05",
-      "eventDate": null,
-      "accessedAt": "2026-09-30",
-      "kind": "primary",
-      "dateNote": "Current retrieved guide still labels Solana 'coming soon', conflicting with March launch post. Product-specific operational support needs rechecking.",
-      "locator": "Blockchain transfer out; supported networks"
-    },
-    {
-      "id": "S16",
-      "title": "September 2026 StraitsX newsletter",
-      "publisher": "StraitsX",
-      "url": "https://www.linkedin.com/pulse/straitsx-september-2026-newsletter-straitsx-bmdec",
-      "publishedAt": "2026-09-10",
-      "eventDate": null,
-      "accessedAt": "2026-09-30",
-      "kind": "primary",
-      "dateNote": "Official public issuer post; prototype and whitepaper evidence does not establish production adoption.",
-      "locator": "New Whitepaper: The Autonomous Economy"
-    },
-    {
-      "id": "S17",
-      "title": "Alipay+ business identity and products",
-      "publisher": "Alipay+ / Ant International",
-      "url": "https://www.alipayplus.com/about-us/",
-      "publishedAt": null,
-      "eventDate": null,
-      "accessedAt": "2026-09-30",
-      "kind": "primary",
-      "dateNote": "Undated official product description; establishes brand identity, not a new StraitsX integration.",
-      "locator": "Who we are; Ant International business pillars paragraph"
+      "dateNote": "Historical USDC pilot announcement involving Worldpay and Nuvei. Current availability and private terms remain unverified; this is not a newly detected event.",
+      "locator": "Moving from Issuers to Acquirers"
     }
   ],
   "evidence": [
     {
-      "id": "E01",
-      "organizationIds": [
-        "grab"
-      ],
-      "sourceIds": [
-        "S01"
-      ],
-      "type": "verified_fact",
-      "statement": "Grab published a November 2025 MOU announcement with StraitsX to explore Web3 wallets and regional stablecoin settlement.",
-      "scope": "Existence and exploratory scope of the announcement; regional rollout unverified.",
-      "asOf": "2026-09-30",
-      "independentCheck": "StraitsX publishes the same MOU; this corroborates announcement, not operating outcomes."
-    },
-    {
-      "id": "E02",
-      "organizationIds": [
-        "grab",
-        "ant"
-      ],
-      "sourceIds": [
-        "S02"
-      ],
+      "id": "E-G01",
+      "statement": "Circle describes Circle Mint as institutional access to mint and redeem its USDC and EURC, with customer and regional eligibility requirements.",
       "type": "company_claim",
-      "statement": "StraitsX says the Alipay+ / GrabPay Singapore integration has been live since October 2024 with PBM and SGD settlement.",
-      "scope": "Singapore merchant flow; not a claim that all proposed Asian markets are live.",
-      "asOf": "2026-09-30",
-      "independentCheck": "No independent transaction or merchant sample checked."
-    },
-    {
-      "id": "E03",
+      "subject": "public_market",
+      "sourceRole": "supports_statement",
       "organizationIds": [
-        "grab",
-        "ant"
+        "circle"
       ],
       "sourceIds": [
-        "S02"
+        "S-G01"
       ],
+      "asOf": "2026-09-30",
+      "scope": "Public Circle product description for its own assets. It does not offer or endorse the demo token.",
+      "independentCheck": "Primary product page opened; no account access, conversion, redemption or fees tested."
+    },
+    {
+      "id": "E-G02",
+      "statement": "Stripe documentation lists USDC, USDP and USDG with token/network and merchant-location restrictions, fiat settlement and stablecoin refunds.",
+      "type": "verified_fact",
+      "subject": "public_market",
+      "sourceRole": "supports_statement",
+      "organizationIds": [
+        "stripe"
+      ],
+      "sourceIds": [
+        "S-G02"
+      ],
+      "asOf": "2026-09-30",
+      "scope": "Verified documentation contents, not a completed merchant payment. Listing specific tokens does not imply support for arbitrary tokens.",
+      "independentCheck": "Documentation opened; no merchant account, eligibility or payment flow tested."
+    },
+    {
+      "id": "E-G03",
+      "statement": "PayPal describes PYUSD payment and transfer uses for eligible accounts; the same page distinguishes available services from planned market expansion.",
       "type": "company_claim",
-      "statement": "The case study reports 174% year-on-year transaction growth and 2.5× unique-user growth for Alipay+ payments at GrabPay merchants.",
-      "scope": "Provider-reported figures; period, base counts, value and attribution to XSGD not supplied.",
-      "asOf": "2026-09-30",
-      "independentCheck": "No independently audited adoption series; do not use as total XSGD payment adoption."
-    },
-    {
-      "id": "E04",
+      "subject": "public_market",
+      "sourceRole": "supports_statement",
       "organizationIds": [
-        "kbank"
+        "paypal",
+        "paxos"
       ],
       "sourceIds": [
-        "S03"
+        "S-G03"
       ],
-      "type": "verified_fact",
-      "statement": "StraitsX's cross-border directory lists KBank and Q Wallet with XSGD.",
-      "scope": "Directory presence; live Thailand corridors and bilateral contract scope unverified.",
       "asOf": "2026-09-30",
-      "independentCheck": "KBank operating status not independently checked."
+      "scope": "Real PYUSD product context only. Announcement and product copy are not independent adoption evidence.",
+      "independentCheck": "Primary page opened. No account, reward rate, reserve state or geographic availability independently checked."
     },
     {
-      "id": "E05",
+      "id": "E-G04",
+      "statement": "Visa describes VSP as access to Open USD with limited availability, beta restrictions and API access coming soon.",
+      "type": "company_claim",
+      "subject": "public_market",
+      "sourceRole": "supports_statement",
       "organizationIds": [
-        "visa",
-        "redotpay"
-      ],
-      "sourceIds": [
-        "S04"
-      ],
-      "type": "verified_fact",
-      "statement": "StraitsX's card directory lists Visa and RedotPay under its ecosystem.",
-      "scope": "Listing only; token labels are not proof of a given card's settlement currency.",
-      "asOf": "2026-09-30",
-      "independentCheck": "Customer story adds program detail for RedotPay."
-    },
-    {
-      "id": "E06",
-      "organizationIds": [
-        "redotpay",
         "visa"
       ],
       "sourceIds": [
-        "S05"
+        "S-G04"
       ],
-      "type": "company_claim",
-      "statement": "The RedotPay customer story describes Visa BIN sponsorship, Apple Pay support, USD virtual-account funding and XUSD-backed settlement.",
-      "scope": "Described program uses XUSD; an XSGD extension remains hypothetical.",
       "asOf": "2026-09-30",
-      "independentCheck": "Named customer perspective included; no scheme certification or transaction sample checked."
+      "scope": "Public product description and restrictions. This does not establish general third-party token eligibility.",
+      "independentCheck": "Primary page opened; no Visa account, beta access or API integration tested."
     },
     {
-      "id": "E07",
+      "id": "E-G05",
+      "statement": "Mastercard announced work with Nuvei, Circle and Paxos on merchant stablecoin settlement in April 2025.",
+      "type": "company_claim",
+      "subject": "public_market",
+      "sourceRole": "supports_statement",
+      "organizationIds": [
+        "mastercard",
+        "circle",
+        "paxos"
+      ],
+      "sourceIds": [
+        "S-G05"
+      ],
+      "asOf": "2026-09-30",
+      "scope": "Existing named market initiative, not a new lead or evidence of support for a different issuer. Consumer tender and merchant settlement are separate legs.",
+      "independentCheck": "Dated primary release opened; current production scope, transaction counts and commercial terms unverified."
+    },
+    {
+      "id": "E-G06",
+      "statement": "Paxos identifies itself as the issuer of PayPal USD and describes PYUSD access and redemption routes.",
+      "type": "company_claim",
+      "subject": "public_market",
+      "sourceRole": "supports_statement",
+      "organizationIds": [
+        "paxos",
+        "paypal"
+      ],
+      "sourceIds": [
+        "S-G06"
+      ],
+      "asOf": "2026-09-30",
+      "scope": "Real issuer/product relationship, retained under original names. No association with the demo profile.",
+      "independentCheck": "Primary issuer page opened; redemption, reserve reports and contractual eligibility not independently reviewed."
+    },
+    {
+      "id": "E-G07",
+      "statement": "Coinbase publishes a USDC product page describing its dollar peg, intended redemption and region-dependent features.",
+      "type": "company_claim",
+      "subject": "public_market",
+      "sourceRole": "supports_statement",
       "organizationIds": [
         "coinbase"
       ],
       "sourceIds": [
-        "S06",
-        "S07"
+        "S-G07"
       ],
-      "type": "verified_fact",
-      "statement": "Coinbase's official XSGD product page advertises the XSGD/USDC pair, SGD conversion and Base transfers; StraitsX announced the partnership in September 2025.",
-      "scope": "Public product availability evidence; live account eligibility and execution untested.",
       "asOf": "2026-09-30",
-      "independentCheck": "Product page corroborates issuer announcement."
+      "scope": "UK-localized USDC context. Inconsistent network counts were not used; this is not a listing of the demo token.",
+      "independentCheck": "Primary page opened; no executable quotes, balances, account eligibility or redemption tested."
     },
     {
-      "id": "E08",
+      "id": "E-G08",
+      "statement": "Solana Pay documentation defines an open payment protocol and reference implementations for developers.",
+      "type": "verified_fact",
+      "subject": "public_market",
+      "sourceRole": "supports_statement",
       "organizationIds": [
         "solana"
       ],
       "sourceIds": [
-        "S08"
+        "S-G08"
       ],
+      "asOf": "2026-09-30",
+      "scope": "Verified documentation contents. Protocol use is separate from a Solana Foundation partnership and current merchant adoption.",
+      "independentCheck": "Protocol documentation opened; no app integration, blockchain state, token deployment or payment tested."
+    },
+    {
+      "id": "E-G09",
+      "statement": "Uniswap documentation explains that concentrated liquidity is allocated within price ranges and becomes inactive outside those ranges.",
       "type": "verified_fact",
-      "statement": "StraitsX announced a Solana Foundation collaboration in December 2025, including plans to develop liquidity.",
-      "scope": "Announcement and plan, not depth measurement.",
-      "asOf": "2026-09-30",
-      "independentCheck": "Later issuer launch post reviewed."
-    },
-    {
-      "id": "E09",
-      "organizationIds": [
-        "solana"
-      ],
-      "sourceIds": [
-        "S09"
-      ],
-      "type": "company_claim",
-      "statement": "StraitsX announced XSGD and XUSD live on Solana and supported on its platform on March 31, 2026.",
-      "scope": "Issuer launch claim; current mint state, supported account flows and depth unverified.",
-      "asOf": "2026-09-30",
-      "independentCheck": "No RPC or explorer-state check; older guide conflicts on supported flows."
-    },
-    {
-      "id": "E10",
+      "subject": "public_market",
+      "sourceRole": "supports_statement",
       "organizationIds": [
         "uniswap"
       ],
       "sourceIds": [
-        "S10"
+        "S-G09"
       ],
-      "type": "verified_fact",
-      "statement": "The StraitsX DeFi directory lists the Uniswap protocol with XSGD and XUSD.",
-      "scope": "Permissionless protocol ecosystem listing; no bilateral Uniswap Labs deal inferred.",
       "asOf": "2026-09-30",
-      "independentCheck": "Pools, contracts and quotes not sampled."
+      "scope": "Protocol mechanics only. Total pool value is not the same as active executable depth; protocol access is not a Labs commercial deal.",
+      "independentCheck": "Official documentation opened; no pool, quote, LP concentration or contract state queried."
     },
     {
-      "id": "E11",
-      "organizationIds": [
-        "coinbase",
-        "uniswap",
-        "solana"
-      ],
-      "sourceIds": [
-        "S11"
-      ],
-      "type": "verified_fact",
-      "statement": "Public Swap API docs list XSGD/USDC and XSGD/XUSD pairs and expiring quotes.",
-      "scope": "Documentation only; not exchange depth, API access or commercial commitment.",
-      "asOf": "2026-09-30",
-      "independentCheck": "No authenticated quote or order submitted."
-    },
-    {
-      "id": "E12",
-      "organizationIds": [
-        "solana"
-      ],
-      "sourceIds": [
-        "S09",
-        "S15"
-      ],
-      "type": "verified_fact",
-      "statement": "The March Solana launch post and the January transfer guide's 'coming soon' label disagree on Solana support.",
-      "scope": "Documentation discrepancy. Later announcement supports launch, but guide may describe different account flows.",
-      "asOf": "2026-09-30",
-      "independentCheck": "Both pages opened on the baseline date; product flow still needs confirmation."
-    },
-    {
-      "id": "E13",
-      "organizationIds": [
-        "nium"
-      ],
-      "sourceIds": [
-        "S12"
-      ],
+      "id": "E-G10",
+      "statement": "Visa announced USDC settlement pilots with merchant acquirers Worldpay and Nuvei in September 2023.",
       "type": "company_claim",
-      "statement": "Nium's August 2026 launch page says customers fund in USDC, Nium converts to USD, and payouts land in local currency.",
-      "scope": "USD funding path; XSGD funding, SGD-specific economics and eligibility not established.",
-      "asOf": "2026-09-30",
-      "independentCheck": "No funded payout, pricing or corridor test."
-    },
-    {
-      "id": "E14",
+      "subject": "public_market",
+      "sourceRole": "supports_statement",
       "organizationIds": [
-        "nium",
+        "worldpay",
         "visa"
       ],
       "sourceIds": [
-        "S13"
+        "S-G10"
       ],
-      "type": "verified_fact",
-      "statement": "Nium announced participation in Visa's stablecoin settlement pilot in November 2025, including USDC.",
-      "scope": "Pilot announcement; does not establish XSGD scheme settlement.",
       "asOf": "2026-09-30",
-      "independentCheck": "Canonical dateline reviewed; live settlement not tested."
+      "scope": "Historical named pilot. It does not prove current availability, support for another token or a new opportunity today.",
+      "independentCheck": "Dated Visa release opened; no independent current Worldpay rollout or eligible product flow checked."
     },
     {
-      "id": "E15",
+      "id": "E-G11",
+      "statement": "Synthetic example: a future issuer might first test a narrow merchant acceptance need before proposing distribution.",
+      "type": "synthetic_example",
+      "subject": "fictional_profile",
+      "sourceRole": "context_only",
       "organizationIds": [
-        "open-standard",
-        "nium",
-        "grab",
-        "coinbase",
-        "solana",
-        "redotpay"
+        "stripe",
+        "paypal",
+        "worldpay"
       ],
       "sourceIds": [
-        "S14"
+        "S-G02",
+        "S-G03",
+        "S-G10"
       ],
-      "type": "company_claim",
-      "statement": "Open Standard's June 2026 Open USD announcement lists StraitsX and Nium among participants.",
-      "scope": "Shared announced ecosystem, not bilateral XSGD partnership or signed economics.",
       "asOf": "2026-09-30",
-      "independentCheck": "List read; no bilateral agreement or participant implementation verified."
+      "scope": "Illustrative hypothesis for the fictional profile. Sources supply market context, not evidence of a product, customer, relationship or demand.",
+      "independentCheck": "Constructed demo example; no real issuer, buyer demand or partnership exists in this dataset."
     },
     {
-      "id": "E16",
+      "id": "E-G12",
+      "statement": "Synthetic example: a future issuer might compare existing issuer and settlement models before designing an interoperability proposal.",
+      "type": "synthetic_example",
+      "subject": "fictional_profile",
+      "sourceRole": "context_only",
       "organizationIds": [
-        "visa"
+        "circle",
+        "paxos",
+        "visa",
+        "mastercard"
       ],
       "sourceIds": [
-        "S16"
+        "S-G01",
+        "S-G04",
+        "S-G05",
+        "S-G06"
       ],
-      "type": "company_claim",
-      "statement": "StraitsX's September newsletter says it released an autonomous-commerce whitepaper with Visa and the Singapore FinTech Association.",
-      "scope": "Public research collaboration; prototypes and a paper do not establish production usage.",
       "asOf": "2026-09-30",
-      "independentCheck": "Full paper and production controls not evaluated."
+      "scope": "Illustrative design question. Named companies retain their own products and existing public relationships; no shared demo-token initiative is implied.",
+      "independentCheck": "Constructed demo example; token eligibility, legal route and economics are unspecified."
     },
     {
-      "id": "E17",
-      "organizationIds": [
-        "grab",
-        "ant",
-        "kbank"
-      ],
-      "sourceIds": [
-        "S01",
-        "S02",
-        "S03"
-      ],
-      "type": "analyst_inference",
-      "statement": "Existing Singapore acceptance makes corridor-level expansion worth investigating before treating these organizations as new leads.",
-      "scope": "Research prioritization; no commitment to launch or contact.",
-      "asOf": "2026-09-30",
-      "independentCheck": "Would fail if incremental merchant demand or compliant settlement economics are weak."
-    },
-    {
-      "id": "E18",
-      "organizationIds": [
-        "nium",
-        "open-standard"
-      ],
-      "sourceIds": [
-        "S12",
-        "S13",
-        "S14"
-      ],
-      "type": "analyst_inference",
-      "statement": "Nium's USDC funding flow provides a concrete point to test SGD treasury demand; the reviewed sources do not establish a bilateral StraitsX relationship.",
-      "scope": "Prospective XSGD hypothesis. Shared Open USD membership is not evidence of bilateral terms.",
-      "asOf": "2026-09-30",
-      "independentCheck": "Disprove with no SGD treasury demand, a closed token policy or unfavorable conversion costs."
-    },
-    {
-      "id": "E19",
+      "id": "E-G13",
+      "statement": "Synthetic example: a future issuer should define conversion and exit requirements before comparing liquidity or adding a network.",
+      "type": "synthetic_example",
+      "subject": "fictional_profile",
+      "sourceRole": "context_only",
       "organizationIds": [
         "coinbase",
         "solana",
         "uniswap"
       ],
       "sourceIds": [
-        "S07",
-        "S09",
-        "S10",
-        "S11",
-        "S15"
+        "S-G07",
+        "S-G08",
+        "S-G09"
       ],
-      "type": "analyst_inference",
-      "statement": "Measure execution and redemption readiness before adding liquidity incentives or another distribution integration.",
-      "scope": "Proposed research sequence; supply, volume and a listing cannot establish payment adoption.",
       "asOf": "2026-09-30",
-      "independentCheck": "Would lose priority if independent quotes show sufficient depth and no user conversion bottleneck."
-    },
-    {
-      "id": "E20",
-      "organizationIds": [
-        "ant"
-      ],
-      "sourceIds": [
-        "S17"
-      ],
-      "type": "verified_fact",
-      "statement": "Alipay+ describes itself as a cross-border wallet gateway and a business pillar of Ant International.",
-      "scope": "Product and organization identity; distinguish Alipay+ from the Alipay consumer wallet.",
-      "asOf": "2026-09-30",
-      "independentCheck": "Official brand page read; no operating-volume claims adopted."
+      "scope": "Illustrative research sequence. No demo token, pools, quotes, reserves or redemption route exist.",
+      "independentCheck": "Constructed demo example; no balances, trades, authenticated quotes or chain state collected."
     }
   ],
   "organizations": [
     {
-      "id": "grab",
-      "name": "Grab",
-      "shortName": "G",
+      "id": "stripe",
+      "name": "Stripe",
+      "shortName": "S",
       "lane": "Distribution",
       "markets": [
-        "Singapore",
-        "Southeast Asia"
+        "United States",
+        "Restricted merchant regions"
       ],
       "products": [
-        "GrabPay",
-        "QR acceptance",
-        "Proposed Web3 wallet"
+        "Stablecoin checkout",
+        "Fiat merchant settlement"
       ],
-      "relationship": "announced",
-      "relationshipSummary": "Existing Singapore payment integration described publicly; November 2025 regional Web3 MOU is exploratory.",
-      "relationshipEvidenceIds": [
-        "E01",
-        "E02"
-      ],
-      "relevance": "Existing merchant access provides a distribution base for incremental XSGD settlement corridors.",
-      "uncertainty": "Country rollout, incremental XSGD payment volumes, regulatory gating and commercial terms remain unknown.",
+      "relationship": "demo",
+      "relationshipSummary": "No issuer relationship exists in this demo. The profile is fictional; public sources do not establish STABLE acceptance, listing or partnership.",
+      "relationshipEvidenceIds": [],
+      "publicContext": "Documentation names accepted assets and eligibility restrictions; these concern real supported products.",
+      "relevance": "Synthetic fit question: Could a narrowly defined merchant use case justify seeking a new acceptance route?",
+      "uncertainty": "No demo token exists. New-token policy, merchant demand, product eligibility and commercial terms are unassessed.",
       "nextQuestions": [
-        "Which proposed markets have publicly confirmed launch dates?",
-        "What merchant and repeat-user payment metrics distinguish incremental use from existing rails?"
+        "What would a real issuer need to satisfy the published token and merchant-location policy?",
+        "Which buyer problem remains after using already supported assets?"
       ],
       "evidenceIds": [
-        "E01",
-        "E02",
-        "E03",
-        "E17"
+        "E-G02",
+        "E-G11"
       ],
       "priorityIds": [
-        "P01"
+        "P-G01"
       ],
       "asOf": "2026-09-30"
     },
     {
-      "id": "ant",
-      "name": "Ant International",
-      "shortName": "A+",
+      "id": "paypal",
+      "name": "PayPal",
+      "shortName": "P",
       "lane": "Distribution",
       "markets": [
-        "Singapore",
-        "Cross-border Asia"
+        "Eligible account regions",
+        "United States merchants"
       ],
       "products": [
-        "Alipay+ wallet network",
-        "QR payments",
-        "PBM settlement"
+        "PYUSD",
+        "Wallet transfers",
+        "Merchant payments"
       ],
-      "relationship": "announced",
-      "relationshipSummary": "Alipay+ is the relevant Ant International product; StraitsX describes an existing GrabPay integration. Do not conflate Alipay+ with the Alipay consumer wallet.",
-      "relationshipEvidenceIds": [
-        "E02"
-      ],
-      "relevance": "Existing foreign-wallet acceptance can expand SGD merchant settlement use cases.",
-      "uncertainty": "Wallet-by-wallet availability, transaction denominators, settlement economics and bilateral terms are unknown.",
+      "relationship": "demo",
+      "relationshipSummary": "No issuer relationship exists in this demo. The profile is fictional; public sources do not establish STABLE acceptance, listing or partnership.",
+      "relationshipEvidenceIds": [],
+      "publicContext": "PayPal describes its existing PYUSD product; Paxos is its named issuer.",
+      "relevance": "Synthetic fit question: Which lessons from an existing wallet product matter for a future issuer?",
+      "uncertainty": "Future market expansion is not present availability. No third-party token acceptance, user demand or economics are established.",
       "nextQuestions": [
-        "Which wallet-origin corridors produce repeat Singapore merchant spend?",
-        "What is the precise role of XSGD versus PBM wrappers and final SGD payout?"
+        "Which features are live for the intended merchant and user region?",
+        "Would a separate token solve anything that the existing product does not?"
       ],
       "evidenceIds": [
-        "E02",
-        "E03",
-        "E17",
-        "E20"
+        "E-G03",
+        "E-G06",
+        "E-G11"
       ],
       "priorityIds": [
-        "P01"
+        "P-G01"
       ],
       "asOf": "2026-09-30"
     },
     {
-      "id": "kbank",
-      "name": "KASIKORNBANK",
-      "shortName": "K",
+      "id": "worldpay",
+      "name": "Worldpay",
+      "shortName": "W",
       "lane": "Distribution",
       "markets": [
-        "Thailand",
-        "Singapore"
+        "Historical global acquirer context"
       ],
       "products": [
-        "KBank",
-        "Q Wallet",
-        "Cross-border QR"
+        "Acquiring",
+        "Announced USDC settlement pilot"
       ],
-      "relationship": "ecosystem",
-      "relationshipSummary": "KBank and Q Wallet already appear in StraitsX's XSGD cross-border ecosystem directory. Bilateral scope and live corridors are unverified.",
-      "relationshipEvidenceIds": [
-        "E04"
-      ],
-      "relevance": "Thai–Singapore merchant settlement is a specific extension to test within the existing ecosystem.",
-      "uncertainty": "Directionality, launch stage, account eligibility and commercial terms unknown; directory listing alone is insufficient.",
+      "relationship": "demo",
+      "relationshipSummary": "No issuer relationship exists in this demo. The profile is fictional; public sources do not establish STABLE acceptance, listing or partnership.",
+      "relationshipEvidenceIds": [],
+      "publicContext": "Visa named Worldpay in a September 2023 USDC acquirer pilot; present rollout is unverified.",
+      "relevance": "Synthetic fit question: What merchant settlement need would warrant investigating a new acquirer route?",
+      "uncertainty": "The source is historical. Current rollout, accepted-token policy, buyer demand and terms require new evidence.",
       "nextQuestions": [
-        "Is there a public live SGD–THB acceptance and settlement flow?",
-        "Which entity provides FX, redemption and exception handling?"
+        "Is there a current primary product description of this pilot or its successor?",
+        "Which merchant settlement obligation would require a different asset?"
       ],
       "evidenceIds": [
-        "E04",
-        "E17"
+        "E-G10",
+        "E-G11"
       ],
       "priorityIds": [
-        "P01"
+        "P-G01"
       ],
       "asOf": "2026-09-30"
     },
     {
-      "id": "nium",
-      "name": "Nium",
-      "shortName": "N",
+      "id": "circle",
+      "name": "Circle",
+      "shortName": "C",
       "lane": "Issuer partnership",
       "markets": [
-        "Singapore",
-        "Global payouts"
+        "Eligible institutional regions"
       ],
       "products": [
-        "USDC funding",
-        "Local-currency payouts",
-        "Visa settlement pilot"
+        "USDC",
+        "EURC",
+        "Circle Mint"
       ],
-      "relationship": "prospective",
-      "relationshipSummary": "Bilateral StraitsX relationship unknown in this source set. Both are announced Open USD participants; that does not establish a bilateral partnership.",
-      "relationshipEvidenceIds": [
-        "E15",
-        "E18"
-      ],
-      "relevance": "Test whether customers with SGD treasury could benefit from an XSGD conversion and payout connector.",
-      "uncertainty": "XSGD policy, buyer demand, corridor economics, access and bilateral commercial terms all unknown.",
+      "relationship": "demo",
+      "relationshipSummary": "No issuer relationship exists in this demo. The profile is fictional; public sources do not establish STABLE acceptance, listing or partnership.",
+      "relationshipEvidenceIds": [],
+      "publicContext": "Circle describes access to its own stablecoins; Mastercard names Circle in a real merchant-settlement initiative.",
+      "relevance": "Synthetic fit question: What eligibility and redemption constraints should a future issuer understand?",
+      "uncertainty": "No generic-token conversion route or joint initiative is evidenced. Live fees, access, capacity and requirements need review.",
       "nextQuestions": [
-        "Is SGD-funded treasury demand material enough to justify a connector?",
-        "Can an external issuer token be accepted, or is USDC/Open USD the preferred policy?",
-        "How do all-in conversion costs compare with current SGD fiat funding?"
+        "Which public access and redemption conditions apply to a real use case?",
+        "Is there evidence of a need beyond the existing issuer assets?"
       ],
       "evidenceIds": [
-        "E13",
-        "E14",
-        "E15",
-        "E18"
+        "E-G01",
+        "E-G05",
+        "E-G12"
       ],
       "priorityIds": [
-        "P02"
+        "P-G02"
       ],
       "asOf": "2026-09-30"
     },
     {
-      "id": "open-standard",
-      "name": "Open Standard",
-      "shortName": "OS",
+      "id": "paxos",
+      "name": "Paxos",
+      "shortName": "PX",
       "lane": "Issuer partnership",
       "markets": [
-        "Global USD"
+        "Eligible account regions"
       ],
       "products": [
-        "Open USD",
-        "Shared governance model"
+        "PYUSD issuance",
+        "PYUSD redemption"
       ],
-      "relationship": "announced",
-      "relationshipSummary": "Open USD's June announcement lists StraitsX as a participant. No XSGD distribution agreement is established by that announcement.",
-      "relationshipEvidenceIds": [
-        "E15"
-      ],
-      "relevance": "Shared ecosystem can be a research context for SGD/USD interoperability and competing issuer economics.",
-      "uncertainty": "Signed terms, actual participant implementation, governance rights and XSGD conversion plans unknown.",
+      "relationship": "demo",
+      "relationshipSummary": "No issuer relationship exists in this demo. The profile is fictional; public sources do not establish STABLE acceptance, listing or partnership.",
+      "relationshipEvidenceIds": [],
+      "publicContext": "Paxos names its existing PYUSD issuance relationship with PayPal; Mastercard also names Paxos in its announcement.",
+      "relevance": "Synthetic fit question: Which issuance and redemption design choices could inform a future profile?",
+      "uncertainty": "No demo issuance arrangement exists. Implementation, eligibility, reserve verification and private terms are unassessed.",
       "nextQuestions": [
-        "Are public implementation or token-policy documents available?",
-        "Does the model permit an SGD leg, and does that add value over existing conversion?"
+        "What public evidence would establish actual responsibilities for a real issuer?",
+        "Which redemption and servicing controls would need to be specified?"
       ],
       "evidenceIds": [
-        "E15",
-        "E18"
+        "E-G03",
+        "E-G05",
+        "E-G06",
+        "E-G12"
       ],
       "priorityIds": [
-        "P02"
+        "P-G02"
+      ],
+      "asOf": "2026-09-30"
+    },
+    {
+      "id": "visa",
+      "name": "Visa",
+      "shortName": "V",
+      "lane": "Issuer partnership",
+      "markets": [
+        "Limited availability",
+        "Eligible institutional regions"
+      ],
+      "products": [
+        "Visa Stablecoin Platform",
+        "Open USD access",
+        "Settlement controls"
+      ],
+      "relationship": "demo",
+      "relationshipSummary": "No issuer relationship exists in this demo. The profile is fictional; public sources do not establish STABLE acceptance, listing or partnership.",
+      "relationshipEvidenceIds": [],
+      "publicContext": "VSP is described with Open USD beta restrictions. An older Visa release names real USDC acquirer pilots.",
+      "relevance": "Synthetic fit question: Would the published settlement model admit an additional asset in a real scenario?",
+      "uncertainty": "API access is described as coming soon. A public platform description does not establish open-token eligibility or a commercial arrangement.",
+      "nextQuestions": [
+        "Does current published policy permit the intended asset and region?",
+        "What is available now versus beta or roadmap?"
+      ],
+      "evidenceIds": [
+        "E-G04",
+        "E-G10",
+        "E-G12"
+      ],
+      "priorityIds": [
+        "P-G02"
+      ],
+      "asOf": "2026-09-30"
+    },
+    {
+      "id": "mastercard",
+      "name": "Mastercard",
+      "shortName": "M",
+      "lane": "Issuer partnership",
+      "markets": [
+        "Global network context"
+      ],
+      "products": [
+        "Merchant stablecoin settlement",
+        "Card network"
+      ],
+      "relationship": "demo",
+      "relationshipSummary": "No issuer relationship exists in this demo. The profile is fictional; public sources do not establish STABLE acceptance, listing or partnership.",
+      "relationshipEvidenceIds": [],
+      "publicContext": "The April 2025 release names work with Nuvei, Circle and Paxos. Those real participants remain distinct from the fictional profile.",
+      "relevance": "Synthetic fit question: Which settlement leg and eligibility constraints should be researched before a proposal?",
+      "uncertainty": "Current production scope, additional-token policy, customer demand and terms are unverified.",
+      "nextQuestions": [
+        "What settles between network, acquirer and merchant in a real flow?",
+        "Which announced capabilities have current production documentation?"
+      ],
+      "evidenceIds": [
+        "E-G05",
+        "E-G12"
+      ],
+      "priorityIds": [
+        "P-G02"
       ],
       "asOf": "2026-09-30"
     },
     {
       "id": "coinbase",
       "name": "Coinbase",
-      "shortName": "C",
+      "shortName": "CB",
       "lane": "Liquidity",
       "markets": [
-        "Singapore",
-        "Eligible global users"
+        "United Kingdom page",
+        "Region-dependent features"
       ],
       "products": [
-        "XSGD/USDC",
-        "SGD conversion",
-        "Base transfers"
+        "USDC product access",
+        "Exchange context"
       ],
-      "relationship": "announced",
-      "relationshipSummary": "Existing announced StraitsX partnership and official XSGD product page; a new-listing pitch would duplicate known work.",
-      "relationshipEvidenceIds": [
-        "E07"
-      ],
-      "relevance": "An existing fiat and exchange route provides a benchmark for executable SGD liquidity.",
-      "uncertainty": "Real spreads, executable size, geography/account limits and commercial terms not tested.",
+      "relationship": "demo",
+      "relationshipSummary": "No issuer relationship exists in this demo. The profile is fictional; public sources do not establish STABLE acceptance, listing or partnership.",
+      "relationshipEvidenceIds": [],
+      "publicContext": "An existing USDC product page is market context, not a generic-token listing.",
+      "relevance": "Synthetic fit question: What conversion and exit benchmarks would a real issuer need?",
+      "uncertainty": "No demo listing or quotes exist. Account eligibility, costs, depth and redemption constraints are unmeasured.",
       "nextQuestions": [
-        "What do timestamped quotes show at representative payment sizes?",
-        "Which transfer networks and redemption routes are available to the target user?"
+        "Which authentic asset and account route would be benchmarked?",
+        "What timestamped read-only quotes and total costs would be needed?"
       ],
       "evidenceIds": [
-        "E07",
-        "E11",
-        "E19"
+        "E-G07",
+        "E-G13"
       ],
       "priorityIds": [
-        "P03"
+        "P-G03"
       ],
       "asOf": "2026-09-30"
     },
     {
       "id": "solana",
       "name": "Solana Foundation",
-      "shortName": "S",
+      "shortName": "SO",
       "lane": "Liquidity",
       "markets": [
-        "Global onchain",
-        "SGD/USD"
+        "Open protocol context"
       ],
       "products": [
-        "Native XSGD",
-        "Native XUSD",
-        "Liquidity development"
+        "Solana Pay protocol",
+        "Developer reference implementations"
       ],
-      "relationship": "announced",
-      "relationshipSummary": "December 2025 collaboration precedes a March 2026 issuer launch announcement. This is an existing initiative.",
-      "relationshipEvidenceIds": [
-        "E08",
-        "E09"
-      ],
-      "relevance": "Same-chain SGD and USD rails make execution and payment settlement readiness worth measuring.",
-      "uncertainty": "Mint state, executable depth, market-maker commitments and supported account flows unverified; transfer guide conflicts.",
+      "relationship": "demo",
+      "relationshipSummary": "No issuer relationship exists in this demo. The profile is fictional; public sources do not establish STABLE acceptance, listing or partnership.",
+      "relationshipEvidenceIds": [],
+      "publicContext": "Solana Pay documentation supplies protocol context. It does not establish Foundation commercial endorsement.",
+      "relevance": "Synthetic fit question: Which payment and operational requirements would justify a network choice?",
+      "uncertainty": "No demo deployment or Foundation agreement exists. Network fees, merchant demand and production controls are unmeasured.",
       "nextQuestions": [
-        "Are issuer mint addresses and redemption routes current and functional?",
-        "What is executable depth and slippage for XSGD/XUSD and XSGD/USDC?",
-        "Does the older 'coming soon' guidance describe a still-unsupported account flow?"
+        "Which payment requirement needs this network rather than an existing rail?",
+        "What token, wallet and redemption checks would precede a real deployment?"
       ],
       "evidenceIds": [
-        "E08",
-        "E09",
-        "E11",
-        "E12",
-        "E19"
+        "E-G08",
+        "E-G13"
       ],
       "priorityIds": [
-        "P03"
+        "P-G03"
       ],
       "asOf": "2026-09-30"
     },
@@ -782,173 +668,108 @@
       "shortName": "U",
       "lane": "Liquidity",
       "markets": [
-        "Global onchain",
-        "Supported EVM networks"
+        "Open protocol context"
       ],
       "products": [
         "Uniswap protocol",
-        "XSGD swaps"
+        "Concentrated liquidity mechanics"
       ],
-      "relationship": "ecosystem",
-      "relationshipSummary": "StraitsX lists the Uniswap protocol in its ecosystem. A bilateral relationship with Uniswap Labs is unknown; protocol pools are permissionless.",
-      "relationshipEvidenceIds": [
-        "E10"
-      ],
-      "relevance": "An existing protocol route is a comparison point for pool depth and total execution costs.",
-      "uncertainty": "Exact pools, contracts, chains, LP concentration and Labs commercial relationship unknown.",
+      "relationship": "demo",
+      "relationshipSummary": "No issuer relationship exists in this demo. The profile is fictional; public sources do not establish STABLE acceptance, listing or partnership.",
+      "relationshipEvidenceIds": [],
+      "publicContext": "Developer documentation describes the protocol. Permissionless pools do not establish a Labs bilateral relationship.",
+      "relevance": "Synthetic fit question: What active liquidity and exit measurements would be necessary before incentives?",
+      "uncertainty": "No demo pool exists. Active depth, price impact, LP concentration and economic sustainability are unmeasured.",
       "nextQuestions": [
-        "Which authentic-token pools offer executable liquidity at target sizes?",
-        "Are quoted improvements durable without subsidies and concentrated LP exposure?"
+        "What size-specific quotes would distinguish active depth from total pool value?",
+        "Would depth persist without subsidies and through an exit scenario?"
       ],
       "evidenceIds": [
-        "E10",
-        "E11",
-        "E19"
+        "E-G09",
+        "E-G13"
       ],
       "priorityIds": [
-        "P03"
+        "P-G03"
       ],
-      "asOf": "2026-09-30"
-    },
-    {
-      "id": "visa",
-      "name": "Visa",
-      "shortName": "V",
-      "lane": "Distribution",
-      "markets": [
-        "Singapore",
-        "Global card network"
-      ],
-      "products": [
-        "Card issuance ecosystem",
-        "Stablecoin settlement",
-        "Agentic research"
-      ],
-      "relationship": "ecosystem",
-      "relationshipSummary": "Existing StraitsX card ecosystem listing and public research collaboration. Neither establishes scheme settlement in XSGD.",
-      "relationshipEvidenceIds": [
-        "E05",
-        "E16"
-      ],
-      "relevance": "Card infrastructure is a possible distribution context; payment-card spend must be tied to its actual settlement token.",
-      "uncertainty": "XSGD-specific card flows, scheme currency requirements, program economics and terms unknown.",
-      "nextQuestions": [
-        "Which programs actually settle an SGD obligation using XSGD?",
-        "What controls and funding requirements apply before any agentic prototype becomes production?"
-      ],
-      "evidenceIds": [
-        "E05",
-        "E06",
-        "E14",
-        "E16"
-      ],
-      "priorityIds": [],
-      "asOf": "2026-09-30"
-    },
-    {
-      "id": "redotpay",
-      "name": "RedotPay",
-      "shortName": "R",
-      "lane": "Distribution",
-      "markets": [
-        "Global card users"
-      ],
-      "products": [
-        "Visa cards",
-        "Apple Pay",
-        "XUSD settlement"
-      ],
-      "relationship": "announced",
-      "relationshipSummary": "Existing StraitsX customer story describes an XUSD-backed card program. XSGD use is unverified.",
-      "relationshipEvidenceIds": [
-        "E06"
-      ],
-      "relevance": "Observe the existing distribution model and test an SGD extension only if a real local-currency need exists.",
-      "uncertainty": "SGD user demand, eligible markets, XSGD settlement and private commercial terms unknown.",
-      "nextQuestions": [
-        "Do target users fund or spend enough SGD to need a distinct settlement leg?",
-        "Would XSGD improve treasury economics versus the established XUSD program?"
-      ],
-      "evidenceIds": [
-        "E05",
-        "E06",
-        "E15"
-      ],
-      "priorityIds": [],
       "asOf": "2026-09-30"
     }
   ],
   "priorities": [
     {
-      "id": "P01",
+      "id": "P-G01",
       "rank": 1,
-      "title": "Deepen the existing QR corridor",
+      "mode": "synthetic_example",
+      "title": "Define one merchant acceptance problem",
       "lane": "Distribution",
       "organizationIds": [
-        "grab",
-        "ant",
-        "kbank"
+        "stripe",
+        "paypal",
+        "worldpay"
       ],
       "evidenceIds": [
-        "E01",
-        "E02",
-        "E03",
-        "E04",
-        "E17"
+        "E-G02",
+        "E-G03",
+        "E-G10",
+        "E-G11"
       ],
-      "thesis": "Start from existing Singapore merchant acceptance, then test one incremental wallet or market corridor with a clear SGD settlement need.",
-      "whyNow": "Existing integration evidence and the regional MOU provide a concrete base, while live rollout and adoption attribution remain unresolved.",
-      "nextAction": "Map one proposed corridor's public launch status, merchant demand and settlement route; define the incremental payment metric before assessing expansion.",
+      "thesis": "Demo hypothesis: define one merchant settlement problem before considering a distribution route for a future issuer.",
+      "whyNow": "Existing public products show how token and merchant eligibility constrain acceptance. This is an illustrative research sequence, not a launch signal.",
+      "nextAction": "Write a hypothetical buyer/problem statement, required currency and jurisdiction. Compare it with existing supported assets; leave demand unproven.",
       "assumptions": [
-        "Incremental merchant or wallet demand exists beyond the current Singapore flow.",
-        "XSGD improves a compliant settlement path after FX, payout and exception costs."
+        "A real, eligible issuer and target buyer would be specified before a commercial recommendation.",
+        "A distinct merchant need would remain after comparing existing products."
       ],
       "disproves": [
-        "The MOU has no reachable production corridor or regulatory route.",
-        "Repeat merchant demand is weak, or existing rails already deliver better all-in economics."
+        "No specific buyer or unmet settlement need can be identified.",
+        "Published token or regional policy excludes the proposed route, or existing products already solve the need."
       ],
       "evidenceReviewedAt": "2026-09-30",
       "reviewBy": "2026-10-30",
-      "confidence": "Moderate",
-      "confidenceReason": "Existing flow described, but adoption figures and new-market economics are not independently verified.",
-      "evidenceSnapshot": "e15c623d"
+      "confidence": "Illustrative only",
+      "confidenceReason": "Public market context is documented. Fit for the fictional profile is synthetic; no acceptance, partnership, demand or commercial readiness is evidenced.",
+      "evidenceSnapshot": "dcb23eef"
     },
     {
-      "id": "P02",
+      "id": "P-G02",
       "rank": 2,
-      "title": "Test Nium's need for an SGD leg",
+      "mode": "synthetic_example",
+      "title": "Map issuer and settlement constraints",
       "lane": "Issuer partnership",
       "organizationIds": [
-        "nium",
-        "open-standard"
+        "circle",
+        "paxos",
+        "visa",
+        "mastercard"
       ],
       "evidenceIds": [
-        "E13",
-        "E14",
-        "E15",
-        "E18"
+        "E-G01",
+        "E-G04",
+        "E-G05",
+        "E-G06",
+        "E-G12"
       ],
-      "thesis": "Investigate whether an XSGD-to-USDC or USD connector solves a specific SGD treasury problem in Nium's existing funding and payout model.",
-      "whyNow": "Nium announced USDC funding in August 2026; Open USD participation adds shared ecosystem context and a competing token policy to investigate.",
-      "nextAction": "Build a public product-gap memo for SGD funding: buyer demand, accepted-token policy, eligible SGD payout route, and all-in cost versus fiat funding.",
+      "thesis": "Demo hypothesis: map redemption, custody and supported-token rules before suggesting an issuer or settlement partnership.",
+      "whyNow": "Real issuer and network products provide design context, including beta restrictions and named existing partnerships. None establishes a relationship with the demo.",
+      "nextAction": "Draft a hypothetical responsibilities matrix covering issuance, reserve evidence, eligibility, redemption, settlement and exceptions; mark every unspecified input unknown.",
       "assumptions": [
-        "A meaningful segment holds SGD treasury and wants stablecoin-funded payouts.",
-        "Nium can support an external-token conversion route at useful economics."
+        "A real profile would have a supportable issuance and redemption model.",
+        "A provider would permit the intended token and use case under documented conditions."
       ],
       "disproves": [
-        "Demand is predominantly USD, or no SGD treasury problem is observable.",
-        "Token policy is closed, or conversion and compliance costs erase any advantage."
+        "Responsibilities or eligibility cannot be established from credible evidence.",
+        "The proposed model adds no benefit or the route is closed to additional assets."
       ],
       "evidenceReviewedAt": "2026-09-30",
       "reviewBy": "2026-10-30",
-      "confidence": "Exploratory",
-      "confidenceReason": "Product adjacency is evidenced; bilateral status, XSGD acceptance and buyer demand remain unknown.",
-      "evidenceSnapshot": "cffa1015"
+      "confidence": "Illustrative only",
+      "confidenceReason": "Public market context is documented. Fit for the fictional profile is synthetic; no acceptance, partnership, demand or commercial readiness is evidenced.",
+      "evidenceSnapshot": "dbf80f92"
     },
     {
-      "id": "P03",
+      "id": "P-G03",
       "rank": 3,
-      "title": "Measure liquidity before adding rails",
+      "mode": "synthetic_example",
+      "title": "Specify liquidity and exit requirements",
       "lane": "Liquidity",
       "organizationIds": [
         "coinbase",
@@ -956,45 +777,42 @@
         "uniswap"
       ],
       "evidenceIds": [
-        "E07",
-        "E08",
-        "E09",
-        "E10",
-        "E11",
-        "E12",
-        "E19"
+        "E-G07",
+        "E-G08",
+        "E-G09",
+        "E-G13"
       ],
-      "thesis": "Compare executable XSGD conversion and redemption through existing exchange and onchain routes before proposing another integration or liquidity incentive.",
-      "whyNow": "Solana has an issuer launch announcement and Coinbase has an established product; operational documentation and execution capacity still need reconciliation.",
-      "nextAction": "Collect read-only, timestamped bid/ask or swap quotes at S$1k, S$10k and S$100k equivalents, including fees, slippage, authentic-token verification and redemption constraints.",
+      "thesis": "Demo hypothesis: define size, execution cost and exit requirements before recommending a listing, pool or extra chain.",
+      "whyNow": "Public exchange and protocol documentation describes useful comparison dimensions. There are no demo-token quotes, pools or transfer routes to evaluate.",
+      "nextAction": "Create an empty benchmark template for size, bid/ask or price impact, all fees, timestamp, chain/asset identity and redemption path. Do not fill it with invented quotes.",
       "assumptions": [
-        "Payment users face a real conversion or redemption bottleneck.",
-        "Depth can be improved sustainably and without unacceptable concentration or exit risk."
+        "A real asset and authentic contracts would be identified before measurement.",
+        "A user conversion or redemption bottleneck would be evidenced."
       ],
       "disproves": [
-        "Existing routes already meet execution and redemption needs at target sizes.",
-        "There is no incremental payment demand, or improvements depend on uneconomic subsidies."
+        "There is no observable conversion or exit problem.",
+        "Existing routes meet the need, or improvements require uneconomic subsidies."
       ],
       "evidenceReviewedAt": "2026-09-30",
       "reviewBy": "2026-10-30",
-      "confidence": "Moderate",
-      "confidenceReason": "Distribution and launch evidence exists; live depth and economic bottleneck are unmeasured.",
-      "evidenceSnapshot": "2b42619f"
+      "confidence": "Illustrative only",
+      "confidenceReason": "Public market context is documented. Fit for the fictional profile is synthetic; no acceptance, partnership, demand or commercial readiness is evidenced.",
+      "evidenceSnapshot": "c954702e"
     }
   ],
   "decisions": [
     {
-      "id": "D01",
-      "priorityId": "P01",
+      "id": "D-G01",
+      "priorityId": "P-G01",
+      "mode": "synthetic_example",
       "status": "Proposed",
-      "proposal": "Investigate one incremental QR corridor before recommending regional expansion.",
-      "rationale": "A known integration is a starting point; incremental demand and XSGD contribution need evidence.",
+      "proposal": "Example review: define one merchant acceptance problem.",
+      "rationale": "Illustrative research action only. Public sources provide market context; the fictional profile has no issuer relationships or operating products.",
       "evidenceIds": [
-        "E01",
-        "E02",
-        "E03",
-        "E04",
-        "E17"
+        "E-G02",
+        "E-G03",
+        "E-G10",
+        "E-G11"
       ],
       "createdAt": "2026-09-30",
       "reviewBy": "2026-10-30",
@@ -1002,16 +820,18 @@
       "notes": ""
     },
     {
-      "id": "D02",
-      "priorityId": "P02",
+      "id": "D-G02",
+      "priorityId": "P-G02",
+      "mode": "synthetic_example",
       "status": "Proposed",
-      "proposal": "Prepare a public SGD product-gap memo for Nium; keep relationship and commercial terms unknown.",
-      "rationale": "A recent USDC funding flow is specific enough to test an SGD connector hypothesis.",
+      "proposal": "Example review: map issuer and settlement constraints.",
+      "rationale": "Illustrative research action only. Public sources provide market context; the fictional profile has no issuer relationships or operating products.",
       "evidenceIds": [
-        "E13",
-        "E14",
-        "E15",
-        "E18"
+        "E-G01",
+        "E-G04",
+        "E-G05",
+        "E-G06",
+        "E-G12"
       ],
       "createdAt": "2026-09-30",
       "reviewBy": "2026-10-30",
@@ -1019,19 +839,17 @@
       "notes": ""
     },
     {
-      "id": "D03",
-      "priorityId": "P03",
+      "id": "D-G03",
+      "priorityId": "P-G03",
+      "mode": "synthetic_example",
       "status": "Proposed",
-      "proposal": "Benchmark existing liquidity and reconcile Solana account support before proposing incentives.",
-      "rationale": "A listing, supply growth and chain launch do not establish usable payment liquidity.",
+      "proposal": "Example review: specify liquidity and exit requirements.",
+      "rationale": "Illustrative research action only. Public sources provide market context; the fictional profile has no issuer relationships or operating products.",
       "evidenceIds": [
-        "E07",
-        "E08",
-        "E09",
-        "E10",
-        "E11",
-        "E12",
-        "E19"
+        "E-G07",
+        "E-G08",
+        "E-G09",
+        "E-G13"
       ],
       "createdAt": "2026-09-30",
       "reviewBy": "2026-10-30",
@@ -1041,27 +859,27 @@
   ],
   "changes": [
     {
-      "id": "B01",
+      "id": "B-G01",
       "kind": "baseline",
       "recordedAt": "2026-09-30",
-      "title": "First public-evidence baseline",
-      "summary": "Ten organizations, three investigation proposals and a dated evidence ledger captured. No previous snapshot exists; no detected-change claim is made.",
+      "title": "Generic demo baseline",
+      "summary": "New public market context and three synthetic research examples. This resets the dataset scope; prior issuer-specific records are omitted from current contents, not relabeled. Earlier Git commits retain the previous content. No monitoring history is claimed.",
       "evidenceIds": [
-        "E01",
-        "E02",
-        "E04",
-        "E07",
-        "E09",
-        "E13",
-        "E15"
+        "E-G02",
+        "E-G04",
+        "E-G05",
+        "E-G09",
+        "E-G11",
+        "E-G12",
+        "E-G13"
       ],
       "priorityIds": [
-        "P01",
-        "P02",
-        "P03"
+        "P-G01",
+        "P-G02",
+        "P-G03"
       ],
       "before": null,
-      "after": "2026-09-30.1"
+      "after": "2026-09-30.generic.1"
     }
   ]
 }

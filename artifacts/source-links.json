@@ -1,122 +1,73 @@
 {
-  "checkedAt": "2026-09-30T15:10:16.180Z",
+  "checkedAt": "2026-09-30T15:50:56.984Z",
   "method": "Unauthenticated public GET; separate from browser search-source access.",
   "results": [
     {
-      "id": "S01",
-      "url": "https://www.grab.com/sg/press/others/grab-and-straitsx-sign-mou-to-explore-the-development-of-web3-wallets-and-stablecoin-based-settlement-layer-across-asia/",
+      "id": "S-G01",
+      "url": "https://www.circle.com/circle-mint",
       "status": null,
       "verdict": "unavailable-to-client",
       "error": "fetch failed"
     },
     {
-      "id": "S02",
-      "url": "https://www.straitsx.com/case-study/alipay-grab",
+      "id": "S-G02",
+      "url": "https://docs.stripe.com/payments/stablecoin-payments",
       "status": null,
       "verdict": "unavailable-to-client",
       "error": "fetch failed"
     },
     {
-      "id": "S03",
-      "url": "https://www.straitsx.com/partners/cross-border-payments",
+      "id": "S-G03",
+      "url": "https://www.paypal.com/us/digital-wallet/manage-money/crypto/pyusd",
       "status": null,
       "verdict": "unavailable-to-client",
       "error": "fetch failed"
     },
     {
-      "id": "S04",
-      "url": "https://www.straitsx.com/partners/cards",
+      "id": "S-G04",
+      "url": "https://www.visa.com/en-us/products/visa-stablecoin-platform",
       "status": null,
       "verdict": "unavailable-to-client",
       "error": "fetch failed"
     },
     {
-      "id": "S05",
-      "url": "https://www.straitsx.com/case-study/from-launch-to-scale-redotpays-wallet-ready-card-program",
+      "id": "S-G05",
+      "url": "https://www.mastercard.com/global/en/news-and-trends/press/2025/april/mastercard-unveils-end-to-end-capabilities-to-power-stablecoin-transactions-from-wallets-to-checkouts.html",
       "status": null,
       "verdict": "unavailable-to-client",
       "error": "fetch failed"
     },
     {
-      "id": "S06",
-      "url": "https://www.straitsx.com/blog-post/xsgd-live-on-coinbase",
+      "id": "S-G06",
+      "url": "https://www.paxos.com/pyusd",
       "status": null,
       "verdict": "unavailable-to-client",
       "error": "fetch failed"
     },
     {
-      "id": "S07",
-      "url": "https://www.coinbase.com/xsgd",
+      "id": "S-G07",
+      "url": "https://www.coinbase.com/en-gb/usdc",
       "status": null,
       "verdict": "unavailable-to-client",
       "error": "fetch failed"
     },
     {
-      "id": "S08",
-      "url": "https://www.straitsx.com/blog-post/straitsx-to-launch-both-xsgd-and-xusd-on-solanas-public-blockchain",
+      "id": "S-G08",
+      "url": "https://docs.solanapay.com/",
       "status": null,
       "verdict": "unavailable-to-client",
       "error": "fetch failed"
     },
     {
-      "id": "S09",
-      "url": "https://www.straitsx.com/blog-post/xsgd-and-xusd-live-on-solana",
+      "id": "S-G09",
+      "url": "https://developers.uniswap.org/docs/get-started/concepts/liquidity-providers/concentrated-liquidity",
       "status": null,
       "verdict": "unavailable-to-client",
       "error": "fetch failed"
     },
     {
-      "id": "S10",
-      "url": "https://www.straitsx.com/partners/defi",
-      "status": null,
-      "verdict": "unavailable-to-client",
-      "error": "fetch failed"
-    },
-    {
-      "id": "S11",
-      "url": "https://docs.straitsx.com/docs/swap-api",
-      "status": null,
-      "verdict": "unavailable-to-client",
-      "error": "fetch failed"
-    },
-    {
-      "id": "S12",
-      "url": "https://www.nium.com/blog/usdc-funding-global-payouts",
-      "status": null,
-      "verdict": "unavailable-to-client",
-      "error": "fetch failed"
-    },
-    {
-      "id": "S13",
-      "url": "https://www.nium.com/newsroom/nium-joins-visa-stablecoin-settlement-cross-border-payments",
-      "status": null,
-      "verdict": "unavailable-to-client",
-      "error": "fetch failed"
-    },
-    {
-      "id": "S14",
-      "url": "https://joinopenstandard.com/blog/introducing-open-usd",
-      "status": null,
-      "verdict": "unavailable-to-client",
-      "error": "fetch failed"
-    },
-    {
-      "id": "S15",
-      "url": "https://www.straitsx.com/blog-post/how-to-get-xsgd",
-      "status": null,
-      "verdict": "unavailable-to-client",
-      "error": "fetch failed"
-    },
-    {
-      "id": "S16",
-      "url": "https://www.linkedin.com/pulse/straitsx-september-2026-newsletter-straitsx-bmdec",
-      "status": null,
-      "verdict": "unavailable-to-client",
-      "error": "fetch failed"
-    },
-    {
-      "id": "S17",
-      "url": "https://www.alipayplus.com/about-us/",
+      "id": "S-G10",
+      "url": "https://usa.visa.com/about-visa/newsroom/press-releases.releaseId.19881.html",
       "status": null,
       "verdict": "unavailable-to-client",
       "error": "fetch failed"

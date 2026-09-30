@@ -33,21 +33,23 @@ test("filters combine evidence search, opportunity, relationship and market", ()
   assert.deepEqual(
     filterOrganizations(baseline, {
       query: "USDC",
-      lane: "Issuer partnership",
-      relationship: "prospective",
+      lane: "Distribution",
+      relationship: "demo",
     }).map((o) => o.id),
-    ["nium"],
+    ["stripe", "worldpay"],
   );
   assert.deepEqual(
-    filterOrganizations(baseline, { market: "Thailand" }).map((o) => o.id),
-    ["kbank"],
+    filterOrganizations(baseline, { market: "United Kingdom page" }).map(
+      (o) => o.id,
+    ),
+    ["coinbase"],
   );
   assert.equal(
     filterOrganizations(baseline, { query: "  nonexistent  " }).length,
     0,
   );
   assert.equal(
-    filterOrganizations(baseline, { query: "solana coming soon" }).length,
+    filterOrganizations(baseline, { query: "price range" }).length,
     1,
   );
 });
@@ -72,12 +74,13 @@ test("reject duplicate IDs, missing evidence, invalid dates and executable URLs"
 });
 test("changed source, organization or added evidence flags affected proposals", () => {
   const cases = [
-    (d) => (d.sources.find((s) => s.id === "S01").dateNote += " Changed."),
+    (d) => (d.sources.find((s) => s.id === "S-G02").dateNote += " Changed."),
     (d) =>
-      (d.organizations.find((o) => o.id === "grab").uncertainty += " New gap."),
+      (d.organizations.find((o) => o.id === "stripe").uncertainty +=
+        " New gap."),
     (d) =>
       d.evidence.push({
-        ...d.evidence[0],
+        ...d.evidence[1],
         id: "E-new",
         statement: "New public evidence.",
       }),
@@ -114,7 +117,7 @@ test("stale date and explicit local review use the current evidence snapshot", (
     "Reviewed locally",
   );
   const d = structuredClone(baseline);
-  d.evidence[0].scope += " Changed scope.";
+  d.evidence[1].scope += " Changed scope.";
   assert.equal(
     reviewState(d, d.priorities[0], review, "2026-10-31").label,
     "Evidence changed",
@@ -122,16 +125,16 @@ test("stale date and explicit local review use the current evidence snapshot", (
 });
 test("full export/import preserves decision notes and review lineage", () => {
   const workspace = blankWorkspace();
-  workspace.decisions.D01 = {
+  workspace.decisions["D-G01"] = {
     status: "Investigating",
-    owner: "Daniel",
+    owner: "Researcher",
     reviewBy: "2026-10-15",
     notes: "Check repeat users and settlement route.",
   };
   workspace.activity.push({
     kind: "decision_edit",
     at: "2026-09-30T12:00:00Z",
-    summary: "D01 local edit.",
+    summary: "D-G01 local edit.",
   });
   const restored = parseImport(
     JSON.stringify(exportPayload(baseline, workspace)),
@@ -156,4 +159,45 @@ test("malformed, oversized and invalid local workspace imports are rejected", ()
   assert.ok(
     validateWorkspace({ ...blankWorkspace(), decisions: [] }, baseline).length,
   );
+});
+
+test("fictional provenance cannot be promoted or restored from a legacy dataset", () => {
+  for (const mutate of [
+    (d) => delete d.profile,
+    (d) => delete d.meta.datasetId,
+    (d) => (d.profile.issuer = "A real company"),
+    (d) => (d.profile.mode = "real_issuer"),
+    (d) => (d.organizations[0].relationship = "announced"),
+    (d) => (d.organizations[0].relationshipEvidenceIds = ["E-G02"]),
+    (d) =>
+      (d.evidence.find((e) => e.type === "synthetic_example").type =
+        "verified_fact"),
+    (d) => (d.evidence[0].subject = "fictional_profile"),
+    (d) => (d.priorities[0].mode = "real_opportunity"),
+    (d) => (d.decisions[0].mode = "real_decision"),
+  ]) {
+    const d = structuredClone(baseline);
+    mutate(d);
+    assert.ok(validateDataset(d).length);
+    assert.throws(() => parseImport(JSON.stringify(d)));
+  }
+  assert.ok(
+    baseline.organizations.every(
+      (o) => o.relationship === "demo" && !o.relationshipEvidenceIds.length,
+    ),
+  );
+  assert.equal(
+    baseline.evidence.filter((e) => e.type === "synthetic_example").length,
+    3,
+  );
+});
+test("profile changes flag all examples without relabeling real sources", () => {
+  const d = structuredClone(baseline);
+  const sources = JSON.stringify(d.sources);
+  d.profile.name = "Example Stablecoin";
+  d.profile.ticker = "EXAMPLE";
+  assert.deepEqual(validateDataset(d), []);
+  assert.equal(JSON.stringify(d.sources), sources);
+  for (const p of d.priorities)
+    assert.equal(reviewState(d, p, {}, "2026-09-30").label, "Evidence changed");
 });

@@ -1,0 +1,12 @@
+{
+  "checkedAt": "2026-09-30T15:54:35.925158+00:00",
+  "method": "Case-insensitive bytes in current tracked/new files, dist and unpacked ZIP; screenshot OCR when available.",
+  "currentFiles": 35,
+  "buildFiles": 11,
+  "zipMembers": 11,
+  "screenshots": 8,
+  "screenshotOCREnabled": true,
+  "findings": [],
+  "gitHistoryScanned": false,
+  "historyNote": "Earlier Git commits retain previous content; no history rewriting or deletion performed."
+}

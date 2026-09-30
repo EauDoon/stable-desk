@@ -1,12 +1,11 @@
 export const RELATIONSHIPS = {
-  announced: "Announced relationship",
-  ecosystem: "Listed ecosystem",
-  prospective: "Bilateral status unknown",
+  demo: "No issuer relationship · demo",
 };
 export const EVIDENCE_TYPES = {
   verified_fact: "Verified fact",
   company_claim: "Company claim",
   analyst_inference: "Analyst inference",
+  synthetic_example: "Synthetic example",
 };
 export const DECISION_STATUSES = [
   "Proposed",
@@ -41,6 +40,25 @@ export function validateDataset(data) {
     return ["Dataset must be an object."];
   if (data.meta?.schemaVersion !== 1 || data.meta?.collectionMode !== "manual")
     fail("Expected schemaVersion 1 and manual collection.");
+  if (data.meta?.datasetId !== "generic-stable-demo")
+    fail("Expected the generic demo dataset identity.");
+  const profile = data.profile;
+  if (
+    !profile ||
+    profile.mode !== "fictional_demo" ||
+    !/^[a-zA-Z0-9-]+$/.test(profile.id ?? "") ||
+    typeof profile.name !== "string" ||
+    !profile.name.trim() ||
+    profile.name.length > 80 ||
+    !/^[A-Z0-9]{2,12}$/.test(profile.ticker ?? "") ||
+    profile.issuer !== null ||
+    profile.currency !== null ||
+    !Array.isArray(profile.networks) ||
+    profile.networks.length
+  )
+    fail(
+      "Expected a fictional demo profile with no real issuer, currency or networks.",
+    );
   if (
     !validDate(data.meta?.asOf) ||
     typeof data.meta?.version !== "string" ||
@@ -146,6 +164,16 @@ export function validateDataset(data) {
     dates(evidence, ["asOf"]);
     if (!Object.hasOwn(EVIDENCE_TYPES, evidence.type))
       fail(`${evidence.id}: invalid evidence type.`);
+    const synthetic = evidence.type === "synthetic_example";
+    if (
+      evidence.subject !==
+        (synthetic ? "fictional_profile" : "public_market") ||
+      evidence.sourceRole !==
+        (synthetic ? "context_only" : "supports_statement")
+    )
+      fail(
+        `${evidence.id}: separate public market evidence from synthetic context.`,
+      );
     refs(evidence, "sourceIds", "sources");
     refs(evidence, "organizationIds", "organizations");
   }
@@ -156,6 +184,7 @@ export function validateDataset(data) {
       "relationshipSummary",
       "relevance",
       "uncertainty",
+      "publicContext",
     ]);
     dates(org, ["asOf"]);
     if (
@@ -165,7 +194,14 @@ export function validateDataset(data) {
       fail(`${org.id}: invalid relationship/lane.`);
     ["markets", "products", "nextQuestions"].forEach((key) => list(org, key));
     refs(org, "evidenceIds", "evidence");
-    refs(org, "relationshipEvidenceIds", "evidence");
+    refs(org, "relationshipEvidenceIds", "evidence", false);
+    if (
+      org.relationship !== "demo" ||
+      array(org.relationshipEvidenceIds).length
+    )
+      fail(
+        `${org.id}: fictional profiles cannot claim issuer relationship evidence.`,
+      );
     refs(org, "priorityIds", "priorities", false);
     for (const id of array(org.relationshipEvidenceIds))
       if (!array(org.evidenceIds).includes(id))
@@ -184,6 +220,8 @@ export function validateDataset(data) {
     dates(p, ["evidenceReviewedAt", "reviewBy"]);
     if (!Number.isInteger(p.rank) || p.rank < 1 || !LANES.includes(p.lane))
       fail(`${p.id}: invalid rank/lane.`);
+    if (p.mode !== "synthetic_example")
+      fail(`${p.id}: generic demo priorities must be synthetic examples.`);
     if (p.reviewBy < p.evidenceReviewedAt)
       fail(`${p.id}: review deadline precedes evidence review.`);
     list(p, "assumptions");
@@ -209,6 +247,8 @@ export function validateDataset(data) {
       typeof d.notes !== "string"
     )
       fail(`${d.id}: invalid decision.`);
+    if (d.mode !== "synthetic_example")
+      fail(`${d.id}: generic demo decisions must be synthetic examples.`);
   }
   for (const c of maps.changes.values()) {
     strings(c, ["title", "summary"]);
@@ -240,6 +280,7 @@ export function evidenceFingerprint(data, priority) {
   );
   const sourceIds = new Set(evidence.flatMap((e) => e.sourceIds));
   const canonical = JSON.stringify({
+    profile: data.profile,
     orgs,
     evidence,
     sources: data.sources.filter((s) => sourceIds.has(s.id)),

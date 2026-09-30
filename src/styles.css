@@ -894,7 +894,9 @@ textarea {
   border-color: #eee0c4;
   color: #886226;
 }
-.pill.analyst_inference {
+.pill.analyst_inference,
+.pill.synthetic_example,
+.pill.demo {
   background: #f2eff7;
   border-color: #e3dbea;
   color: #76608c;
@@ -2263,4 +2265,19 @@ input[type="file"] {
     transition: none !important;
     animation: none !important;
   }
+}
+
+.demo-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  border: 1px solid #d8dfd7;
+  border-left: 3px solid #64794d;
+  border-radius: 7px;
+  background: #f0f3ec;
+  padding: 14px 17px;
+  margin: 18px 0 22px;
+  color: #3e5140;
+  font-size: 13px;
+  line-height: 1.6;
 }

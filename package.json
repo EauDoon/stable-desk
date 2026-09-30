@@ -1,9 +1,9 @@
 {
   "name": "stable-desk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
-  "description": "A dated, public-evidence research desk for XSGD ecosystem decisions.",
+  "description": "A generic stablecoin research workspace with public market context and fictional demo examples.",
   "scripts": {
     "dev": "node scripts/server.mjs",
     "preview": "node scripts/server.mjs --dist",
@@ -11,8 +11,14 @@
     "test": "node --test tests/model.test.mjs",
     "test:browser": "playwright test",
     "check:links": "node scripts/check-links.mjs",
-    "build": "node scripts/build.mjs"
+    "build": "node scripts/build.mjs",
+    "package": "python3 scripts/package.py",
+    "audit:content": "python3 scripts/audit-content.py"
   },
-  "engines": { "node": ">=22" },
-  "devDependencies": { "@playwright/test": "1.58.2" }
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.58.2"
+  }
 }

@@ -101,12 +101,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1403,
+                  "duration": 1560,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:19:22.952Z",
+                  "startTime": "2026-09-30T15:53:51.104Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -135,12 +135,12 @@
                   "workerIndex": 1,
                   "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 1036,
+                  "duration": 1071,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:19:22.965Z",
+                  "startTime": "2026-09-30T15:53:51.114Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -169,12 +169,12 @@
                   "workerIndex": 1,
                   "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 1033,
+                  "duration": 1172,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:19:24.535Z",
+                  "startTime": "2026-09-30T15:53:52.749Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -203,12 +203,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1064,
+                  "duration": 1056,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:19:24.908Z",
+                  "startTime": "2026-09-30T15:53:53.228Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -218,7 +218,7 @@
           ],
           "id": "8074e1259f63eca8872d-a5928e039a07a900ec19",
           "file": "desk.spec.js",
-          "line": 125,
+          "line": 127,
           "column": 1
         },
         {
@@ -237,12 +237,12 @@
                   "workerIndex": 1,
                   "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 2291,
+                  "duration": 2169,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:19:25.590Z",
+                  "startTime": "2026-09-30T15:53:53.948Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -252,7 +252,7 @@
           ],
           "id": "8074e1259f63eca8872d-b3ec1edcc96eef787fc2",
           "file": "desk.spec.js",
-          "line": 156,
+          "line": 158,
           "column": 1
         },
         {
@@ -271,12 +271,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1587,
+                  "duration": 1624,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:19:25.992Z",
+                  "startTime": "2026-09-30T15:53:54.309Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -286,7 +286,7 @@
           ],
           "id": "8074e1259f63eca8872d-37c3f8d431e4e9c8b4af",
           "file": "desk.spec.js",
-          "line": 205,
+          "line": 207,
           "column": 1
         },
         {
@@ -305,12 +305,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 848,
+                  "duration": 1019,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:19:27.602Z",
+                  "startTime": "2026-09-30T15:53:55.965Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -339,12 +339,12 @@
                   "workerIndex": 1,
                   "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 686,
+                  "duration": 662,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:19:27.899Z",
+                  "startTime": "2026-09-30T15:53:56.151Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -354,7 +354,75 @@
           ],
           "id": "8074e1259f63eca8872d-0d894108da11edb56b4d",
           "file": "desk.spec.js",
-          "line": 292,
+          "line": 286,
+          "column": 1
+        },
+        {
+          "title": "fictional identity, provenance labels and legacy workspace isolation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 1227,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T15:53:56.859Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8074e1259f63eca8872d-f2525fa7c362ca8fcf85",
+          "file": "desk.spec.js",
+          "line": 307,
+          "column": 1
+        },
+        {
+          "title": "configured fictional placeholder updates labels and flags profile assumptions",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 998,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T15:53:56.998Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8074e1259f63eca8872d-48b4f899f66edccf62c6",
+          "file": "desk.spec.js",
+          "line": 365,
           "column": 1
         },
         {
@@ -373,12 +441,12 @@
                   "workerIndex": 2,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1031,
+                  "duration": 1069,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:19:29.437Z",
+                  "startTime": "2026-09-30T15:53:58.957Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -407,12 +475,12 @@
                   "workerIndex": 3,
                   "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 855,
+                  "duration": 927,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:19:29.537Z",
+                  "startTime": "2026-09-30T15:53:59.052Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -441,12 +509,12 @@
                   "workerIndex": 3,
                   "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 1001,
+                  "duration": 942,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:19:30.901Z",
+                  "startTime": "2026-09-30T15:54:00.505Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -475,12 +543,12 @@
                   "workerIndex": 2,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 922,
+                  "duration": 1123,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:19:31.004Z",
+                  "startTime": "2026-09-30T15:54:00.524Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -490,7 +558,7 @@
           ],
           "id": "8074e1259f63eca8872d-530104ce94bba0e81122",
           "file": "desk.spec.js",
-          "line": 125,
+          "line": 127,
           "column": 1
         },
         {
@@ -509,12 +577,12 @@
                   "workerIndex": 3,
                   "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 1854,
+                  "duration": 1905,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:19:31.915Z",
+                  "startTime": "2026-09-30T15:54:01.464Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -524,7 +592,7 @@
           ],
           "id": "8074e1259f63eca8872d-9298bf4b79e1e283bd70",
           "file": "desk.spec.js",
-          "line": 156,
+          "line": 158,
           "column": 1
         },
         {
@@ -543,12 +611,12 @@
                   "workerIndex": 2,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1212,
+                  "duration": 1185,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:19:31.946Z",
+                  "startTime": "2026-09-30T15:54:01.669Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -558,7 +626,7 @@
           ],
           "id": "8074e1259f63eca8872d-743ed00cee1de25d499d",
           "file": "desk.spec.js",
-          "line": 205,
+          "line": 207,
           "column": 1
         },
         {
@@ -577,12 +645,12 @@
                   "workerIndex": 2,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 720,
+                  "duration": 662,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:19:33.185Z",
+                  "startTime": "2026-09-30T15:54:02.901Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -611,12 +679,12 @@
                   "workerIndex": 3,
                   "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 441,
+                  "duration": 595,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-30T15:19:33.793Z",
+                  "startTime": "2026-09-30T15:54:03.389Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -626,7 +694,75 @@
           ],
           "id": "8074e1259f63eca8872d-d9ff6d034bcd73a58cc1",
           "file": "desk.spec.js",
-          "line": 292,
+          "line": 286,
+          "column": 1
+        },
+        {
+          "title": "fictional identity, provenance labels and legacy workspace isolation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1033,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T15:54:03.588Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8074e1259f63eca8872d-eba0a0168d8187f159b0",
+          "file": "desk.spec.js",
+          "line": 307,
+          "column": 1
+        },
+        {
+          "title": "configured fictional placeholder updates labels and flags profile assumptions",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 642,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-30T15:54:04.020Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8074e1259f63eca8872d-8bfe629c6b62abcca518",
+          "file": "desk.spec.js",
+          "line": 365,
           "column": 1
         }
       ]
@@ -634,9 +770,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-09-30T15:19:22.023Z",
-    "duration": 12298.259,
-    "expected": 16,
+    "startTime": "2026-09-30T15:53:50.129Z",
+    "duration": 14655.211,
+    "expected": 20,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0
