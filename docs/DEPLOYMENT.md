@@ -1,6 +1,10 @@
 # Stable Desk deployment
 
-The app is a static build. [vercel.json](https://github.com/EauDoon/stable-desk/blob/main/vercel.json) selects the **Other** framework preset, installs the locked development dependencies, runs the dataset-validating `npm run build`, and publishes only `dist/`. It needs no environment variables, backend, functions or scheduled jobs. Hash navigation works without rewrites. Configuration follows [Vercel's documented build settings](https://vercel.com/docs/project-configuration/vercel-json).
+**October 2 update (v4):** the maintainer reports v2 published at `https://stable-desk.vercel.app` from `e3207a71eb18da35bed066cbf9016e4f402a6df7`. The September 30 blocker below is historical. v4 removes the hosted dependency entirely: no Supabase project, credentials, environment variables or database are required. The only server-side artifact is `api/check.js`, a stateless function that fetches one fixed public URL. See [the v4 review contract](V4_REVIEW.md). The `v3-pilot` branch retains the hosted design as an unmerged record; it must not replace production without approval.
+
+Deploying v4 publishes `dist/` and adds the check function. To publish the research desk alone, remove `api/check.js`; the desk itself is fully static and the review screens degrade honestly when the endpoint is absent.
+
+The app is a static build. [vercel.json](https://github.com/EauDoon/stable-desk/blob/main/vercel.json) selects the **Other** framework preset, installs the locked development dependencies, runs the dataset-validating `npm run build`, and publishes only `dist/`. It needs no environment variables, backend, functions or scheduled jobs. Hash navigation works without rewrites. In v4 the single optional addition is `api/check.js`, which Vercel detects as a serverless function; it requires no configuration and holds no state. Configuration follows [Vercel's documented build settings](https://vercel.com/docs/project-configuration/vercel-json).
 
 ## Current status — September 30, 2026
 

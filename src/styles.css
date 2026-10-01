@@ -993,6 +993,15 @@ textarea {
   color: #8b9586;
   font-size: 9px;
 }
+/* The added review link must not widen the footer on narrow viewports: the
+   flex row has to be allowed to shrink and wrap instead of overflowing. */
+.footer-links {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  min-width: 0;
+}
 .view-intro {
   margin-bottom: 26px;
 }

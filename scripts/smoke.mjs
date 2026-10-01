@@ -100,12 +100,30 @@ try {
       await page.locator(".priority-card").nth(2).textContent(),
       /Needs assumption review/,
     );
+    // v4: the review surface must open with no account, no sign-in form and
+    // no hosted-provisioning state, and the research desk must link into it.
+    await page.goto("http://127.0.0.1:4176/review.html");
+    await page
+      .getByRole("heading", { name: "Choose a safe starting point" })
+      .waitFor();
+    assert.equal(await page.locator("#login-form").count(), 0);
+    assert.equal(await page.locator('[data-action="logout"]').count(), 0);
+    assert.equal(
+      await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      true,
+    );
+    await page.screenshot({ path: `artifacts/v4-${name}-review.png`, fullPage: true });
+    await page.goto("http://127.0.0.1:4176/");
+    await page
+      .getByRole("link", { name: "Source review →" })
+      .waitFor();
     report.checks.push({
       viewport: name,
       allViews: true,
       overflow: false,
       revisionCommit: true,
       reloadPersistence: true,
+      reviewOpensWithoutAccount: true,
     });
     await context.close();
   }

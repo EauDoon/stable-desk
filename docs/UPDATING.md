@@ -34,4 +34,4 @@ For each actually reviewed assumption, update only its `evidenceSnapshot`, `evid
 
 Run `npm run validate`, model/browser checks, rebuild/package and content audit. Inspect desktop/mobile screenshots and recorded source-link coverage. Publish normal reviewed Git commits under the project's authorization; no force push, visibility change, deployment, paid API or recurring collection is implied.
 
-The seed's 30-day cadence is a review schedule, not proof that a source expired. Flags are computed when the desk opens; no scheduled notification is sent. See [release scope and next gates](V2_PLAN.md).
+The seed's 30-day cadence is a review schedule, not proof that a source expired. Flags are computed when the desk opens; no scheduled notification is sent. See [the v4 source review contract and its limits](V4_REVIEW.md).

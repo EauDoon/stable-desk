@@ -1,9 +1,9 @@
 {
   "name": "stable-desk",
-  "version": "0.2.0",
+  "version": "4.0.0",
   "private": true,
   "type": "module",
-  "description": "A generic stablecoin research workspace with public market context and fictional demo examples.",
+  "description": "A generic stablecoin research desk with public market context, a fictional STABLE profile, and bounded human-reviewed source checking.",
   "scripts": {
     "dev": "node scripts/server.mjs",
     "preview": "node scripts/server.mjs --dist",
@@ -17,9 +17,12 @@
     "test:smoke": "node scripts/smoke.mjs"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.13"
   },
   "devDependencies": {
     "@playwright/test": "1.58.2"
+  },
+  "dependencies": {
+    "cheerio": "1.2.0"
   }
 }

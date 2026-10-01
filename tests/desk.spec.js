@@ -309,7 +309,8 @@ test("all source and documentation links render their correct targets", async ({
     "/docs/ARCHITECTURE.md",
     "/docs/UPDATING.md",
     "/docs/PRIORITIES.md",
-    "/docs/V2_PLAN.md",
+    "/docs/V4_REVIEW.md",
+    "/docs/VERIFICATION.md",
     "/data/baseline.json",
   ])
     expect((await request.get(path)).status()).toBe(200);

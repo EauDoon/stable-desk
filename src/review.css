@@ -1,0 +1,171 @@
+.review-shell {
+  max-width: 1120px;
+  margin: auto;
+  padding: 28px;
+}
+.review-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid var(--border, #d7ded8);
+  padding-bottom: 24px;
+  margin-bottom: 42px;
+}
+.review-header .brand {
+  color: #19382f;
+  font-size: 24px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.review-header nav {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin-left: auto;
+}
+.review-shell h1 {
+  font-size: clamp(34px, 5vw, 54px);
+  letter-spacing: -1.5px;
+}
+.review-lead {
+  font-size: 18px;
+  max-width: 650px;
+  color: #53635d;
+}
+.review-shell .panel {
+  padding: 28px;
+  margin: 22px 0;
+  border: 1px solid #d7ded8;
+  background: #fffdf8;
+  border-radius: 12px;
+}
+.review-login {
+  max-width: 560px;
+}
+.review-shell label {
+  display: block;
+  font-weight: 600;
+  margin: 16px 0;
+}
+.review-shell input,
+.review-shell textarea,
+.review-shell select {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid #b9c7bf;
+  border-radius: 6px;
+  background: #fff;
+  font: inherit;
+}
+.review-shell textarea {
+  min-height: 120px;
+}
+.review-source {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+.review-source h2 {
+  font-size: 24px;
+}
+.review-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 26px;
+}
+.review-candidate {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 1px solid #b9c7bf;
+  border-radius: 8px;
+  padding: 20px;
+  background: #edf3ed;
+  margin: 12px 0;
+  font: inherit;
+}
+.review-candidate span {
+  display: block;
+  font-size: 12px;
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+}
+.review-diff {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.review-diff details {
+  padding: 14px;
+  border: 1px solid #d7ded8;
+  border-radius: 8px;
+  min-width: 0;
+}
+.review-diff pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 300px;
+  overflow: auto;
+  font: 14px/1.7 system-ui;
+}
+.review-event {
+  padding: 16px 0;
+  border-bottom: 1px solid #d7ded8;
+  overflow-wrap: anywhere;
+}
+.review-empty {
+  padding: 28px 0;
+  color: #53635d;
+}
+.review-shell .small {
+  overflow-wrap: anywhere;
+}
+.review-shell .button.primary {
+  background: #19382f;
+  color: #fff;
+}
+.review-shell main {
+  min-height: 65vh;
+}
+.review-shell .demo-banner {
+  margin: 24px 0;
+}
+.review-shell .footer {
+  flex-wrap: wrap;
+  gap: 14px;
+}
+@media (max-width: 650px) {
+  .review-shell {
+    padding: 20px 16px;
+  }
+  .review-header {
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 30px;
+  }
+  .review-header nav {
+    margin-left: 0;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 16px;
+  }
+  .review-shell .panel {
+    padding: 20px 16px;
+  }
+  .review-source {
+    display: block;
+  }
+  .review-diff {
+    grid-template-columns: 1fr;
+  }
+  .review-toolbar .button {
+    flex: 1 1 42%;
+    white-space: normal;
+  }
+  .review-source > .button {
+    margin-top: 14px;
+  }
+}

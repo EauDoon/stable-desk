@@ -1,6 +1,6 @@
 # Stable Desk architecture and coverage
 
-Stable Desk v2.0 keeps the static ES-module architecture: semantic HTML, responsive CSS, browser-local data and a local Node preview server. It has no backend, account system, database, runtime dependency or AI endpoint. The app uses system fonts and makes no third-party request until a user opens an original source link.
+The default local desk retains v2's static ES-module architecture: semantic HTML, responsive CSS, browser-local data and a local Node preview server. That mode has no backend/account/database dependency or AI endpoint and makes no third-party collection request. v4 adds a separate source-review surface with one stateless fetch function and browser-local state; read [its architecture and evidence boundaries](V4_REVIEW.md). It has no account, database or credential dependency. System fonts remain local.
 
 | File                 | Responsibility                                                                                                                     |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
@@ -9,6 +9,14 @@ Stable Desk v2.0 keeps the static ES-module architecture: semantic HTML, respons
 | `src/workflow-ui.js` | Scoped manual editor forms, assumption cards, revision previews and history markup                                                 |
 | `src/app.js`         | Four views, native dialogs, escaped rendering, drafts, browser persistence, locks, conflict/rebase and recovery                    |
 | `src/styles.css`     | Responsive visual system; no external fonts                                                                                        |
+| `src/review-model.js` | v4 versioned review state, hash-chained journal, bounded collection outcomes, candidate staging, idempotency and the weekly brief            |
+| `src/review-store.js` | Browser-local review persistence with immutable prior copies and explicit-only replacement                                            |
+| `src/sha256.js`      | Synchronous SHA-256 so the model hashes identically in the browser and in Node tests                                                    |
+| `src/review.js`      | Review inbox, source diff, acceptance form, brief, backup and recovery downloads                                                      |
+| `src/review-client.js` | The single network call: bounded source fetch                                                                                        |
+| `server/api.mjs`     | Stateless same-origin check endpoint; refuses caller-supplied URLs and non-JSON bodies                                                 |
+| `server/collector.mjs` | Bounded extraction of one allowlisted page: no redirects, 8s timeout, 1 MB response, 20k text cap                                    |
+| `api/check.js`       | Serverless entry for the check endpoint; no state, no environment variables                                                          |
 | `data/baseline.json` | Schema-v2 fictional seed with original public context and six stable assumptions                                                   |
 
 The build validates the seed and replay, then copies app/data/docs to `dist/`. Packaging compares every ZIP member with the build and its repository source. The dev server is a preview utility, not a production service.
