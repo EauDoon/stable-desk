@@ -1,7 +1,7 @@
 {
-  "recordedAt": "2026-10-01T06:02:21.507532+00:00",
+  "recordedAt": "2026-10-01T06:20:54.412039+00:00",
   "modelTests": {
-    "passed": 42,
+    "passed": 47,
     "failed": 0,
     "mode": "local model/API/SQLite/PostgreSQL fixtures"
   },
@@ -34,5 +34,6 @@
   "userAcceptance": "pending",
   "sharedDraftRebase": "delayed state response awaited; retained reasoning committed against actual latest basis",
   "sessionExpiry": "synthetic cookie removal locks shared view on refresh; real provider expiry unverified",
-  "weeklyBrief": "accepted evidence/source hashes/adopted heads and affected assumption/decision IDs tested"
+  "weeklyBrief": "accepted evidence/source hashes/adopted heads and affected assumption/decision IDs tested",
+  "providerKeyCompatibility": "5 passing local stub/build cases: modern, legacy, mixed, precedence, failure closure, headers, sanitized responses and static boundary; hosted unverified"
 }

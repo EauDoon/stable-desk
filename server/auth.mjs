@@ -5,6 +5,8 @@ export class SupabaseAuth {
     this.fetcher = fetcher;
   }
   async request(path, token, body) {
+    if (this.config.anonKey.startsWith("sb_secret_"))
+      throw new PilotError("Invalid sign-in key configuration.", 503);
     const response = await this.fetcher(`${this.config.url}/auth/v1/${path}`, {
       method: body ? "POST" : "GET",
       headers: {

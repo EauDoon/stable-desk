@@ -1,0 +1,22 @@
+{
+  "recordedAt": "2026-10-01T06:20:54.412039+00:00",
+  "originalReviewCommit": "57558190ee86d9f718e3a03b872d786ce105763e",
+  "casesPassed": 5,
+  "modelCasesTotalPassed": 47,
+  "mode": "nonfunctional synthetic key values and provider request stubs; actual static build boundary",
+  "modernAuth": "publishable apikey; bearer only for the separate user session",
+  "modernStorage": "secret apikey only; no API-key bearer",
+  "legacyFallback": "JWT transport only when corresponding modern setting is absent",
+  "invalidModernSetting": "fails closed without silently falling back",
+  "userVerification": "authoritative provider user endpoint and approved account unchanged",
+  "secretBoundary": "no configured key in public status/error, static module/asset or RPC body",
+  "realProviderTested": false,
+  "resourcesOrCredentialsCreated": false,
+  "keysRotatedOrDeactivated": false,
+  "providerSecuritySettingsChanged": false,
+  "productionDeployed": false,
+  "primarySources": [
+    "https://supabase.com/docs/guides/getting-started/api-keys",
+    "https://supabase.com/docs/guides/getting-started/migrating-to-new-api-keys"
+  ]
+}

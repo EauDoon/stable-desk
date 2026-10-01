@@ -1,23 +1,12 @@
 import { createAPI } from "../server/api.mjs";
 import { SupabaseAuth } from "../server/auth.mjs";
 import { SupabaseStore } from "../server/store.mjs";
-const {
-  SUPABASE_URL: url,
-  SUPABASE_ANON_KEY: anonKey,
-  SUPABASE_SERVICE_ROLE_KEY: serviceKey,
-  PILOT_OWNER_ID: ownerId,
-} = process.env;
-const configured =
-  url &&
-  /^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(url) &&
-  anonKey &&
-  serviceKey &&
-  /^[0-9a-f-]{36}$/i.test(ownerId ?? "");
-const config = { url, anonKey, serviceKey };
+import { resolveSupabaseConfig } from "../server/config.mjs";
+const config = resolveSupabaseConfig(process.env);
 const handler = createAPI({
-  store: configured ? new SupabaseStore(config) : null,
-  auth: configured ? new SupabaseAuth(config) : null,
-  allowedOwners: configured ? [ownerId] : [],
+  store: config ? new SupabaseStore(config) : null,
+  auth: config ? new SupabaseAuth(config) : null,
+  allowedOwners: config ? [config.ownerId] : [],
 });
 export default async function desk(req, res) {
   const protocol =

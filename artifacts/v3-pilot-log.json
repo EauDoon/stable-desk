@@ -86,5 +86,15 @@
   "usefulness": "Awaiting user acceptance; not measured.",
   "causalSpeedupClaimed": false,
   "externalProvisioningPerformed": false,
-  "productionDeploymentPerformed": false
+  "productionDeploymentPerformed": false,
+  "modernKeyFollowup": {
+    "recordedAt": "2026-10-01T06:20:54.412039+00:00",
+    "parentAuthorized": "small modern-key compatibility update, tests and superseding review archive; provisioning remains pending",
+    "originalCommitPreserved": "57558190ee86d9f718e3a03b872d786ce105763e",
+    "modelTestsPassed": 47,
+    "pilotBrowserTestsPassed": 16,
+    "sourceEvidenceChanged": false,
+    "realKeysConfigured": false,
+    "liveProviderVerified": false
+  }
 }

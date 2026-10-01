@@ -66,11 +66,18 @@ export class SupabaseStore {
     this.fetcher = fetcher;
   }
   async request(path, body) {
+    // Opaque modern secrets are API keys, not bearer JWTs. User sessions never
+    // reach this privileged adapter; verified owner checks remain in the API.
+    const modernSecret = this.config.serviceKey.startsWith("sb_secret_");
+    if (this.config.serviceKey.startsWith("sb_publishable_"))
+      throw new PilotError("Invalid server storage key configuration.", 503);
     const response = await this.fetcher(`${this.config.url}/rest/v1/${path}`, {
       method: body ? "POST" : "GET",
       headers: {
         apikey: this.config.serviceKey,
-        Authorization: `Bearer ${this.config.serviceKey}`,
+        ...(!modernSecret
+          ? { Authorization: `Bearer ${this.config.serviceKey}` }
+          : {}),
         "Content-Type": "application/json",
       },
       body: body ? JSON.stringify(body) : undefined,
