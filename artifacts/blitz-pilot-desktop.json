@@ -1,0 +1,30 @@
+{
+  "fixture": true,
+  "startedAt": "2026-10-01T06:01:04.508Z",
+  "completedAt": "2026-10-01T06:01:05.860Z",
+  "elapsedMs": 1352,
+  "sourceUrl": "https://docs.stripe.com/payments/stablecoin-payments",
+  "representativeReview": {
+    "beforeVersion": 2,
+    "adoptedVersion": 3,
+    "beforeHead": "baseline",
+    "afterHead": "EV-ac879e21-d945-4564-9e10-56bc431d1910",
+    "sourceBeforeHash": "47b2b6d6c8269c5f2ffd366ea77f26bc96090e219456fdac5b7b8c3d20bddc1e",
+    "sourceAfterHash": "421a2bbf14dd7c12fa0adb3f219e167a1348cadb057558995d24571f6ded1fb3"
+  },
+  "continuation": {
+    "checkpointVersion": 4,
+    "resumedVersion": 4,
+    "pendingCandidate": "a787d0c3-2c69-4ce2-bb01-940b16329d8b",
+    "beforeSourceHash": "421a2bbf14dd7c12fa0adb3f219e167a1348cadb057558995d24571f6ded1fb3",
+    "afterSourceHash": "fa2bd2b26ee616d615a62610369167484767768496f975d886d6f8e070b23d03",
+    "writesReplayed": 0,
+    "duplicateDeltaIgnored": true
+  },
+  "retries": {
+    "duplicateDelta": 1,
+    "playwrightAutomaticRetries": 0
+  },
+  "usefulness": "Awaiting user acceptance; one synthetic pilot does not prove causal speedup.",
+  "injectedFailures": "Synthetic fixture source revisions; real market monitoring is unverified."
+}

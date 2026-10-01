@@ -1,6 +1,6 @@
 # Stable Desk architecture and coverage
 
-Stable Desk v2.0 keeps the static ES-module architecture: semantic HTML, responsive CSS, browser-local data and a local Node preview server. It has no backend, account system, database, runtime dependency or AI endpoint. The app uses system fonts and makes no third-party request until a user opens an original source link.
+The default local desk retains v2's static ES-module architecture: semantic HTML, responsive CSS, browser-local data and a local Node preview server. That mode has no backend/account/database dependency or AI endpoint and makes no third-party collection request. The staged v3 pilot adds a separate authenticated API and shared mode; read [its architecture and activation gates](V3_PILOT.md). It is implemented but not provisioned or deployed. System fonts remain local.
 
 | File                 | Responsibility                                                                                                                     |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |

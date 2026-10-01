@@ -1,0 +1,171 @@
+.pilot-shell {
+  max-width: 1120px;
+  margin: auto;
+  padding: 28px;
+}
+.pilot-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid var(--border, #d7ded8);
+  padding-bottom: 24px;
+  margin-bottom: 42px;
+}
+.pilot-header .brand {
+  color: #19382f;
+  font-size: 24px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.pilot-header nav {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin-left: auto;
+}
+.pilot-shell h1 {
+  font-size: clamp(34px, 5vw, 54px);
+  letter-spacing: -1.5px;
+}
+.pilot-lead {
+  font-size: 18px;
+  max-width: 650px;
+  color: #53635d;
+}
+.pilot-shell .panel {
+  padding: 28px;
+  margin: 22px 0;
+  border: 1px solid #d7ded8;
+  background: #fffdf8;
+  border-radius: 12px;
+}
+.pilot-login {
+  max-width: 560px;
+}
+.pilot-shell label {
+  display: block;
+  font-weight: 600;
+  margin: 16px 0;
+}
+.pilot-shell input,
+.pilot-shell textarea,
+.pilot-shell select {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid #b9c7bf;
+  border-radius: 6px;
+  background: #fff;
+  font: inherit;
+}
+.pilot-shell textarea {
+  min-height: 120px;
+}
+.pilot-source {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+.pilot-source h2 {
+  font-size: 24px;
+}
+.pilot-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 26px;
+}
+.pilot-candidate {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 1px solid #b9c7bf;
+  border-radius: 8px;
+  padding: 20px;
+  background: #edf3ed;
+  margin: 12px 0;
+  font: inherit;
+}
+.pilot-candidate span {
+  display: block;
+  font-size: 12px;
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+}
+.pilot-diff {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.pilot-diff details {
+  padding: 14px;
+  border: 1px solid #d7ded8;
+  border-radius: 8px;
+  min-width: 0;
+}
+.pilot-diff pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 300px;
+  overflow: auto;
+  font: 14px/1.7 system-ui;
+}
+.pilot-event {
+  padding: 16px 0;
+  border-bottom: 1px solid #d7ded8;
+  overflow-wrap: anywhere;
+}
+.pilot-empty {
+  padding: 28px 0;
+  color: #53635d;
+}
+.pilot-shell .small {
+  overflow-wrap: anywhere;
+}
+.pilot-shell .button.primary {
+  background: #19382f;
+  color: #fff;
+}
+.pilot-shell main {
+  min-height: 65vh;
+}
+.pilot-shell .demo-banner {
+  margin: 24px 0;
+}
+.pilot-shell .footer {
+  flex-wrap: wrap;
+  gap: 14px;
+}
+@media (max-width: 650px) {
+  .pilot-shell {
+    padding: 20px 16px;
+  }
+  .pilot-header {
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 30px;
+  }
+  .pilot-header nav {
+    margin-left: 0;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 16px;
+  }
+  .pilot-shell .panel {
+    padding: 20px 16px;
+  }
+  .pilot-source {
+    display: block;
+  }
+  .pilot-diff {
+    grid-template-columns: 1fr;
+  }
+  .pilot-toolbar .button {
+    flex: 1 1 42%;
+    white-space: normal;
+  }
+  .pilot-source > .button {
+    margin-top: 14px;
+  }
+}

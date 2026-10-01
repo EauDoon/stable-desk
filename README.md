@@ -1,10 +1,14 @@
 # Stable Desk
 
+**v3 pilot is implemented for review, not deployed.** It adds sign-in and shared storage adapters, one bounded official-source check, a human review inbox and an on-demand seven-day change brief. Hosted activation requires separate approval and secure backend provisioning. The existing local desk remains available; browser-local work is never uploaded or cleared automatically. Read [the pilot contract, architecture and gates](docs/V3_PILOT.md).
+
+To exercise the complete workflow with **local fixtures only**, run `npm ci --cache /tmp/stable-desk-npm`, then `npm run dev:pilot` and open **http://127.0.0.1:4183/pilot.html**. Use `reader-a@example.invalid` and `fixture-only`. These are synthetic test inputs, not real accounts or credentials. The fixture server binds to loopback, persists to a test SQLite file in `/tmp`, and is never selected by the Vercel handler. `npm run test:pilot` runs desktop/mobile pilot browser tests. This does not verify a real Supabase or Vercel integration.
+
 **v2.0** is a static stablecoin research desk with configurable profiles, manual evidence revisions, exact assumption impact and revision-bound decision history. It starts with **Generic Stablecoin (STABLE)**, a fictional placeholder with no real issuer, deployed token, reserves, listings or partners. Ten organizations and ten primary public sources provide market context; three synthetic investigations demonstrate the workflow. They are not commercial leads for a real asset.
 
 The public baseline is dated **September 30, 2026**. This release adds maintenance functionality without claiming a new source refresh. Real product names, source titles, URLs and historical dates remain original. Sources about USDC, PYUSD or Open USD never prove STABLE acceptance. Token supply and aggregate transfers do not establish payment adoption.
 
-Run with Node.js 22 or newer; no runtime packages, credentials or paid services are needed:
+Run the browser-local v2 desk with Node.js 22 or newer; it needs no credentials or paid services. The v3 server adds pinned Cheerio for public-page extraction. Local pilot fixtures require Node.js 22.13 or newer for SQLite; this release was tested with Node.js 24.19:
 
 ```sh
 cd /workspace/stable-desk
@@ -45,6 +49,6 @@ npm run preview -- --host 0.0.0.0 --port 4174
 
 Local storage is not a shared database or automatic backup. Export after useful work and before switching devices or clearing browser data. Exports include committed profiles/events, not drafts or recovery copies. Generic v1 notes and original activity migrate without inferring a v2 endorsement; the old storage key is retained. Earlier issuer-specific browser content remains isolated and unsupported. Earlier Git commits still retain prior project content; no history rewriting or deletion occurred.
 
-Delivery is through [EauDoon/stable-desk](https://github.com/EauDoon/stable-desk). No hosted deployment, access change, weighted ranking, paid API, automatic collection, live AI chat, payments, subscriptions or outreach is included. The next step is two manual review cycles on one selected use case before choosing a prioritization rubric or collector.
+Delivery is through [EauDoon/stable-desk](https://github.com/EauDoon/stable-desk). The maintainer reports live **v2** at [stable-desk.vercel.app](https://stable-desk.vercel.app), from `e3207a71eb18da35bed066cbf9016e4f402a6df7`. This v3 feature branch does not replace that deployment. No paid service, subscription, new provider credential, OAuth grant, production migration, production deployment, recurring schedule or outreach was performed for v3.
 
-Vercel publication has been requested. The repository includes static build configuration; publication is currently blocked by the connector's unavailable deployment action and absent CLI authentication. Read the [deployment status and resume guide](docs/DEPLOYMENT.md). No live URL is claimed until deployment and hosted verification succeed.
+The static ZIP contains the local desk and a v3 page that honestly reports missing API configuration. Hosted v3 needs the repository's server/API code and an approved backend; a static ZIP alone cannot provide shared storage or sign-in. Read [deployment status](docs/DEPLOYMENT.md) and [v3 verification](docs/V3_VERIFICATION.md).

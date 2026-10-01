@@ -1,5 +1,7 @@
 # Stable Desk deployment
 
+**October 1 update:** the maintainer reports v2 published at `https://stable-desk.vercel.app` from `e3207a71eb18da35bed066cbf9016e4f402a6df7`. The September 30 blocker below is historical. V3 is staged on a feature branch and must not replace production without approval; its backend/credentials and hosted verification remain gated. See [v3 provisioning and deployment instructions](V3_PILOT.md).
+
 The app is a static build. [vercel.json](https://github.com/EauDoon/stable-desk/blob/main/vercel.json) selects the **Other** framework preset, installs the locked development dependencies, runs the dataset-validating `npm run build`, and publishes only `dist/`. It needs no environment variables, backend, functions or scheduled jobs. Hash navigation works without rewrites. Configuration follows [Vercel's documented build settings](https://vercel.com/docs/project-configuration/vercel-json).
 
 ## Current status — September 30, 2026

@@ -1,0 +1,58 @@
+# Stable Desk v3 pilot
+
+October 1, 2026. Implementation is staged on `v3-pilot`; hosted integration is not provisioned or verified. The maintainer reports live v2 at `https://stable-desk.vercel.app`, source `e3207a71eb18da35bed066cbf9016e4f402a6df7`. No v3 production deployment or destructive migration has occurred.
+
+## Lean contract
+
+One approved account, one workspace shared across that account's devices, one official public page, explicit review before adoption, and an on-demand seven-day brief. Separate accounts cannot access each other's records. Multi-user teams, invitations and role management are deferred. The parent supplied the Blitz contract for one representative review and one continuation. This does not approve provisioning or a schedule. Its four records are [scope](blitz/00-scope.md), [context](blitz/03-context.md), [decisions](blitz/09-decisions.md) and [change log](blitz/10-change-log.md).
+
+The selected page is [Stripe stablecoin payments](https://docs.stripe.com/payments/stablecoin-payments), original source `S-G02`, public evidence `E-G02`. It exercises distribution eligibility and an existing dependency (`A-P-G01-2`) without treating the fictional asset as accepted. Generic Stablecoin (STABLE) remains fictional; all example opportunities and issuer relationships retain their synthetic/unverified status.
+
+There is no recurring collector or scheduled brief delivery. Each authenticated check fetches that one immutable allowlisted URL, at most once per minute in hosted mode. Eight-second collection timeout, 1 MB response bound, 20,000-character meaningful-content bound, 4 MB pilot-state bound and **60 committed operations** cap the pilot. Recovery copies remain immutable. Reaching a cap fails safely and requires export/retention review; no automatic deletion or paid upgrade occurs.
+
+## Complete implemented workflow
+
+1. Sign in with an existing approved pilot account. No signup, social OAuth, email delivery or credential creation flow exists. The provider verifies every protected request; owner IDs and timestamps cannot be supplied by clients.
+2. Start a new shared baseline or explicitly preview an exported local v2 workspace. Download the original before confirming a copy. Initialization only accepts an empty shared account; retries do not overwrite work. Existing browser keys, notes, recovery copies and v1 migration behavior stay intact. Old reviewer labels remain explicitly unauthenticated.
+3. Trigger the selected source check. First successful capture establishes a dated monitoring baseline. Later unchanged captures create checks only; failures remain unresolved. Main-page text is normalized while navigation, scripts and presentation whitespace are excluded. A layout/content-type failure is not a content change.
+4. Inspect a candidate's before/after text, fetch dates, original URL, SHA-256 hashes and current adopted claim. The candidate is a suggested source revision, not an AI-written claim. A reviewer writes the replacement claim and reasoning, or rejects the difference. Single-source monitored adoption supports company claims or analyst inference; it does not independently verify facts.
+5. Acceptance atomically records the authenticated review, claim revision and source-check citation using v2's existing replay/provenance/conflict guards. Affected assumptions become stale; decisions retain their old basis and are never automatically endorsed. Rejection preserves adopted evidence/decisions. Superseded candidates and stale evidence bases cannot be accepted. Repeated identical operations are idempotent; changed intent requires a new operation.
+6. Open `/?shared=1` to use the existing Opportunities, Evidence, Changes and Decisions editors against server-validated shared operations. Load latest explicitly to see another device's changes. The default `/` remains browser-local. Shared drafts are held in memory and never written to v2 local keys; network errors retain the open draft, but closing/reloading loses uncommitted shared drafts.
+7. Download the seven-day UTC brief, full pilot backup, recovery manifest or a selected prior recovery copy. The brief reports actual check/review events with citations, adopted heads, exact affected assumption/decision IDs and pending work. It has no outbound delivery. Recovery inspection never replaces live state or deletes history; use a prior adopted v2 export in a separate local desk for comparison, then record a new reasoned revision if needed.
+
+## Architecture
+
+| Component                              | Responsibility                                                                                                        |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `pilot.html`, `src/pilot.*`            | Responsive sign-in, explicit import, review inbox, source diff, checks/history, brief and backup downloads            |
+| `src/app.js` shared mode               | Existing v2 editors; backend command submission; fails closed without an authorized shared session                    |
+| `server/pilot-model.mjs`               | Bounded versioned state, cryptographic change hashes, candidates, review transitions, operation idempotency and brief |
+| `server/collector.mjs`                 | One fixed official URL, no redirects/arbitrary URLs or credentialed fetches; bounded deterministic text extraction    |
+| `server/api.mjs`, `api/desk.js`        | Same-origin API, verified account allowlist, secure session cookie, server-derived collection/reviewer metadata       |
+| `server/auth.mjs`                      | Supabase password-sign-in and authoritative user lookup; synthetic fixture adapter only for local tests               |
+| `server/store.mjs`, `db/001-pilot.sql` | Transactional compare-and-swap, owner RLS/read isolation, server-only writes and pre-update recovery copies           |
+| `scripts/pilot-fixture.mjs`            | Loopback-only SQLite/auth/page fixtures; explicitly excluded from production handler selection                        |
+
+**Recommended hosted provider: Supabase**, combining Postgres and authentication with one provisioning gate. The staged SQL creates only new pilot tables/functions, is repeatable, enables owner row security, revokes anonymous/client writes and grants write RPC execution only to the server role. It has not been applied to an external database. Browser requests carry no service-role key. The authenticated API verifies the identity with the provider before choosing the owner row and validating commands; it does not trust decoded JWT claims or client owner parameters.
+
+Sessions use `__Host-` cookies with Secure, HttpOnly, SameSite=Strict and at most one-hour lifetime. Passwords/tokens never enter workspace storage or exports. There is no refresh-token storage; expiration requires sign-in again. Provider rate limits and session semantics still need real integration verification. Logout clears this app's cookie and requests provider sign-out; do not claim immediate revocation of a stolen already-issued access token. A same-browser broadcast locks an open shared desk after sign-out. User-facing owner labels remain ordinary research fields; authenticated event actors are provider UUIDs.
+
+Every adopted operation uses the existing strict v2 replay validation. The v3 journal has a SHA-256 chain and server-authenticated actor, but it is not signed or tamper-proof against a database administrator/service-role holder. Imports preserve older unsigned history. Database recovery copies protect against interrupted/conflicting application writes, not loss of the provider account/database. Export backups to another safe location; free-tier provider backup is not assumed.
+
+## Provisioning and approval gate
+
+No provider resource or credential was created. `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` and `PILOT_OWNER_ID` are absent from this execution environment. No authenticated provider-management capability for Supabase is available here. Unconfigured hosted API returns 503; it cannot silently select fixtures or local-file persistence.
+
+Smallest next step: approve a **separate free-tier test backend**, then configure it securely through the provider/Vercel interface. Review any account creation, credentials, integration/OAuth grant or security-policy request separately; never paste credentials into chat. A service-role key is a powerful project credential and must be limited to this dedicated pilot, server-side environment settings and authorized maintainers.
+
+After approval, a maintainer should apply `db/001-pilot.sql` to that test project, configure one existing approved account UUID, and set the four environment variables on a protected preview only. Do not copy any production database, change existing v2 access settings or provision a paid plan. Test real login, provider rate limits, owner isolation, RPC conflicts/backup, function packaging, cookie headers and actual official-page extraction there. Reuse the existing Vercel project and protection; do not create a second public project. Production rollout needs separate approval after real hosted acceptance passes. A feature branch must not be merged into live `main` before that gate.
+
+## Cost and operating limits
+
+Local development/test dependencies are open-source and pinned: Cheerio for extraction, PGlite as a development-only PostgreSQL engine fixture, and the existing Playwright tooling. No paid API, model provider or subscription is used.
+
+As checked October 1, [Supabase Free](https://supabase.com/pricing) lists $0/month, 500 MB database size, 5 GB egress and 50,000 monthly active users; projects pause after one week of inactivity, with two active free projects allowed. Automatic provider backups and point-in-time recovery are not included. These published limits do not prove free capacity is available on the user's account or guarantee this workload's bill. Confirm the actual plan before provisioning, measure storage including recovery copies, and stop at pilot bounds instead of upgrading. The existing Vercel account's function/build quota and source-network access remain unverified; no incremental hosting cost is asserted.
+
+The collector's actual execution-environment check on October 1 returned unresolved collection with no HTTP status, no captured content and no adoption (`artifacts/v3-source-check.json`). Public documentation was viewable through the research tool, but that does not prove the server collector can reach/extract it. Hosted source access remains an acceptance gate. No fabricated monitoring snapshots or historical market changes are seeded.
+
+The pilot does not provide automatic cloud backup, live synchronization, multi-reviewer teams, background schedules, notifications, AI extraction, weighted ranking, private data ingestion, messaging, payments or subscriptions. Different origins/devices require explicit v2 export/import when moving local work. Pilot backups can be inspected/downloaded, but full v3 overwrite/restore is deliberately unavailable; preserving history takes priority over destructive rollback.

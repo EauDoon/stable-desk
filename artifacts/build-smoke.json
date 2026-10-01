@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-09-30T17:55:20.658Z",
+  "checkedAt": "2026-10-01T06:02:22.818Z",
   "build": "dist/",
   "checks": [
     {
@@ -7,14 +7,16 @@
       "allViews": true,
       "overflow": false,
       "revisionCommit": true,
-      "reloadPersistence": true
+      "reloadPersistence": true,
+      "staticPilotFailsClosed": true
     },
     {
       "viewport": "mobile",
       "allViews": true,
       "overflow": false,
       "revisionCommit": true,
-      "reloadPersistence": true
+      "reloadPersistence": true,
+      "staticPilotFailsClosed": true
     }
   ],
   "errors": [],

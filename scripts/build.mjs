@@ -21,6 +21,7 @@ await rm(resolve(root, "dist"), { recursive: true, force: true });
 await mkdir(resolve(root, "dist"), { recursive: true });
 for (const file of [
   "index.html",
+  "pilot.html",
   "favicon.svg",
   "README.md",
   "src",

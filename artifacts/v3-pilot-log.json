@@ -1,0 +1,90 @@
+{
+  "startedObservationAt": "2026-10-01T05:04:06+00:00",
+  "recordedAt": "2026-10-01T06:02:21.507532+00:00",
+  "elapsedWallSeconds": 3495,
+  "measurementScope": "Observed implementation/verification/coordination wall clock; not an active-work or causal speed benchmark.",
+  "sourceBaseSha": "e3207a71eb18da35bed066cbf9016e4f402a6df7",
+  "branch": "v3-pilot",
+  "requestedModel": "GPT-6.1 Sol",
+  "requestedReasoning": "high",
+  "observedModel": null,
+  "tokenUsage": null,
+  "modelCostUSD": null,
+  "milestones": [
+    {
+      "observedAt": "2026-10-01T05:07:19Z",
+      "result": "Inspected base and began bounded implementation; provisioning absent."
+    },
+    {
+      "observedAt": "2026-10-01T05:21:35Z",
+      "result": "39/40 model/API/database cases; fixed reference-equality test assertion."
+    },
+    {
+      "observedAt": "2026-10-01T05:24:28.855Z",
+      "result": "Actual official source collection unresolved; no capture or adoption."
+    },
+    {
+      "observedAt": "2026-10-01T05:32:19Z",
+      "result": "42 model cases pass; 46 v2 browser regressions and then 10 pilot cases pass."
+    },
+    {
+      "observedAt": "2026-10-01T05:39:13Z",
+      "result": "Blitz contract incorporated; recovery/shared manual-edit cases extend pilot coverage."
+    },
+    {
+      "observedAt": "2026-10-01T05:48:27Z",
+      "result": "42 model and 14 pilot browser cases pass; 25-file static package matches build; content audit zero findings."
+    },
+    {
+      "observedAt": "2026-10-01T06:02:21.507532+00:00",
+      "result": "Final model 42/42, pilot browser 16/16, v2 regression 46/46; delayed shared rebase and expired refresh verified."
+    }
+  ],
+  "interventions": [
+    "Parent requested architecture/blocker checkpoint.",
+    "Parent supplied bounded Blitz evidence contract.",
+    "Parent corrected a superseded v2 deployment response; resumed saved v3 scope without altering production."
+  ],
+  "rework": [
+    {
+      "failure": "Initial browser root URL rejected by fixture static server",
+      "fix": "Allow repository root before selecting index.html",
+      "initialResults": "6 passed / 4 failed"
+    },
+    {
+      "failure": "Decisions locator selected button instead of link",
+      "fix": "Correct test locator",
+      "intermediateResults": "8 passed / 2 failed"
+    },
+    {
+      "failure": "Cloned review objects compared by identity",
+      "fix": "Use structural equality",
+      "initialResults": "39 passed / 1 failed"
+    },
+    {
+      "failure": "Shared draft rebase did not await server state",
+      "fix": "Await latest state before changing revision basis; test delayed fetch and expired refresh on both viewports"
+    },
+    {
+      "failure": "Formatter attempted default read-only home cache",
+      "fix": "Retry using writable /tmp cache; application code and tests unaffected"
+    }
+  ],
+  "automaticTestRetries": 0,
+  "syntheticFailureTests": [
+    "Network abort before login response",
+    "Interrupted review save",
+    "Stale workspace/candidate/evidence",
+    "Duplicate DELTA and changed-intent retry"
+  ],
+  "recoveryArtifacts": [
+    "artifacts/blitz-pilot-desktop.json",
+    "artifacts/blitz-pilot-mobile.json",
+    "artifacts/v3-desktop-recovery.png",
+    "artifacts/v3-mobile-recovery.png"
+  ],
+  "usefulness": "Awaiting user acceptance; not measured.",
+  "causalSpeedupClaimed": false,
+  "externalProvisioningPerformed": false,
+  "productionDeploymentPerformed": false
+}

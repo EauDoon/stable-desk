@@ -100,12 +100,18 @@ try {
       await page.locator(".priority-card").nth(2).textContent(),
       /Needs assumption review/,
     );
+    await page.goto("http://127.0.0.1:4176/pilot.html");
+    await page.getByRole("heading", {name:"Hosted pilot awaits provisioning"}).waitFor();
+    assert.equal(await page.locator("#login-form").count(),0);
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+    await page.screenshot({path:`artifacts/v3-${name}-unconfigured.png`,fullPage:true});
     report.checks.push({
       viewport: name,
       allViews: true,
       overflow: false,
       revisionCommit: true,
       reloadPersistence: true,
+      staticPilotFailsClosed: true,
     });
     await context.close();
   }

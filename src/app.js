@@ -37,6 +37,25 @@ import {
   revisionPreview,
   historyMarkup,
 } from "./workflow-ui.js";
+import { requestPilot } from "./pilot-client.js";
+const SHARED = new URLSearchParams(location.search).get("shared") === "1";
+let sharedPilot = null;
+let sharedFixture = false;
+let sharedDrafts = {};
+function lockShared() {
+  sharedDrafts = {};
+  detailDialog.close();
+  utilityDialog.close();
+  app.innerHTML =
+    '<main class="load-error"><h1>Shared session ended</h1><p>Sign in again to open shared work. Local v2 is preserved.</p><a href="./pilot.html">Sign in</a></main>';
+}
+if (SHARED && "BroadcastChannel" in window)
+  new BroadcastChannel("stable-desk-auth").addEventListener(
+    "message",
+    (event) => {
+      if (event.data === "signed-out") lockShared();
+    },
+  );
 const STORAGE_KEY = "stable-desk:v2";
 const LEGACY_KEY = "stable-desk:generic-v1";
 const DRAFT_KEY = "stable-desk:drafts-v2";
@@ -109,6 +128,11 @@ function loadDisk() {
   return raw === null ? null : parseV2Import(raw);
 }
 function persist(next = workspace) {
+  if (SHARED) {
+    workspace = next;
+    hydrate();
+    return;
+  }
   if (blockedCache)
     throw new Error(
       "Saved data is invalid and preserved. Archive/reset it in Workspace & data before saving.",
@@ -362,8 +386,26 @@ function render() {
       "",
     )}</nav><div class="sidebar-context"><div class="eyebrow">Research focus</div><span class="focus-token">◇</span><h3>${esc(data.profile.name)}</h3><p>${esc(data.profile.ticker)} · ${data.profile.mode === "fictional_demo" ? "Fictional placeholder" : "Research subject · unverified"}</p></div><div class="sidebar-bottom"><span class="manual-dot"></span><strong>Manual research desk</strong><p>No recurring collection or live refresh.</p><button data-utility="method" class="sidebar-help">How to update the desk ${icon("arrow", 14)}</button><div class="profile"><span>SD</span><div>Demo workspace<small>Public market context</small></div></div></div></aside><div class="main-shell"><header class="topbar"><span>Research desk <span class="breadcrumb">/ ${view[0].toUpperCase() + view.slice(1)}</span></span><div class="topbar-right"><button class="button profile-switch" data-profiles>${esc(state.profile.name)}</button><span class="baseline-chip"><span></span>${imported ? "Imported" : "Versioned"} baseline</span><button class="icon-button" data-utility="workspace" aria-label="Workspace backup and import">${icon("download")}</button></div></header><main id="main"><div class="page-heading"><div><div class="eyebrow">${esc(data.profile.ticker)} · ${data.profile.mode === "fictional_demo" ? "FICTIONAL DEMO" : "RESEARCH SUBJECT · UNVERIFIED"}</div><h1>${titles[view][0]}</h1><p>${titles[view][1]}</p></div><button class="button" data-export>${icon("download", 16)} Export workspace</button></div><div class="baseline-line"><span>AS OF <strong>${formatDate(data.meta.asOf)}</strong></span><span class="line-divider"></span><span>${esc(data.meta.version)}</span><span class="baseline-caption">${overdue ? `${overdue} proposal${overdue > 1 ? "s" : ""} need review` : "Baseline market context · manual revisions"}</span></div>${overdue ? `<div class="stale-banner" role="status">${overdue} proposal${overdue > 1 ? "s" : ""} require assumption review. Inspect their status in Decisions.</div>` : ""}<aside class="demo-banner" data-demo-notice><strong>${esc(data.profile.name)} (${esc(data.profile.ticker)}) ${data.profile.mode === "fictional_demo" ? "is fictional." : "is an unverified research subject."}</strong><span>${data.profile.mode === "fictional_demo" ? "No real issuer, deployed token, reserves or partners." : "Intended settings establish no issuance, eligibility, deployment or partnerships."} Public sources describe real market products; example fit remains synthetic.</span></aside>${storageWarning || blockedCache ? `<div class="storage-banner" role="alert">${esc(blockedCache ? "Saved data is invalid and preserved. Recover it in Workspace & data before saving." : storageWarning)}<button class="text-button" data-reload-latest>Load latest saved workspace</button></div>` : ""}<div class="stats-strip"><div><strong>${data.organizations.length.toString().padStart(2, "0")}</strong><span>Organizations mapped</span></div><div><strong>${data.sources.length.toString().padStart(2, "0")}</strong><span>Primary sources</span></div><div><strong>${data.priorities.length.toString().padStart(2, "0")}</strong><span>Synthetic research examples</span></div><div><strong>${data.changes.length.toString().padStart(2, "0")}</strong><span>Baseline versions logged</span></div></div>${view === "opportunities" ? opportunities() : view === "evidence" ? evidenceView() : view === "changes" ? changes() : decisions()}<footer class="footer"><span>Stable Desk · Built for deliberate ecosystem research</span><button class="text-button" data-utility="workspace">Workspace & data ${icon("arrow", 14)}</button></footer></main></div></div>`;
   renderResults();
+  const footer = app.querySelector(".footer");
+  if (footer)
+    footer.insertAdjacentHTML(
+      "beforeend",
+      '<a href="./pilot.html">v3 review pilot →</a>',
+    );
+  if (SHARED)
+    app
+      .querySelector(".baseline-line")
+      .insertAdjacentHTML(
+        "afterend",
+        `<div class="storage-banner" role="status">${sharedFixture ? "Local fixture · " : ""}Shared persistent workspace · version ${sharedPilot.version}. Monitoring and reviews are in the <a href="./pilot.html">review inbox</a>. Local v2 work is untouched.</div>`,
+      );
 }
 function openUtility(mode) {
+  if (SHARED && mode === "workspace") {
+    utilityDialog.innerHTML = `<div class="dialog-header"><h2 id="utility-title">Shared workspace & recovery</h2><button class="icon-button" data-close aria-label="Close workspace">${icon("close")}</button></div><div class="dialog-body"><p>Shared version ${sharedPilot.version}. Local v2 keys, notes and recovery copies remain untouched. Import/reset are available only in the local desk; shared initialization never overwrites existing work.</p><button class="button" data-export>Export adopted v2 workspace</button><button class="button" data-reload-latest>Load latest shared work</button><p><a href="./pilot.html">Review inbox, full pilot backup and recovery history →</a></p></div>`;
+    utilityDialog.showModal();
+    return;
+  }
   const coverage = `<p class="detail-lead">${esc(data.meta.coverage)}</p><div class="legend">${Object.values(
     EVIDENCE_TYPES,
   )
@@ -441,8 +483,25 @@ function exportWorkspace() {
 }
 // WORKFLOW_CONTROLLER
 function showEditor(title, markup) {
-  openDetail(dialogShell(title, markup, "Manual research · local draft"));
+  openDetail(
+    dialogShell(
+      title,
+      SHARED
+        ? markup.replace("Save local assessment", "Save shared assessment")
+        : markup,
+      SHARED
+        ? "Manual research · shared workspace"
+        : "Manual research · local draft",
+    ),
+  );
   prepareForm();
+  if (SHARED) {
+    const reviewer = detailDialog.querySelector('[name="actor"]');
+    if (reviewer) {
+      reviewer.value = "Signed-in pilot account";
+      reviewer.readOnly = true;
+    }
+  }
 }
 function openProfiles() {
   const profiles = Object.values(projectWorkspace(seed, workspace).profiles);
@@ -457,6 +516,7 @@ function draftKey(form) {
   return `${workspace.id}:${workspace.activeProfileId}:${form.id}:${form.dataset.new === "true" || form.id === "source-add-form" ? "new" : form.dataset.record}`;
 }
 function readDrafts() {
+  if (SHARED) return sharedDrafts;
   try {
     return JSON.parse(localStorage.getItem(DRAFT_KEY)) ?? {};
   } catch {
@@ -481,9 +541,10 @@ function saveDraft(form) {
       op: form.dataset.op,
       savedAt: new Date().toISOString(),
     };
-    localStorage.setItem(DRAFT_KEY, JSON.stringify(drafts));
-    form.querySelector(".draft-note").textContent =
-      "Draft saved in this browser; not part of committed history.";
+    if (!SHARED) localStorage.setItem(DRAFT_KEY, JSON.stringify(drafts));
+    form.querySelector(".draft-note").textContent = SHARED
+      ? "Shared draft retained in memory only; export/save before closing."
+      : "Draft saved in this browser; not part of committed history.";
   } catch {
     form.querySelector(".draft-note").textContent =
       "Draft is in memory only; browser storage is unavailable.";
@@ -534,7 +595,7 @@ function clearDraft(form) {
   try {
     const drafts = readDrafts();
     delete drafts[form.dataset.draftKey];
-    localStorage.setItem(DRAFT_KEY, JSON.stringify(drafts));
+    if (!SHARED) localStorage.setItem(DRAFT_KEY, JSON.stringify(drafts));
   } catch {
     /* Saved operation IDs make a retained draft retry idempotent. */
   }
@@ -675,6 +736,24 @@ async function commitForm(form, command) {
   const submit = form.querySelector('button[type="submit"]');
   submit.disabled = true;
   try {
+    if (SHARED) {
+      const result = await requestPilot("operate", {
+        type: "command",
+        opId: `SHARED-${command.opId}`,
+        expectedVersion: sharedPilot.version,
+        command,
+      });
+      sharedPilot = result.pilot;
+      const restored = parseV2Import(JSON.stringify(sharedPilot.desk));
+      seed = restored.seed;
+      workspace = restored.workspace;
+      hydrate();
+      clearDraft(form);
+      detailDialog.close();
+      render();
+      notify("Committed shared revision. Other devices can load latest.");
+      return;
+    }
     await withLock(() => {
       const result = commitOperation(seed, workspace, command);
       persist(result.workspace);
@@ -690,6 +769,10 @@ async function commitForm(form, command) {
       storageWarning || "Committed local revision. Export to keep a backup.",
     );
   } catch (error) {
+    if (SHARED && error.status === 401) {
+      lockShared();
+      return;
+    }
     formError(form, error);
   } finally {
     submit.disabled = false;
@@ -748,7 +831,25 @@ async function replaceWorkspace(candidate) {
     "Opened validated workspace. Previous saved copy is available in recovery copies.",
   );
 }
-function reloadLatest() {
+async function reloadLatest() {
+  if (SHARED) {
+    try {
+      const result = await requestPilot("state");
+      if (!result.pilot)
+        throw new Error("Initialize shared work in the review pilot first.");
+      sharedPilot = result.pilot;
+      sharedFixture = result.fixture === true;
+      const restored = parseV2Import(JSON.stringify(sharedPilot.desk));
+      seed = restored.seed;
+      workspace = restored.workspace;
+      hydrate();
+      render();
+    } catch (error) {
+      if (error.status === 401) lockShared();
+      throw error;
+    }
+    return;
+  }
   const candidate = loadDisk();
   if (!candidate)
     throw new Error(
@@ -852,14 +953,14 @@ document.addEventListener("click", async (event) => {
     if (target.hasAttribute("data-commit-revision") && previewCommand)
       await commitForm(target.closest("form"), previewCommand);
     if (target.hasAttribute("data-reload-latest")) {
-      reloadLatest();
+      await reloadLatest();
       detailDialog.close();
       utilityDialog.close();
       notify("Loaded latest saved workspace. Drafts remain preserved.");
     }
     if (target.hasAttribute("data-rebase-draft")) {
       const form = target.closest("form");
-      reloadLatest();
+      await reloadLatest();
       const id = form.dataset.record;
       const group = {
         "evidence-form": "evidence",
@@ -1057,7 +1158,7 @@ window.addEventListener("hashchange", () => {
   }
 });
 window.addEventListener("storage", (event) => {
-  if (event.key === STORAGE_KEY) {
+  if (!SHARED && event.key === STORAGE_KEY) {
     storageWarning =
       "Saved workspace changed in another tab. Your current view and drafts are retained; load latest before editing.";
     render();
@@ -1088,7 +1189,21 @@ try {
     hasLegacy = false;
   try {
     hasLegacy = !!localStorage.getItem("stable-desk:v1");
-    const raw = localStorage.getItem(STORAGE_KEY);
+    if (SHARED) {
+      const remote = await requestPilot("state");
+      if (!remote.pilot)
+        throw new Error(
+          "Initialize a shared workspace in the review pilot first.",
+        );
+      sharedPilot = remote.pilot;
+      sharedFixture = remote.fixture === true;
+      const candidate = parseV2Import(JSON.stringify(sharedPilot.desk));
+      seed = candidate.seed;
+      workspace = candidate.workspace;
+      lastDiskHead = workspaceHead(workspace);
+      restored = true;
+    }
+    const raw = SHARED ? null : localStorage.getItem(STORAGE_KEY);
     if (raw !== null) {
       try {
         const candidate = parseV2Import(raw);
@@ -1102,7 +1217,7 @@ try {
         storageWarning =
           "Invalid saved data is preserved. Use Workspace & data to recover or archive/reset.";
       }
-    } else {
+    } else if (!SHARED) {
       const legacy = localStorage.getItem(LEGACY_KEY);
       if (legacy) {
         const saved = JSON.parse(legacy);
@@ -1124,7 +1239,8 @@ try {
         lastDiskHead = workspaceHead(workspace);
       }
     }
-  } catch {
+  } catch (error) {
+    if (SHARED) throw error;
     storageWarning =
       "Browser storage could not be loaded. The baseline is open; export in-memory edits before reload.";
   }
@@ -1135,5 +1251,5 @@ try {
       "A legacy workspace is preserved separately and is not loaded into this generic demo.",
     );
 } catch (error) {
-  app.innerHTML = `<main class="load-error"><h1>The desk could not open</h1><p>${esc(error.message)}</p><p>Serve the repository over HTTP and check baseline validation.</p><a href="./data/baseline.json">Open baseline JSON</a></main>`;
+  app.innerHTML = `<main class="load-error"><h1>The desk could not open</h1><p>${esc(error.message)}</p>${SHARED ? '<a href="./pilot.html">Sign in or initialize the shared pilot</a>' : '<p>Serve the repository over HTTP and check baseline validation.</p><a href="./data/baseline.json">Open baseline JSON</a>'}</main>`;
 }
