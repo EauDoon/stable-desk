@@ -157,6 +157,32 @@ export function validateReview(value) {
         "Missing review history.",
       );
   }
+  // Restore must preserve both sides of the journal links, not merely validate
+  // whichever derived records happen to remain in the imported file.
+  for (const event of value.journal) {
+    requireThat(["check", "accepted", "rejected", "command"].includes(event.type), "Invalid review event type.");
+    if (event.type === "check") {
+      requireThat(value.checks.filter((check) => check.id === event.checkId).length === 1,
+        "Missing or duplicate source check record.");
+      if (event.outcome === "changed")
+        requireThat(value.candidates.some((candidate) => candidate.id === event.candidateId),
+          "Missing source candidate record.");
+    }
+    if (event.type === "accepted" || event.type === "rejected")
+      requireThat(value.candidates.some((candidate) => candidate.id === event.candidateId &&
+        candidate.status === event.type && candidate.afterHash === event.sourceHash),
+        "Missing or inconsistent reviewed candidate.");
+  }
+  const latest = new Map();
+  for (const check of value.checks)
+    if (check.outcome !== "unreachable") latest.set(`${check.profileId}:${WATCH.id}`, check);
+  requireThat(Object.keys(value.snapshots).length === latest.size, "Incomplete source snapshots.");
+  for (const [key, check] of latest) {
+    const snapshot = value.snapshots[key];
+    requireThat(snapshot && snapshot.profileId === check.profileId &&
+      snapshot.at === check.at && snapshot.hash === check.hash,
+      "Missing or inconsistent latest source snapshot.");
+  }
   requireThat(
     new TextEncoder().encode(JSON.stringify(value)).length <= 4 * 1024 * 1024,
     "Review history exceeds the 4 MB limit; export and review retention before continuing.",

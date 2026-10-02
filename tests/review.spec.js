@@ -8,10 +8,10 @@ const capture = (n) => ({
 });
 let page;
 let context;
-test.beforeEach(async ({ browser }) => {
+test.beforeEach(async ({ browser }, info) => {
   // A fresh context per test: localStorage is per-origin, so sharing one
   // context across parallel workers would leak review state between tests.
-  context = await browser.newContext();
+  context = await browser.newContext(info.project.use);
   page = await context.newPage();
   // A deterministic capture keeps the test offline and repeatable.
   let n = 0;
@@ -228,4 +228,117 @@ test("reset is explicit: it downloads first and needs a second confirmation", as
   await expect(
     page.getByRole("heading", { name: "Choose a safe starting point" }),
   ).toBeVisible();
+});
+
+test('unreadable bytes survive initialization and require guarded raw recovery', async () => {
+  await page.goto('/review.html');
+  await page.evaluate(() => localStorage.setItem('stable-desk:review', '{broken saved bytes'));
+  await page.reload();
+  await page.getByRole('button', { name: 'Start from public baseline' }).click();
+  await expect(page.getByRole('alert')).toContainText('unreadable');
+  expect(await page.evaluate(() => localStorage.getItem('stable-desk:review'))).toBe('{broken saved bytes');
+  const download = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download raw review' }).click();
+  const stream = await (await download).createReadStream();
+  const chunks = []; for await (const chunk of stream) chunks.push(chunk);
+  expect(Buffer.concat(chunks).toString()).toBe('{broken saved bytes');
+  await page.evaluate(() => localStorage.setItem('stable-desk:review', '{newer saved bytes'));
+  await page.getByRole('button', { name: 'Confirm discard unreadable review' }).click();
+  await expect(page.getByRole('alert')).toContainText('changed');
+  expect(await page.evaluate(() => localStorage.getItem('stable-desk:review'))).toBe('{newer saved bytes');
+});
+
+test('a stale reset cannot erase another tab commit', async () => {
+  await page.goto('/review.html');
+  await page.getByRole('button', { name: 'Start from public baseline' }).click();
+  await page.getByRole('button', { name: 'Check source now' }).click();
+  await expect(page.locator('.footer')).toContainText('Version 1');
+  await page.getByRole('button', { name: 'Reset local review' }).click();
+  const other = await context.newPage();
+  await other.route('**/api/check', route => route.fulfill({ json: { capture: capture(2) } }));
+  await other.goto('/review.html');
+  await other.getByRole('button', { name: 'Check source now' }).click();
+  await expect(other.locator('.footer')).toContainText('Version 2');
+  const latest = await other.evaluate(() => localStorage.getItem('stable-desk:review'));
+  await page.getByRole('button', { name: 'Confirm erase local review' }).click();
+  await expect(page.getByRole('alert')).toContainText('changed');
+  expect(await page.evaluate(() => localStorage.getItem('stable-desk:review'))).toBe(latest);
+});
+
+test('review cycles restore in a fresh browser and hand adopted evidence back to Decisions', async ({ browser }, info) => {
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Decisions', exact: true }).click();
+  await page.getByRole('button', { name: 'Review assessment', exact: false }).first().click();
+  await page.getByLabel('Research notes', { exact: true }).fill('Original decision basis before eligibility changed.');
+  await page.getByLabel('Status', { exact: true }).selectOption('Investigating');
+  await page.getByRole('checkbox', { name: 'I reviewed these assumptions against the current evidence.', exact: true }).check();
+  await page.getByRole('button', { name: 'Save local assessment', exact: true }).click();
+  await expect(page.locator('#detail-dialog')).not.toBeVisible();
+  const original = await page.evaluate(() => JSON.parse(localStorage.getItem('stable-desk:v2')).workspace.events);
+  await page.goto('/review.html');
+  await page.getByRole('button', { name: 'Import local v2 export' }).click();
+  await page.getByRole('button', { name: 'Download original v2 backup' }).click();
+  await page.getByRole('button', { name: 'Confirm import', exact: true }).click();
+  for (const version of [1, 2]) {
+    await page.getByRole('button', { name: 'Check source now' }).click();
+    await expect(page.locator('.footer')).toContainText(`Version ${version}`);
+  }
+  await page.locator('.review-candidate').click();
+  const adopted = 'Stripe documents revised merchant eligibility; independent performance remains unverified.';
+  await page.getByLabel('Reviewed replacement claim').fill(adopted);
+  await page.getByLabel('Review rationale').fill('Material eligibility change in the synthetic test capture.');
+  await page.getByRole('button', { name: 'Accept reviewed revision' }).click();
+  await expect(page.locator('.footer')).toContainText('Version 3');
+  await page.getByRole('button', { name: 'Check source now' }).click();
+  await expect(page.locator('.footer')).toContainText('Version 4');
+  await page.locator('.review-candidate').click();
+  await page.getByLabel('Review rationale').fill('Synthetic navigation churn only; retain the adopted eligibility claim.');
+  await page.getByRole('button', { name: 'Reject candidate' }).click();
+  await expect(page.locator('.footer')).toContainText('Version 5');
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('stable-desk:review')));
+  const exported = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export review backup' }).click();
+  const backup = await (await exported).path();
+  const fresh = await browser.newContext(info.project.use);
+  try {
+    const restored = await fresh.newPage();
+    await restored.goto('/review.html');
+    await restored.locator('#restore-file').setInputFiles(backup);
+    await expect(restored.getByRole('heading', { name: 'Restore preview' })).toBeVisible();
+    await restored.getByRole('button', { name: 'Download backup before restore' }).click();
+    await restored.getByRole('button', { name: 'Confirm restore' }).click();
+    await expect(restored.locator('.footer')).toContainText('Version 5');
+    expect(await restored.evaluate(() => JSON.parse(localStorage.getItem('stable-desk:review')))).toEqual(saved);
+    // Malformed, oversized and divergent imports never replace current bytes.
+    for (const bad of ['{broken', 'x'.repeat(4 * 1024 * 1024 + 1)]) {
+      await restored.locator('#restore-file').setInputFiles({ name: 'bad.json', mimeType: 'application/json', buffer: Buffer.from(bad) });
+      await expect(restored.getByRole('alert')).toBeVisible();
+      expect(await restored.evaluate(() => JSON.parse(localStorage.getItem('stable-desk:review')))).toEqual(saved);
+    }
+    await restored.locator('#restore-file').setInputFiles({ name: 'old.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify({ ...saved, version: 0, journal: [], checks: [], snapshots: {}, candidates: [] })) });
+    await restored.getByRole('button', { name: 'Download backup before restore' }).click();
+    await restored.getByRole('button', { name: 'Confirm restore' }).click();
+    await expect(restored.getByRole('alert')).toContainText('diverges');
+    const handoff = restored.waitForEvent('download');
+    await restored.getByRole('button', { name: 'Export adopted workspace' }).click();
+    const handoffPath = await (await handoff).path();
+    await restored.getByRole('link', { name: 'Research desk', exact: true }).click();
+    await restored.getByRole('button', { name: 'Workspace backup and import', exact: true }).click();
+    await restored.locator('#import-file').setInputFiles(handoffPath);
+    await expect(restored.locator('#import-preview')).toContainText('Validated');
+    await restored.getByRole('button', { name: 'Use in this browser', exact: true }).click();
+    await expect(restored.locator('#utility-dialog')).not.toBeVisible();
+    const received = await restored.evaluate(() => JSON.parse(localStorage.getItem('stable-desk:v2')));
+    expect(received.workspace.events.slice(0, original.length)).toEqual(original);
+    expect(received.workspace.events.find(event => event.type === 'evidence_revision').after.statement).toBe(adopted);
+    await restored.getByRole('link', { name: 'Evidence', exact: true }).click();
+    await expect(restored.getByText(adopted, { exact: true })).toBeVisible();
+    await restored.getByRole('link', { name: 'Opportunities', exact: true }).click();
+    await expect(restored.locator('.priority-card').first()).toContainText('Needs assumption review');
+    await restored.getByRole('link', { name: 'Decisions', exact: true }).click();
+    await expect(restored.locator('.decision-card').first()).toContainText('Decision stale');
+    await expect(restored.locator('.decision-card').first()).toContainText('Original decision basis');
+    expect(await restored.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await restored.screenshot({ path: info.outputPath('restored-decision-handoff.png'), fullPage: true });
+  } finally { await fresh.close(); }
 });

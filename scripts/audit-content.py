@@ -32,7 +32,7 @@ for path in current:
 build = sorted(p for p in (root / 'dist').rglob('*') if p.is_file())
 for path in build:
     scan(str(path.relative_to(root)), path.read_bytes())
-archive_path = root / 'artifacts/stable-desk-static.zip'
+archive_path = root / 'test-results/artifacts/stable-desk-static.zip'
 if not archive_path.is_file() or not build:
     raise SystemExit('Build and package before running the complete audit.')
 with ZipFile(archive_path) as archive:
@@ -41,10 +41,10 @@ with ZipFile(archive_path) as archive:
         scan('ZIP/' + member, member.encode() + b'\n' + archive.read(member))
         if archive.read(member) != (root / 'dist' / member).read_bytes():
             findings.append({'path': 'ZIP/' + member, 'kind': 'stale build member'})
-    if set(members) != {str(p.relative_to(root / 'dist')) for p in build}:
+    if set(members) != {p.relative_to(root / 'dist').as_posix() for p in build}:
         findings.append({'path': 'ZIP', 'kind': 'member set differs from dist'})
 
-screenshots = sorted((root / 'artifacts').glob('*.png'))
+screenshots = sorted((root / 'test-results').rglob('*.png'))
 ocr_enabled = bool(shutil.which('tesseract'))
 if ocr_enabled:
     for path in screenshots:
@@ -58,7 +58,7 @@ report = {
     'findings': findings, 'gitHistoryScanned': False,
     'historyNote': 'Earlier Git commits retain previous content; no history rewriting or deletion performed.',
 }
-(root / 'artifacts/content-audit.json').write_text(json.dumps(report, indent=2) + '\n')
+(root / 'test-results/artifacts/content-audit.json').write_text(json.dumps(report, indent=2) + '\n')
 print(json.dumps(report, indent=2))
 if findings:
     raise SystemExit(1)

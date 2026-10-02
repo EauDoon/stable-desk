@@ -30,7 +30,7 @@ test("desktop/mobile layout, all views, genuine baseline, no JS errors", async (
   await expect(page.locator(".org-table tbody tr")).toHaveCount(10);
   await noOverflow(page);
   await page.screenshot({
-    path: `artifacts/${testInfo.project.name}-opportunities.png`,
+    path: `test-results/artifacts/${testInfo.project.name}-opportunities.png`,
     fullPage: true,
   });
   await page.getByRole("link", { name: "Changes", exact: true }).click();
@@ -42,14 +42,14 @@ test("desktop/mobile layout, all views, genuine baseline, no JS errors", async (
   ).toBeVisible();
   await noOverflow(page);
   await page.screenshot({
-    path: `artifacts/${testInfo.project.name}-changes.png`,
+    path: `test-results/artifacts/${testInfo.project.name}-changes.png`,
     fullPage: true,
   });
   await page.getByRole("link", { name: "Decisions", exact: true }).click();
   await expect(page.locator(".decision-card")).toHaveCount(3);
   await noOverflow(page);
   await page.screenshot({
-    path: `artifacts/${testInfo.project.name}-decisions.png`,
+    path: `test-results/artifacts/${testInfo.project.name}-decisions.png`,
     fullPage: true,
   });
   await page.getByRole("link", { name: "Evidence", exact: true }).click();
@@ -58,7 +58,7 @@ test("desktop/mobile layout, all views, genuine baseline, no JS errors", async (
   ).toHaveCount(13);
   await noOverflow(page);
   await page.screenshot({
-    path: `artifacts/${testInfo.project.name}-evidence.png`,
+    path: `test-results/artifacts/${testInfo.project.name}-evidence.png`,
     fullPage: true,
   });
   expect(errors).toEqual([]);
@@ -127,7 +127,7 @@ test("organization detail, source lineage, priority and keyboard dismissal", asy
     .click();
   await expect(dialog).toContainText("What could disprove it");
   await page.screenshot({
-    path: `artifacts/${testInfo.project.name}-priority-detail.png`,
+    path: `test-results/artifacts/${testInfo.project.name}-priority-detail.png`,
   });
   await expect(
     await dialog.evaluate((el) => el.scrollWidth <= el.clientWidth),
