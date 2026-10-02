@@ -76,7 +76,8 @@ let data,
   previewCommand = null,
   imported = false,
   selected = new Set(),
-  pendingImport = null;
+  pendingImport = null,
+  importRead = 0;
 let filters = { query: "", lane: "", relationship: "", market: "" };
 let view = ["opportunities", "evidence", "changes", "decisions"].includes(
   location.hash.slice(1),
@@ -888,6 +889,7 @@ document.addEventListener("click", async (event) => {
     if (target.hasAttribute("data-apply-import") && pendingImport)
       await replaceWorkspace(pendingImport);
     if (target.dataset.backup) {
+      importRead++;
       try {
         previewImport(localStorage.getItem(target.dataset.backup));
       } catch (error) {
@@ -960,6 +962,8 @@ document.addEventListener("change", async (event) => {
     renderResults();
   }
   if (target.id === "import-file") {
+    const read = ++importRead;
+    const current = () => read === importRead && target.isConnected && utilityDialog.open;
     pendingImport = null;
     document.querySelector("#import-preview").innerHTML = "";
     document.querySelector("#import-error").textContent = "";
@@ -967,8 +971,10 @@ document.addEventListener("change", async (event) => {
       const file = target.files[0];
       if (!file) return;
       if (file.size > 4_000_000) throw new Error("Import is limited to 4 MB.");
-      previewImport(await file.text());
+      const text = await file.text();
+      if (current()) previewImport(text);
     } catch (error) {
+      if (!current()) return;
       document.querySelector("#import-error").textContent =
         `Import rejected: ${error.message}`;
     }

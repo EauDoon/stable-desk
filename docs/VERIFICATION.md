@@ -1,5 +1,13 @@
 # Stable Desk verification record
 
+## Import and preview-server follow-up, 02-10-2026
+
+The research desk now discards delayed file reads after another file or recovery copy is selected, or the import dialog closes. Previously a slow first file could replace a newer selected workspace. Review import controls now disable during the existing operation lock instead of silently ignoring a second selection. Actual desktop/mobile browser regressions cover both paths, including invalid newer files and recovery choices.
+
+The local server now resolves canonical file paths before reading, rejects hidden paths and decoded backslashes, and checks the exact local host and listening port in its default loopback mode. The explicit `--host 0.0.0.0` public-preview option remains supported. Both modes refuse supplied foreign origins and browser cross-site requests to source collection. A real-server test uses synthetic outside-root junction/symlink and hidden-directory files in both modes, then verifies the existing adapter contract with a stub external source. These fixes address reproduced local-server exposures, not evidence of compromise or hosted deployment validation.
+
+Local checks: 65 Node tests, 76 Chromium desktop/mobile cases, baseline validation, build and both build-smoke viewports. Existing storage, unsigned-history, browser coverage and deployment limitations below still apply.
+
 ## Integrity-fix verification, 02-10-2026
 
 This section supersedes contradictory v4 guarantees in the historical record below. The earlier adapter tests called the helper instead of the deployed wrapper; the earlier storage stress test never used its large capture or actual store. The old importer accepted v2 only, corrupt records could be initialized over, stale reset was unguarded, and the no-Web-Locks queue invoked a callback twice. These are reproduced defects, not evidence of hosted compromise.

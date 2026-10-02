@@ -12,7 +12,7 @@ npm ci --ignore-scripts
 npm run dev
 ```
 
-Open **http://localhost:4173** for the research desk, or **http://localhost:4173/review.html** for source review. The default binds to `127.0.0.1`; `--host 0.0.0.0` allows a cloud preview. Choose another port with `--port 4174`. Serve over HTTP; `file://` cannot load the JSON dataset. System fonts keep the build self-contained.
+Open **http://localhost:4173** for the research desk, or **http://localhost:4173/review.html** for source review. The default binds to `127.0.0.1` and accepts only local hosts on the listening port. `--host 0.0.0.0` explicitly opens a public cloud preview and accepts its public host; use the built `preview` surface when exposing it. Both modes refuse hidden paths, links outside the serving root and cross-origin source checks. Choose another port with `--port 4174`. Serve over HTTP; `file://` cannot load the JSON dataset. System fonts keep the build self-contained.
 
 The working release includes:
 
