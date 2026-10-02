@@ -509,37 +509,3 @@ test("assumptions downstream of an adopted revision are marked for review", () =
       "Needs assumption review",
     );
 });
-
-test("the live state is bounded and archiving degrades instead of wedging", () => {
-  // A realistic worst case: near-maximum source text on every capture. The
-  // 4 MB bound must apply to the live state and each copy separately, never to
-  // the sum of all copies, or a real run dies long before the 60-op bound.
-  const big = (n) =>
-    `${"Official stablecoin documentation. Merchants must examine business eligibility, country restrictions and supported tokens. ".repeat(155)}Revision ${n}.`;
-  const history = [];
-  let review = initialReview(seed);
-  for (let i = 0; i < REVIEW_MAX_EVENTS; i++) {
-    review = check(review, i, `CHECK-bulk-${i}`);
-    history.unshift(review);
-  }
-  assert.equal(review.version, REVIEW_MAX_EVENTS);
-  const liveBytes = new TextEncoder().encode(JSON.stringify(review)).length;
-  assert.ok(
-    liveBytes <= 4 * 1024 * 1024,
-    `live state must stay within 4 MB, got ${liveBytes}`,
-  );
-  // A retention budget must evict older copies rather than refuse new work.
-  let used = 0;
-  let kept = 0;
-  for (const copy of history) {
-    const bytes = new TextEncoder().encode(JSON.stringify(copy)).length;
-    if (bytes > 4 * 1024 * 1024 || used + bytes > 3 * 1024 * 1024) continue;
-    used += bytes;
-    kept += 1;
-  }
-  assert.ok(kept > 0, "at least the most recent copy must fit the budget");
-  assert.ok(
-    used <= 3 * 1024 * 1024,
-    "retained copies must stay inside the history budget",
-  );
-});

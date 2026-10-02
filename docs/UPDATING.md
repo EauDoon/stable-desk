@@ -35,3 +35,11 @@ For each actually reviewed assumption, update only its `evidenceSnapshot`, `evid
 Run `npm run validate`, model/browser checks, rebuild/package and content audit. Inspect desktop/mobile screenshots and recorded source-link coverage. Publish normal reviewed Git commits under the project's authorization; no force push, visibility change, deployment, paid API or recurring collection is implied.
 
 The seed's 30-day cadence is a review schedule, not proof that a source expired. Flags are computed when the desk opens; no scheduled notification is sent. See [the v4 source review contract and its limits](V4_REVIEW.md).
+
+## Source review handoff and two-cycle exercise
+
+The v4 review store is separate from the v2 desk. After adopting evidence, **Export adopted workspace**, open the desk and use **Workspace backup and import**. Inspect the preview before **Use in this browser**. Decisions retain their original evidence basis and need deliberate reassessment. A divergent existing desk is rejected by its importer; export and explicitly reset that desk before switching histories.
+
+For a real research exercise, retain the original page URL and publication/access dates, capture a monitoring baseline, and later inspect two actual changes. Reject one irrelevant change with rationale; adopt a material eligibility change only when supported by the page. Keep fetch and adoption dates separate. Revisit the affected assumption and explicitly retain or revise the prior decision. Export the v4 backup, restore it in a fresh browser, hand off the adopted workspace and retain the resulting change brief. An unreachable source must remain unresolved.
+
+Automated browser coverage uses two synthetic source changes to test acceptance, rejection, restore and handoff. It does not establish that those changes happened on the real public page, or that two live research cycles have been completed.

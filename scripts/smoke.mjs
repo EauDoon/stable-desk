@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { writeFile } from "node:fs/promises";
+import { writeFile, mkdir } from "node:fs/promises";
 import assert from "node:assert/strict";
 import { chromium } from "@playwright/test";
 const preview = spawn(
@@ -7,6 +7,7 @@ const preview = spawn(
   ["scripts/server.mjs", "--dist", "--port", "4176"],
   { cwd: new URL("..", import.meta.url), stdio: ["ignore", "pipe", "pipe"] },
 );
+await mkdir("test-results/artifacts", { recursive: true });
 let browser;
 const report = {
   checkedAt: new Date().toISOString(),
@@ -30,8 +31,7 @@ try {
     });
   });
   browser = await chromium.launch({
-    executablePath: process.env.CHROMIUM_PATH || "/usr/bin/chromium",
-    args: ["--no-sandbox"],
+    executablePath: process.env.CHROMIUM_PATH || undefined,
   });
   for (const [name, viewport] of [
     ["desktop", { width: 1440, height: 1000 }],
@@ -67,7 +67,7 @@ try {
     }
     await page.getByRole("link", { name: "Evidence", exact: true }).click();
     await page.locator(".evidence-workbench").waitFor();
-    await page.screenshot({ path: `artifacts/${name}-build-evidence.png` });
+    await page.screenshot({ path: `test-results/artifacts/${name}-build-evidence.png` });
     await page
       .locator('#evidence-results [data-edit-evidence="E-G09"]')
       .click();
@@ -112,7 +112,7 @@ try {
       await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
       true,
     );
-    await page.screenshot({ path: `artifacts/v4-${name}-review.png`, fullPage: true });
+    await page.screenshot({ path: `test-results/artifacts/v4-${name}-review.png`, fullPage: true });
     await page.goto("http://127.0.0.1:4176/");
     await page
       .getByRole("link", { name: "Source review →" })
@@ -137,7 +137,7 @@ try {
   await browser?.close();
   preview.kill();
   await writeFile(
-    "artifacts/build-smoke.json",
+    "test-results/artifacts/build-smoke.json",
     JSON.stringify(report, null, 2) + "\n",
   );
 }

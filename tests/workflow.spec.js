@@ -181,7 +181,7 @@ test("independent profiles, intended settings and deliberate real-mode enablemen
   );
   await overflow(page);
   await page.screenshot({
-    path: `artifacts/${info.project.name}-profile.png`,
+    path: `test-results/artifacts/${info.project.name}-profile.png`,
     fullPage: true,
   });
   const exported = await stored(page),
@@ -284,7 +284,7 @@ test("source revision preview, exact impact, stale decision and inspectable atom
   await expect(panel).not.toContainText("D-G02");
   await overflow(page);
   await page.screenshot({
-    path: `artifacts/${info.project.name}-revision-preview.png`,
+    path: `test-results/artifacts/${info.project.name}-revision-preview.png`,
   });
   await commit(page);
   await page.getByRole("link", { name: "Decisions", exact: true }).click();
@@ -307,7 +307,7 @@ test("source revision preview, exact impact, stale decision and inspectable atom
   await expect(dialog(page)).toContainText("Example researcher qualification");
   await expect(dialog(page)).toContainText("Researcher");
   await overflow(page);
-  await page.screenshot({ path: `artifacts/${info.project.name}-history.png` });
+  await page.screenshot({ path: `test-results/artifacts/${info.project.name}-history.png` });
 });
 
 test("withdrawal blocks endorsement; dependency revision and review retain earlier decisions", async ({

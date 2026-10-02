@@ -1,6 +1,7 @@
 """Package the already validated static build; no deployment or upload."""
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
+import sys
 
 root = Path(__file__).resolve().parent.parent
 build = root / 'dist'
@@ -9,8 +10,8 @@ if not (build / 'index.html').is_file():
 for file in sorted(build.rglob('*')):
     if file.is_file() and file.read_bytes() != (root / file.relative_to(build)).read_bytes():
         raise SystemExit(f'Build member is stale; rebuild first: {file.relative_to(build)}')
-(root / 'artifacts').mkdir(exist_ok=True)
-path = root / 'artifacts/stable-desk-static.zip'
+path = root / (sys.argv[1] if len(sys.argv) > 1 else 'test-results/artifacts/stable-desk-static.zip')
+path.parent.mkdir(parents=True, exist_ok=True)
 with ZipFile(path, 'w', ZIP_DEFLATED) as archive:
     for file in sorted(build.rglob('*')):
         if file.is_file():

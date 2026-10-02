@@ -1,121 +1,109 @@
-import { validateReview } from "./review-model.js";
-// Browser-local review store. Persistence is localStorage, matching the v2 desk:
-// no server, no account, no cross-device synchronization. Export is the only
-// way to move work between devices, and the only backup.
+import { validateReview, hash } from "./review-model.js";
+import { canonical } from "./workspace.js";
 const KEY = "stable-desk:review";
 const HISTORY_KEY = "stable-desk:review-history";
-const MAX_HISTORY = 20;
-const MAX_BYTES = 4 * 1024 * 1024;
-// The 4 MB bound applies to the LIVE state, and separately to each stored copy.
-// Charging the budget to the sum of all copies wedged a real run at operation
-// 15 of 60 while live state used only 0.54 MB, which contradicted the
-// documented operation bound and left no honest way forward.
-const MAX_COPY_BYTES = 4 * 1024 * 1024;
-// Total budget for archived copies, leaving headroom for the live state and
-// the rest of the origin's storage. Real browser quotas are typically ~5 MB.
 const MAX_HISTORY_BYTES = 3 * 1024 * 1024;
-const encoder = new TextEncoder();
-const size = (value) => encoder.encode(JSON.stringify(value)).length;
-const readJSON = (key) => {
+const size = (value) => new TextEncoder().encode(JSON.stringify(value)).length;
+let queue = Promise.resolve();
+const withLock = (fn) => {
+  if (globalThis.navigator?.locks)
+    return navigator.locks.request("stable-desk-review-write", fn);
+  // Without Web Locks this serializes only this tab. Export before switching tabs.
+  const result = queue.then(fn);
+  queue = result.catch(() => {});
+  return result;
+};
+const history = () => {
+  const value = JSON.parse(localStorage.getItem(HISTORY_KEY) ?? "[]");
+  if (!Array.isArray(value)) throw new Error("Unreadable recovery history.");
+  return value;
+};
+const same = (a, b) => canonical(a) === canonical(b);
+function save(current, next) {
+  validateReview(next);
+  const raw = JSON.stringify(next);
   try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-};
-const requireRoom = (value, bound = MAX_BYTES, what = "Review state") => {
-  if (size(value) > bound)
-    throw new Error(
-      `${what} exceeds the 4 MB limit. Export and review retention before continuing.`,
-    );
-};
-// Serialize commits across cooperating tabs, mirroring the v2 desk. Without
-// this, two tabs can both pass the version check and the later write silently
-// discards the earlier one. Browsers without the Web Locks API fall back to a
-// best-effort in-tab queue, exactly as the v2 desk does.
-const queue = [];
-const withLock = (fn) =>
-  navigator.locks
-    ? navigator.locks.request("stable-desk-review-write", fn)
-    : new Promise((resolve, reject) => {
-        const run = () =>
-          Promise.resolve()
-            .then(fn)
-            .then(resolve, reject)
-            .finally(() => {
-              const next = queue.shift();
-              if (next) next();
-            });
-        queue.push(run);
-        if (queue.length === 1) run();
-      });
-
-export const reviewStore = {
-  read() {
-    const value = readJSON(KEY);
-    if (!value) return null;
+    localStorage.setItem(KEY, raw);
+  } catch (error) {
+    if (error.name !== "QuotaExceededError") throw error;
+    // Recovery copies are expendable; the durable live state is never removed.
+    localStorage.removeItem(HISTORY_KEY);
     try {
-      return validateReview(value);
+      localStorage.setItem(KEY, raw);
     } catch {
-      // A corrupt or foreign key must not silently overwrite real work.
-      return null;
+      throw new Error("Storage is full. Last saved review is intact. Export it, free space and retry; your draft is retained.");
     }
-  },
-  write(expected, next) {
-    return withLock(() => this.commit(expected, next));
-  },
-  commit(expected, next) {
-    validateReview(next);
-    if (next.version !== expected + 1)
-      throw new Error("Invalid next review version.");
-    const current = this.read();
-    if ((current?.version ?? -1) !== expected)
-      throw new Error("Stored review changed; reload and review again.");
-    if (current) {
-      // Archiving is best effort under a real total-storage budget. Copies are
-      // added newest first while they fit; the rest are dropped, and the live
-      // commit proceeds regardless. Refusing to record new work because older
-      // copies are large would be a worse lie than retaining fewer copies.
-      const history = readJSON(HISTORY_KEY) ?? [];
+  }
+  if (current) {
+    try {
       const kept = [];
       let used = 0;
-      for (const candidate of [
-        { version: current.version, at: new Date().toISOString(), body: current },
-        ...history,
-      ]) {
-        if (kept.length >= MAX_HISTORY) break;
-        const bytes = size(candidate);
-        if (bytes > MAX_COPY_BYTES || used + bytes > MAX_HISTORY_BYTES) continue;
-        kept.push(candidate);
-        used += bytes;
+      for (const copy of [{ version: current.version, at: new Date().toISOString(), body: current }, ...history()]) {
+        const bytes = size(copy);
+        if (kept.length < 20 && used + bytes <= MAX_HISTORY_BYTES) {
+          kept.push(copy);
+          used += bytes;
+        }
       }
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(kept));
+      while (kept.length) {
+        try {
+          localStorage.setItem(HISTORY_KEY, JSON.stringify(kept));
+          break;
+        } catch {
+          kept.pop();
+        }
+      }
+    } catch {
+      // An unreadable archive stays untouched; a successful live save stays saved.
     }
-    requireRoom(next);
-    localStorage.setItem(KEY, JSON.stringify(next));
-    return next;
+  }
+  return next;
+}
+export const reviewStore = {
+  raw() { return localStorage.getItem(KEY); },
+  read() {
+    const raw = this.raw();
+    if (raw === null) return null;
+    try { return validateReview(JSON.parse(raw)); }
+    catch { throw new Error("Saved review is unreadable. Download the raw record before explicitly discarding it; nothing was overwritten."); }
   },
-  backups() {
-    return (readJSON(HISTORY_KEY) ?? []).map((h) => h.version);
+  assertCurrent(expected) {
+    const current = this.read();
+    if (!same(current, expected))
+      throw new Error("Stored review changed; reload and review again. Your draft is retained.");
+    return current;
   },
-  recovery(version) {
-    const found = (readJSON(HISTORY_KEY) ?? []).find(
-      (h) => h.version === Number(version),
-    );
-    return found ? validateReview(found.body) : null;
-  },
-  // Replacement is explicit and never automatic: the caller must pass the
-  // current version, so a stale tab cannot overwrite newer work.
-  replace(expected, next) {
+  write(expected, next) {
     return withLock(() => {
-      validateReview(next);
-      if ((this.read()?.version ?? -1) !== expected)
-        throw new Error("Stored review changed; reload before replacing.");
-      return this.commit(expected, next);
+      const current = this.assertCurrent(expected);
+      if (!current || next.version !== current.version + 1)
+        throw new Error("Invalid next review version.");
+      return save(current, next);
     });
   },
-  clear() {
-    localStorage.removeItem(KEY);
+  replace(expected, next) {
+    return withLock(() => {
+      const current = this.assertCurrent(expected);
+      validateReview(next);
+      if (current && (!same(current.desk.dataset, next.desk.dataset) ||
+          current.desk.workspace.id !== next.desk.workspace.id ||
+          !same(current.journal, next.journal.slice(0, current.version)) ||
+          !same(current.desk.workspace.events, next.desk.workspace.events.slice(0, current.desk.workspace.events.length)) ||
+          (current.version === next.version && !same(current, next))))
+        throw new Error("Backup diverges from or predates this review. Export and explicitly reset before restoring a different history.");
+      return save(current, next);
+    });
+  },
+  clear(expectedRaw) {
+    return withLock(() => {
+      if (this.raw() !== expectedRaw)
+        throw new Error("Stored review changed; reload and download it again before reset.");
+      localStorage.removeItem(KEY);
+    });
+  },
+  backups() { return history().map((copy) => ({ version: copy.version, key: hash(copy.body) })); },
+  recovery(key) {
+    const found = history().find((copy) => hash(copy.body) === key);
+    return found ? validateReview(found.body) : null;
   },
 };

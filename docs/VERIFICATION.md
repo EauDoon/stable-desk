@@ -1,5 +1,22 @@
 # Stable Desk verification record
 
+## Integrity-fix verification, 02-10-2026
+
+This section supersedes contradictory v4 guarantees in the historical record below. The earlier adapter tests called the helper instead of the deployed wrapper; the earlier storage stress test never used its large capture or actual store. The old importer accepted v2 only, corrupt records could be initialized over, stale reset was unguarded, and the no-Web-Locks queue invoked a callback twice. These are reproduced defects, not evidence of hosted compromise.
+
+The current candidate passes **65 Node model/store/HTTP tests** and **72 Chromium browser tests** (36 desktop at 1440 x 1000, 36 mobile at 390 x 844), plus baseline validation, static build, byte-compared packaging and both build-smoke viewports. After the final review-model completeness guard, all 26 review-browser cases were rerun successfully. The review tests now use each project's actual viewport. New artifacts go to ignored `test-results/`; checked-in `artifacts/` remain historical. The new GitHub workflow publishes commit/tree and runtime receipts with its outputs; local results do not imply that hosted CI has already passed.
+
+- The actual store preserves malformed/foreign/empty live bytes, rejects stale resets and replacements, serializes the fallback exactly once, and retains the last durable state if quota prevents a live save. A 5 MiB simulated whole-origin UTF-16 quota includes an existing 256 Ki-character v2 record and near-20,000-character captures. It exercises the real store and archive eviction; it is not a universal browser quota guarantee. Recovery copies use content hashes so equal version numbers after reset remain distinguishable.
+- Exported v4 histories restore through preview, backup and confirmation in a fresh browser. Tests compare the complete restored object, including desk events, journal, checks, candidates and snapshots. Omitted journal-linked records, malformed/oversized files and divergent or older histories are rejected. An independent reviewer found the omitted-record gap during this pass; reciprocal completeness checks now cover it.
+- Two synthetic source changes exercise acceptance and rejection, then a real browser downloads the adopted v2 workspace and imports it through the desk UI. The changed claim, affected-assumption warning, stale decision and exact original decision events survive the handoff. This is workflow evidence, not two live public-source research cycles.
+- HTTP tests invoke the actual hosted export over a local HTTP server and the real local server process with a stub upstream. DELETE/TRACE, non-JSON, declared/streamed oversized bodies and caller URL parameters are refused before collection. JSON/no-store/nosniff headers survive both adapters. Concurrent/repeated checks respect a 30-second per-process cooldown; upstream redirects and oversized source responses remain unresolved.
+- Clean `npm ci --ignore-scripts` required synchronizing the previously stale lockfile with the already-declared Cheerio dependency. No direct dependency version was changed. Playwright defaults to its installed browser; no hard-coded Linux executable or disabled sandbox is added.
+
+Limits: Chromium on Windows was exercised locally; Linux acceptance awaits the exact-commit workflow. Safari, Firefox, screen readers, hosted deployment identity and deployment-wide traffic budgets remain unverified. Browser tests use deterministic synthetic captures; HTTP adapter tests stub only the external source. No license, account, database, hosting configuration, paid service or manual deployment was added. Without Web Locks, cross-tab exact simultaneous writes can race; the fallback serializes only one tab. Local unsigned records cannot authenticate a reviewer or prevent a user from rewriting all history.
+
+## Historical verification records
+
+
 October 2, 2026 update (v4): the source-review surface was verified after the hosted path was removed. Details in the v4 section below; the v2 core record that follows is unchanged.
 
 September 30, 2026. **v2.0 core release.** This records implementation verification; it is not financial assurance or a live source refresh. The public market seed is unchanged from the generic baseline. No real issuer relationship or commercial acceptance is inferred.

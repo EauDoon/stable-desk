@@ -2,7 +2,7 @@ export const RELATIONSHIPS = {
   demo: "No issuer relationship · demo",
 };
 export const EVIDENCE_TYPES = {
-  verified_fact: "Verified fact",
+  verified_fact: "Documented fact",
   company_claim: "Company claim",
   analyst_inference: "Analyst inference",
   synthetic_example: "Synthetic example",
