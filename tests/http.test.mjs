@@ -2,6 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer, request } from 'node:http';
 import { spawn } from 'node:child_process';
+import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { basename, join } from 'node:path';
 import check from '../api/check.js';
 import { createAPI } from '../server/api.mjs';
 import { collect } from '../server/collector.mjs';
@@ -48,17 +51,44 @@ test('actual hosted adapter checks original requests and propagates headers', as
   finally { globalThis.fetch = original; await new Promise(resolve => server.close(resolve)); }
 });
 
-test('actual local adapter has the same method, body and traffic bounds', async () => {
+test('actual local server contains files and guards collection in loopback and public preview modes', async () => {
   const preload = `globalThis.fetch = async () => new Response(${JSON.stringify(text)}, {headers:{'content-type':'text/plain'}});`;
-  const child = spawn(process.execPath, ['--import=data:text/javascript,' + encodeURIComponent(preload), 'scripts/server.mjs', '--port', '0'], { cwd: new URL('..', import.meta.url), stdio: ['ignore','pipe','pipe'] });
+  await mkdir(new URL('../test-results/', import.meta.url), { recursive: true });
+  const fixture = await mkdtemp(new URL('../test-results/server-', import.meta.url));
+  const outside = await mkdtemp(join(tmpdir(), 'stable-desk-server-'));
   try {
-    const port = await new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error('Server startup timeout')), 5000);
-      child.once('error', reject);
-      child.stdout.on('data', chunk => { const match = String(chunk).match(/127\.0\.0\.1:(\d+)/); if (match) { clearTimeout(timer); resolve(Number(match[1])); }});
-    });
-    await contract(port);
-  } finally { child.kill(); }
+    await mkdir(join(fixture, '.private'));
+    await writeFile(join(fixture, '.private', 'marker.json'), '{"synthetic":"hidden"}');
+    await writeFile(join(outside, 'marker.json'), '{"synthetic":"outside"}');
+    await symlink(outside, join(fixture, 'portal'), process.platform === 'win32' ? 'junction' : 'dir');
+    const path = `/test-results/${basename(fixture)}`;
+    for (const host of ['127.0.0.1', '0.0.0.0']) {
+      const child = spawn(process.execPath, ['--import=data:text/javascript,' + encodeURIComponent(preload), 'scripts/server.mjs', '--host', host, '--port', '0'], { cwd: new URL('..', import.meta.url), stdio: ['ignore','pipe','pipe'] });
+      try {
+        const port = await new Promise((resolve, reject) => {
+          const timer = setTimeout(() => reject(new Error('Server startup timeout')), 5000);
+          child.once('error', reject);
+          child.stdout.on('data', chunk => { const match = String(chunk).match(/http:\/\/[^:]+:(\d+)/); if (match) { clearTimeout(timer); resolve(Number(match[1])); }});
+        });
+        for (const target of [`${path}/portal/marker.json`, `${path}/%5C.private%5Cmarker.json`, `${path}/.private/marker.json`])
+          assert.equal((await call(port, 'GET', undefined, {}, target)).status, 404);
+        assert.equal((await call(port, 'GET', undefined, { Host: 'preview.example' }, '/package.json')).status, host === '127.0.0.1' ? 403 : 200);
+        if (host === '127.0.0.1')
+          assert.equal((await call(port, 'GET', undefined, { Host: `localhost:${port + 1}` }, '/package.json')).status, 403);
+        assert.equal((await call(port, 'HEAD', undefined, { Host: `localhost:${port}` }, '/package.json')).body, '');
+        for (const method of ['GET', 'POST'])
+          assert.equal((await call(port, method, undefined, { Origin: 'https://outside.example' })).status, 403);
+        assert.equal((await call(port, 'GET', undefined, { 'Sec-Fetch-Site': 'cross-site' })).status, 403);
+        await contract(port);
+        assert.equal((await call(port, 'GET', undefined, { Origin: `http://127.0.0.1:${port}` })).status, 429);
+        if (host === '0.0.0.0')
+          assert.equal((await call(port, 'GET', undefined, { Host: 'preview.example', Origin: 'https://preview.example' })).status, 429);
+      } finally { child.kill(); }
+    }
+  } finally {
+    await rm(fixture, { recursive: true, force: true });
+    await rm(outside, { recursive: true, force: true });
+  }
 });
 
 test('in-flight collection and cooldown do not permit duplicate upstream calls', async () => {

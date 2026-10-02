@@ -40,6 +40,30 @@ test("review opens with no account, no sign-in and no hosted state", async () =>
   ).toBeVisible();
 });
 
+test("review file inputs are disabled until the selected backup finishes reading", async () => {
+  await page.goto("/review.html");
+  await page.evaluate(() => {
+    const read = File.prototype.text;
+    File.prototype.text = function () {
+      return new Promise((resolve) => { window.finishImport = async () => resolve(await read.call(this)); });
+    };
+  });
+  const desk = await page.evaluate(async () => {
+    const { prepareDataset, createWorkspace, exportV2 } = await import("/src/workspace.js");
+    const seed = prepareDataset(await (await fetch("/data/baseline.json")).json());
+    return exportV2(seed, createWorkspace(seed));
+  });
+  await page.locator("#import-file").setInputFiles({
+    name: "desk.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(desk)),
+  });
+  await expect(page.locator("#import-file")).toBeDisabled();
+  await expect(page.locator("#restore-file")).toBeDisabled();
+  await page.evaluate(() => window.finishImport());
+  await expect(page.getByRole("heading", { name: "Import preview" })).toBeVisible();
+  await expect(page.locator("#import-file")).toBeEnabled();
+  await expect(page.locator("#restore-file")).toBeEnabled();
+});
+
 test("the desk links into review and review links back", async () => {
   await page.goto("/");
   await page.getByRole("link", { name: "Source review →" }).click();

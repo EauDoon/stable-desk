@@ -582,6 +582,53 @@ test("validated import rejects tampered and divergent histories without replacin
   );
 });
 
+test("a delayed import cannot replace a newer file, rejection or recovery choice", async ({ page }) => {
+  const payload = await stored(page);
+  await page.getByRole("button", { name: "Workspace backup and import", exact: true }).click();
+  await page.evaluate(() => {
+    const read = File.prototype.text;
+    File.prototype.text = function () {
+      if (this.name !== "slow.json") return read.call(this);
+      return new Promise((resolve) => { window.finishImport = async () => resolve(await read.call(this)); });
+    };
+  });
+  const file = (name, value) => ({ name, mimeType: "application/json", buffer: Buffer.from(JSON.stringify(value)) });
+  for (const newest of ["valid", "invalid"]) {
+    await page.locator("#import-file").setInputFiles(file("slow.json", {
+      ...payload, workspace: { ...payload.workspace, id: "WS-SLOW" },
+    }));
+    await page.locator("#import-file").setInputFiles(file("latest.json", newest === "valid" ? {
+      ...payload, workspace: { ...payload.workspace, id: "WS-LATEST" },
+    } : {}));
+    if (newest === "valid") await expect(page.locator("[data-apply-import]")).toBeVisible();
+    else await expect(page.locator("#import-error")).toContainText("Import rejected");
+    await page.evaluate(() => window.finishImport());
+    if (newest === "valid") {
+      await page.locator("[data-apply-import]").click();
+      await expect(page.locator("#utility-dialog")).not.toBeVisible();
+      expect((await stored(page)).workspace.id).toBe("WS-LATEST");
+      await page.getByRole("button", { name: "Workspace backup and import", exact: true }).click();
+    } else {
+      await expect(page.locator("[data-apply-import]")).toHaveCount(0);
+      await expect(page.locator("#import-error")).toContainText("Import rejected");
+    }
+  }
+  await page.locator("#import-file").setInputFiles(file("slow.json", {
+    ...payload, workspace: { ...payload.workspace, id: "WS-SLOW" },
+  }));
+  await page.locator("[data-backup]").first().click();
+  await page.evaluate(() => window.finishImport());
+  await page.locator("[data-apply-import]").click();
+  await expect(page.locator("#utility-dialog")).not.toBeVisible();
+  expect((await stored(page)).workspace.id).toBe(payload.workspace.id);
+  await page.getByRole("button", { name: "Workspace backup and import", exact: true }).click();
+  await page.locator("#import-file").setInputFiles(file("slow.json", payload));
+  await page.keyboard.press("Escape");
+  await page.evaluate(() => window.finishImport());
+  await page.getByRole("button", { name: "Workspace backup and import", exact: true }).click();
+  await expect(page.locator("[data-apply-import]")).toHaveCount(0);
+});
+
 test("generic v1 migration preserves exact notes, reviews and original activity; reset archives v2", async ({
   page,
 }) => {
