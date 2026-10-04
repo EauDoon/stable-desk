@@ -1,6 +1,15 @@
 # Stable Desk deployment
 
-**October 2 update (v4):** the maintainer reports v2 published at `https://stable-desk.vercel.app` from `e3207a71eb18da35bed066cbf9016e4f402a6df7`. The September 30 blocker below is historical. v4 removes the hosted dependency entirely: no Supabase project, credentials, environment variables or database are required. The only server-side artifact is `api/check.js`, a stateless function that fetches one fixed public URL. See [the v4 review contract](V4_REVIEW.md). The `v3-pilot` branch retains the hosted design as an unmerged record; it must not replace production without approval.
+**October 4 update (v4.0 live):** `https://stable-desk.vercel.app` now serves v4.0 from `780d4070c331` (one commit on top of v2's history). Direct requests from this execution environment confirm:
+
+- `/` returns 200 and the research desk title.
+- `/review.html` returns 200 and the source-review title.
+- `POST /api/check` returns 200 with a real fetch of `https://docs.stripe.com/payments/stablecoin-payments` and the JSON `{ source, maxEvents, capture, checkedAt }`.
+- `POST /api/check?url=...` returns 400 `{"error":"This endpoint fetches one fixed source only."}`, so a caller cannot turn the function into a proxy.
+- `POST /api/check` with a non-JSON body returns 415 `{"error":"JSON request required."}`.
+- `/data/baseline.json` is unchanged from v2 (`2026-09-30.generic.2`).
+
+The earlier September 30 blocker remains historically accurate: the deployment connector was unavailable from this environment, and the v2 publish was reported by the maintainer but not observed here. v4 inherits that published alias through the existing Git integration; the new commit is live without any environment changes.
 
 **Current verification limit (02-10-2026):** No v4 deployment or live source identity was verified in the integrity-fix pass. Local checks do not establish hosted acceptance. The adapter now preserves original HTTP method, headers and body bounds, with one upstream check per 30 seconds per warm process. Multiple instances and cold starts have separate limits; an operator must select and verify an edge traffic budget before public-scale rollout. No hosting settings, access protections or manual deployment were changed.
 
