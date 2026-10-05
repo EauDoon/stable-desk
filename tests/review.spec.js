@@ -145,6 +145,49 @@ test("an unchanged claim is refused by the model, not silently adopted", async (
   await expect(page.locator(".footer")).toContainText("Version 2");
 });
 
+test("adopted source review copies into the desk only after preview and confirmation", async () => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "Where could STABLE fit?", exact: true })).toBeVisible();
+  const original = await page.evaluate(() => localStorage.getItem("stable-desk:v2"));
+  await page.goto("/review.html");
+  await page.getByRole("button", { name: "Import local v2 export" }).click();
+  await page.getByRole("button", { name: "Download original v2 backup" }).click();
+  await page.getByRole("button", { name: "Confirm import", exact: true }).click();
+  for (const version of [1, 2]) {
+    await page.getByRole("button", { name: "Check source now" }).click();
+    await expect(page.locator(".footer")).toContainText(`Version ${version}`);
+  }
+  await page.locator(".review-candidate").click();
+  const claim = "Stripe documents revised merchant eligibility in this synthetic source-review test.";
+  await page.getByLabel("Reviewed replacement claim").fill(claim);
+  await page.getByLabel("Review rationale").fill("Reviewed the changed eligibility scope; no commercial acceptance inferred.");
+  await page.getByRole("button", { name: "Accept reviewed revision" }).click();
+  await expect(page.locator(".footer")).toContainText("Version 3");
+  await page.getByRole("button", { name: "Check source now" }).click();
+  await expect(page.locator(".footer")).toContainText("Version 4");
+  const reviewRaw = await page.evaluate(() => localStorage.getItem("stable-desk:review"));
+  const review = JSON.parse(reviewRaw);
+  expect(review.candidates.filter(c => c.status === "pending")).toHaveLength(1);
+  await page.getByRole("link", { name: "Research desk", exact: true }).click();
+  await page.getByRole("button", { name: "Workspace backup and import", exact: true }).click();
+  await page.getByRole("button", { name: "Preview adopted source review" }).click();
+  await expect(page.locator("#import-preview")).toContainText("Source review snapshot, version 4");
+  await expect(page.locator("#import-preview")).toContainText("Pending candidates stay in Source review");
+  expect(await page.evaluate(() => localStorage.getItem("stable-desk:v2"))).toBe(original);
+  await page.getByRole("button", { name: "Use in this browser", exact: true }).click();
+  await expect(page.locator("#utility-dialog")).not.toBeVisible();
+  const desk = await page.evaluate(() => JSON.parse(localStorage.getItem("stable-desk:v2")));
+  expect(desk.workspace.events).toEqual(review.desk.workspace.events);
+  expect(await page.evaluate(() => localStorage.getItem("stable-desk:review"))).toBe(reviewRaw);
+  const archives = await page.evaluate(() => Object.keys(localStorage).filter(k => k.startsWith("stable-desk:archive:")).map(k => localStorage.getItem(k)));
+  expect(archives).toContain(original);
+  await page.getByRole("link", { name: "Evidence", exact: true }).click();
+  await expect(page.locator("#evidence-results")).toContainText(claim);
+  await expect(page.locator('.review-queue [data-queue-id="A-P-G01-2"]')).toContainText("Needs assumption review");
+  await page.reload();
+  await expect(page.locator("#evidence-results")).toContainText(claim);
+});
+
 test("work survives a reload and can be exported", async () => {
   await page.goto("/review.html");
   await page

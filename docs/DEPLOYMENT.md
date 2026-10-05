@@ -1,5 +1,7 @@
 # Stable Desk deployment
 
+**06-10-2026, local v4.1 candidate:** the review queue and direct adopted-workspace handoff have not been pushed or deployed. The records below describe earlier releases and do not establish v4.1 hosted acceptance. No hosting configuration or environment variable change is required by this iteration.
+
 **October 4 update (v4.0 live):** `https://stable-desk.vercel.app` now serves v4.0 from `780d4070c331` (one commit on top of v2's history). Direct requests from this execution environment confirm:
 
 - `/` returns 200 and the research desk title.

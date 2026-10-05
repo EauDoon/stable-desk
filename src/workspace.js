@@ -723,6 +723,87 @@ export function sourceFreshness(
     actor: latest?.actor ?? "Baseline",
   };
 }
+export function reviewQueue(
+  seed,
+  state,
+  today = new Date().toISOString().slice(0, 10),
+) {
+  assert(validDate(today), "Invalid review queue date.");
+  const items = [];
+  const add = (kind, id, title, label, reason, dueAt, rank) =>
+    items.push({ kind, id, title, label, reason, dueAt, rank });
+  for (const [id, source] of Object.entries(state.sources)) {
+    const status = sourceFreshness(seed, state, id, today);
+    const unresolved = status.label === "Coverage unresolved";
+    if (unresolved || status.dueAt <= today)
+      add(
+        "source",
+        id,
+        source.value.title,
+        unresolved || status.dueAt !== today ? status.label : "Check due today",
+        unresolved
+          ? "The latest manual source check was unreachable. Resolve coverage before relying on this source."
+          : `Source check ${status.dueAt === today ? "is due today" : `was due ${status.dueAt}`}. Checking a source does not review its assumptions or decisions.`,
+        status.dueAt,
+        unresolved ? 0 : 2,
+      );
+  }
+  for (const [id, assumption] of Object.entries(state.assumptions)) {
+    const status = assumptionStatus(state, id, today);
+    const dueAt = assumption.review?.reviewBy ?? null;
+    if (status.tone === "warn" || dueAt === today)
+      add(
+        "assumption",
+        id,
+        assumption.value.statement,
+        status.tone === "warn" ? status.label : "Review due today",
+        status.tone === "warn"
+          ? status.reason
+          : "This assumption is due for review today against its current dependencies.",
+        dueAt,
+        status.label === "Blocked by evidence"
+          ? 0
+          : status.label === "Needs assumption review"
+            ? 1
+            : 2,
+      );
+  }
+  for (const [id, decision] of Object.entries(state.decisions)) {
+    const status = decisionStatus(seed, state, id, today);
+    const independent = [
+      "Decision stale",
+      "Decision review overdue",
+      "Legacy decision retained",
+    ].includes(status.label);
+    if (
+      independent ||
+      (decision.value.basis && decision.value.reviewBy === today)
+    ) {
+      const priorityId = seed.decisions.find((d) => d.id === id).priorityId;
+      add(
+        "decision",
+        id,
+        seed.priorities.find((p) => p.id === priorityId).title,
+        independent ? status.label : "Decision review due today",
+        independent
+          ? status.reason
+          : "This assessment is due for review today. Assumption and source deadlines are separate.",
+        decision.value.reviewBy,
+        independent && status.label !== "Decision review overdue" ? 1 : 2,
+      );
+    }
+  }
+  // Coverage blockers first, then changed bases, then deadlines from oldest to newest.
+  return items
+    .sort(
+      (a, b) =>
+        a.rank - b.rank ||
+        (a.rank === 2 ? a.dueAt.localeCompare(b.dueAt) : 0) ||
+        a.kind.localeCompare(b.kind) ||
+        a.id.localeCompare(b.id),
+    )
+    .map(({ rank, ...item }) => item);
+}
 export function materializeDataset(seed, ws) {
   const state = activeState(seed, ws);
   const data = copy(seed);

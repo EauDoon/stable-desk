@@ -21,6 +21,8 @@ The default local desk retains v2's static ES-module architecture: semantic HTML
 
 The build validates the seed and replay, then copies app/data/docs to `dist/`. Packaging compares every ZIP member with the build and its repository source. The dev server is a preview utility, not a production service.
 
+v4.1 keeps the same dependencies and storage formats. `reviewQueue` in `src/workspace.js` derives active-profile work from the existing freshness, assumption and decision rules. It orders coverage/evidence blockers, changed bases, then chronological deadlines, with stable kind/ID tie breaks. It includes work due today in UTC and does not duplicate decision warnings inherited only from assumptions. The Evidence view filters these rows and routes to the existing manual editors; nothing is collected, scored or endorsed by the queue.
+
 ## Data and lineage
 
 | Record       | Meaning                                                                                                                                                                                                   |
@@ -49,7 +51,9 @@ Fingerprints use deterministic FNV change detection. They are consistency aids, 
 
 ## Persistence and compatibility
 
-`stable-desk:v2` stores a complete validated export in one localStorage write. `stable-desk:drafts-v2` separately retains interrupted form values, operation ID and editing basis. Drafts are not committed history or part of workspace exports. A stale draft needs explicit rebase and another preview.
+`stable-desk:v2` stores a complete validated export in one localStorage write. `stable-desk:drafts-v2` separately retains interrupted form values, operation ID and editing basis. Drafts are not committed history or part of workspace exports. A stale draft needs explicit rebase and another preview. Rebase preserves its original workspace/profile, reads that profile's latest revisions, and refuses a replacement workspace before changing the editing context.
+
+The direct source-review handoff reads and validates the complete `stable-desk:review` record through `reviewStore.read()`, then offers only its adopted `desk` snapshot to the existing import preview. Choosing it invalidates older asynchronous file reads and clears earlier candidates before validation. Import previews retain their desk workspace ID/head; confirmation rechecks those inside the write lock as well as the saved-disk conflict guard. Same-tab edits cannot make an older preview safe to apply. Source review remains untouched, and its later edits require a new explicit import.
 
 Cooperating tabs serialize writes through Web Locks where available and compare saved workspace identity/head before committing. Storage events warn other tabs; conflicts retain the draft. Without Web Locks, conflict checks are best effort and an exact simultaneous race is possible. Cross-device collaboration and hostile/non-cooperating writers are unsupported.
 
