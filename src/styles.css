@@ -2525,3 +2525,86 @@ input[type="file"] {
 .evidence-workbench .search-label input {
   padding-left: 38px;
 }
+
+.review-queue {
+  margin-top: 30px;
+  border-block: 1px solid var(--line);
+  padding-block: 24px;
+}
+.queue-heading,
+.queue-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.queue-heading > div,
+.queue-row > div {
+  min-width: 0;
+}
+.queue-heading p,
+.queue-row p {
+  max-width: 75ch;
+  line-height: 1.65;
+  margin-top: 8px;
+}
+.queue-heading label {
+  display: grid;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.queue-heading select {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--white);
+}
+#queue-count {
+  margin-top: 18px;
+}
+.queue-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.queue-row {
+  border-top: 1px solid var(--line);
+  margin-top: 16px;
+  padding-top: 16px;
+  overflow-wrap: anywhere;
+}
+.queue-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: center;
+  font-size: 12px;
+}
+.queue-meta > span:first-child {
+  text-transform: capitalize;
+}
+.queue-row h3 {
+  font-size: 15px;
+  line-height: 1.5;
+  margin-top: 10px;
+}
+.queue-row .button {
+  flex-shrink: 0;
+  min-height: 44px;
+}
+.queue-empty {
+  margin-top: 14px;
+  line-height: 1.65;
+}
+@media (max-width: 620px) {
+  .queue-heading,
+  .queue-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+  .queue-row .button {
+    align-self: flex-start;
+  }
+}

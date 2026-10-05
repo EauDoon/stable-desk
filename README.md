@@ -1,6 +1,10 @@
 # Stable Desk
 
-**v4.0** is a public, self-contained stablecoin research desk. It adds bounded, human-reviewed source checking to the v2 research loop and needs **no account, no database and no credentials** to deploy or use. It starts with **Generic Stablecoin (STABLE)**, a fictional placeholder with no real issuer, deployed token, reserves, listings or partners. Ten organizations and ten primary public sources provide market context; three synthetic investigations demonstrate the workflow. They are not commercial leads for a real asset.
+**v4.1** is a public, self-contained stablecoin research desk. It adds an actionable review queue and a direct browser-local handoff from source review to the research desk. It needs **no account, no database and no credentials** to deploy or use. It starts with **Generic Stablecoin (STABLE)**, a fictional placeholder with no real issuer, deployed token, reserves, listings or partners. Ten organizations and ten primary public sources provide market context; three synthetic investigations demonstrate the workflow. They are not commercial leads for a real asset.
+
+In **Evidence**, filter the review queue by sources, assumptions or decisions. Blocked evidence and unresolved coverage come first, followed by changed review bases and the oldest deadlines, including work due today (UTC). Each row opens the relevant editor. A source check never clears an assumption or decision review, and an empty queue does not establish commercial readiness.
+
+After adopting evidence in **Source review**, open **Research desk > Workspace & data > Preview adopted source review**. Inspect the snapshot, then choose **Use in this browser**. Pending candidates stay in Source review. Both stores remain separate, later changes require another import, and exports remain the backup and cross-device path. Stale previews and cross-profile draft rebases cannot silently replace newer work.
 
 The public baseline is dated **September 30, 2026**. Real product names, source titles, URLs and historical dates remain original. Sources about USDC, PYUSD or Open USD never prove STABLE acceptance. Token supply and aggregate transfers do not establish payment adoption.
 
@@ -25,11 +29,11 @@ The working release includes:
 
 A configured real research subject remains unverified. Intended markets, currency or networks establish no issuance, acceptance or commercial relationship. All seeded opportunity fit stays synthetic. New profiles start from shared public baseline context without inheriting another profile's notes, checks or local reviews.
 
-| Status on 02-10-2026 | Evidence |
+| Local candidate status on 06-10-2026 | Evidence |
 | --- | --- |
-| Current source | v4 browser-local review, explicit restore and adopted-workspace export to the v2 desk |
+| Current source | v4.1 review queue, explicit adopted-workspace handoff, and guarded draft/import recovery; v2/v4 storage formats retained |
 | Deterministic validation | Model/store/HTTP adapter and Chromium desktop/mobile checks; see [verification](docs/VERIFICATION.md) |
-| Hosted source identity | No independently verified deployment SHA; historical maintainer-reported v2 deployment is recorded in [deployment notes](docs/DEPLOYMENT.md) |
+| Hosted source identity | v4.1 has not been published or deployed. Historical deployment observations are recorded separately in [deployment notes](docs/DEPLOYMENT.md) |
 | Storage | Manual exports are backups. Recovery copies may be evicted. No cross-device synchronization. |
 | Reuse terms | No license selected; no reuse permission is inferred from public visibility. |
 

@@ -13,6 +13,7 @@ import {
   priorityStatus,
   decisionStatus,
   sourceFreshness,
+  reviewQueue,
   previewEvidence,
   materializeDataset,
   migrateLegacy,
@@ -628,4 +629,182 @@ test("an assessment deadline is enforced separately from its still-valid assumpt
     decisionStatus(seed, s, "D-G01", "2026-09-30").label,
     "Decision review overdue",
   );
+});
+
+test("review queue includes due-today work at the UTC boundary without duplicating inherited decision warnings", () => {
+  let ws = fresh();
+  ws = apply(
+    ws,
+    command(ws, "decision_saved", "D-G01", {
+      status: "Investigating",
+      owner: "Researcher",
+      reviewBy: "2026-10-30",
+      notes: "Review this assessment when its own deadline arrives.",
+    }),
+  );
+  const state = activeState(seed, ws);
+  const before = structuredClone(state);
+  assert.deepEqual(reviewQueue(seed, state, "2026-10-29"), []);
+  const due = reviewQueue(seed, state, "2026-10-30");
+  assert.equal(due.length, 17);
+  assert.deepEqual(due.find((item) => item.id === "D-G01"), {
+    kind: "decision",
+    id: "D-G01",
+    title: seed.priorities[0].title,
+    label: "Decision review due today",
+    reason:
+      "This assessment is due for review today. Assumption and source deadlines are separate.",
+    dueAt: "2026-10-30",
+  });
+  assert.equal(due.find((item) => item.id === "S-G02").label, "Check due today");
+  assert.equal(
+    due.find((item) => item.id === "A-P-G01-2").label,
+    "Review due today",
+  );
+  assert.ok(due.every((item) => item.dueAt === "2026-10-30"));
+  const overdue = reviewQueue(seed, state, "2026-10-31");
+  assert.equal(overdue.length, 17);
+  assert.equal(
+    overdue.find((item) => item.id === "D-G01").label,
+    "Decision review overdue",
+  );
+  assert.equal(overdue.filter((item) => item.kind === "decision").length, 1);
+  assert.deepEqual(state, before);
+  assert.throws(() => reviewQueue(seed, state, "2026-02-30"), /date/i);
+});
+
+test("review queue orders blocked coverage, changed bases, then the oldest deadlines with stable ties", () => {
+  let ws = fresh();
+  const at = "2026-09-30T12:00:00.000Z";
+  for (const [id, reviewBy, assumptionIds] of [
+    ["D-G01", "2026-10-30", []],
+    ["D-G02", "2026-10-03", ["A-P-G02-1"]],
+  ]) {
+    ws = apply(
+      ws,
+      command(ws, "decision_saved", id, {
+        status: "Investigating",
+        owner: "Researcher",
+        reviewBy,
+        notes: "The assessment and selected assumptions have explicit deadlines.",
+      }, { at, assumptionIds }),
+    );
+  }
+  ws = apply(
+    ws,
+    command(ws, "evidence_revision", "E-G02", {
+      ...edited(ws),
+      status: "unknown",
+    }, { at }),
+  );
+  ws = apply(
+    ws,
+    command(ws, "evidence_revision", "E-G07", edited(ws, "E-G07"), { at }),
+  );
+  for (const [id, outcome, reviewDays] of [
+    ["S-G01", "unreachable", 30],
+    ["S-G02", "unchanged", 1],
+    ["S-G03", "unchanged", 5],
+  ]) {
+    ws = apply(
+      ws,
+      command(ws, "source_check", id, {
+        sourceId: id,
+        outcome,
+        reviewDays,
+        checkedAt: "2026-09-30",
+        note: "Manual source observation, separate from assumption endorsement.",
+        evidenceRevisionIds: [],
+      }, { at }),
+    );
+  }
+  const queue = reviewQueue(seed, activeState(seed, ws), "2026-10-05");
+  assert.deepEqual(queue.map((item) => [item.id, item.label]), [
+    ["A-P-G01-2", "Blocked by evidence"],
+    ["S-G01", "Coverage unresolved"],
+    ["A-P-G03-2", "Needs assumption review"],
+    ["D-G01", "Decision stale"],
+    ["S-G02", "Check overdue"],
+    ["A-P-G02-1", "Review overdue"],
+    ["D-G02", "Decision review overdue"],
+    ["S-G03", "Check due today"],
+  ]);
+  assert.equal(queue[0].title, seed.assumptions[1].statement);
+  assert.equal(queue[1].title, seed.sources[0].title);
+  assert.equal(queue[1].dueAt, "2026-10-30");
+  assert.deepEqual(
+    queue.slice(4).map((item) => item.dueAt),
+    ["2026-10-01", "2026-10-03", "2026-10-03", "2026-10-05"],
+  );
+});
+
+test("review queue preserves assumption and decision work after source checks and isolates profiles", () => {
+  let ws = fresh();
+  ws = apply(
+    ws,
+    command(ws, "decision_saved", "D-G01", {
+      status: "Investigating",
+      owner: "Researcher",
+      reviewBy: "2026-10-30",
+      notes: "Keep this recorded basis when its source is checked again.",
+    }),
+  );
+  ws = apply(ws, command(ws, "evidence_revision", "E-G02", edited(ws)));
+  const originalQueue = reviewQueue(seed, activeState(seed, ws), "2026-10-05");
+  assert.deepEqual(originalQueue.map((item) => item.id), ["A-P-G01-2", "D-G01"]);
+  ws = apply(
+    ws,
+    command(ws, "source_check", "S-G02", {
+      sourceId: "S-G02",
+      checkedAt: "2026-09-30",
+      reviewDays: 30,
+      outcome: "unchanged",
+      evidenceRevisionIds: [],
+      note: "An unchanged source does not endorse a changed assumption or decision.",
+    }),
+  );
+  assert.deepEqual(
+    reviewQueue(seed, activeState(seed, ws), "2026-10-05"),
+    originalQueue,
+  );
+  const originalId = ws.activeProfileId;
+  const profile = {
+    ...activeState(seed, ws).profile,
+    id: uid("PROFILE"),
+    name: "Separate research",
+    ticker: "SEPARATE",
+  };
+  ws = apply(
+    ws,
+    command(ws, "profile_created", profile.id, profile, {
+      profileId: profile.id,
+    }),
+  );
+  ws.activeProfileId = profile.id;
+  const otherQueue = reviewQueue(seed, activeState(seed, ws), "2026-10-05");
+  assert.equal(otherQueue.length, seed.assumptions.length);
+  assert.ok(
+    otherQueue.every((item) => item.kind === "assumption" && item.dueAt === null),
+  );
+  ws.activeProfileId = originalId;
+  assert.deepEqual(
+    reviewQueue(seed, activeState(seed, ws), "2026-10-05"),
+    originalQueue,
+  );
+});
+
+test("review queue retains an independent legacy decision without claiming a new review basis", () => {
+  const legacy = blankWorkspace();
+  legacy.decisions["D-G01"] = {
+    status: "Investigating",
+    owner: "Researcher",
+    reviewBy: "2026-10-30",
+    notes: "Preserved legacy assessment.",
+  };
+  const state = activeState(seed, migrateLegacy(seed, legacy));
+  const queue = reviewQueue(seed, state, "2026-10-05");
+  assert.equal(queue.length, 1);
+  assert.equal(queue[0].label, "Legacy decision retained");
+  assert.equal(queue[0].dueAt, "2026-10-30");
+  assert.equal(state.decisions["D-G01"].value.basis, null);
 });

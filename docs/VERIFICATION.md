@@ -1,5 +1,17 @@
 # Stable Desk verification record
 
+## Local v4.1 candidate, 06-10-2026
+
+The current v4 app was evolved into a local v4.1 candidate. Its Evidence review queue projects active-profile work from existing source, assumption and decision rules, including UTC deadlines due today. Actions open the existing manual forms without selecting or endorsing assumptions. Imported datasets without a corresponding decision route to dependency inspection.
+
+The browser-local source-review handoff validates the complete review record, previews only its adopted desk snapshot, and requires confirmation before replacement. Browser regressions verify that pending candidates remain separate, failed local selections clear earlier previews, delayed files cannot override newer choices, and same-tab edits invalidate an older preview. Draft-rebase regressions retain the original profile and reject replacement workspaces without losing the draft.
+
+Local validation passed: **69 Node model/store/HTTP tests**, **92 Chromium browser cases** (46 desktop and 46 mobile), baseline validation, static build and both build-smoke viewports. An independent read-only code review found the missing-decision edge case; its repair and regression passed in the final browser run. Dependencies and storage schemas are unchanged.
+
+Actual rendered queue screenshots were inspected at 390, 768 and 1440 CSS pixels with a synthetic 30-10-2026 clock to expose due work. All three had no horizontal overflow or JavaScript errors, and queue action buttons were at least 44 pixels high with reduced motion enabled. Import previews were inspected at 390 and 1440 pixels. Browser tests cover keyboard activation, exact assumption focus, filters and empty states. Reports and screenshots are under ignored `test-results/artifacts/`.
+
+This is local Windows Chromium evidence. It does not verify live research, Safari, Firefox, screen readers, remote CI or hosted acceptance. No v4.1 push, merge, release or deployment occurred. Existing unsigned-history and cross-tab fallback limitations below remain applicable.
+
 ## Import and preview-server follow-up, 02-10-2026
 
 The research desk now discards delayed file reads after another file or recovery copy is selected, or the import dialog closes. Previously a slow first file could replace a newer selected workspace. Review import controls now disable during the existing operation lock instead of silently ignoring a second selection. Actual desktop/mobile browser regressions cover both paths, including invalid newer files and recovery choices.

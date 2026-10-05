@@ -16,6 +16,10 @@ const seed = prepareDataset(
 );
 const stored = (page) =>
   page.evaluate(() => JSON.parse(localStorage.getItem("stable-desk:v2")));
+const saveReview = (page, payload) => page.evaluate(async (desk) => {
+  const { initialReview } = await import("/src/review-model.js");
+  localStorage.setItem("stable-desk:review", JSON.stringify(initialReview(null, desk)));
+}, payload);
 const ledger = (page) => page.locator("#evidence-results > .evidence-ledger");
 const dialog = (page) => page.locator("#detail-dialog");
 const overflow = async (page) => {
@@ -541,6 +545,78 @@ test("two-tab conflict retains draft and explicit rebase previews the actual lat
   await second.close();
 });
 
+test("draft rebase keeps its original profile after another tab creates a profile", async ({ page, context }) => {
+  const originalProfile = (await stored(page)).workspace.activeProfileId;
+  const second = await context.newPage();
+  await second.goto("/");
+  await edit(second, "E-G03");
+  const claim = second.getByLabel("Claim statement", { exact: true });
+  const revised = (await claim.inputValue()) + " Original profile draft.";
+  await claim.fill(revised);
+  await reason(second, "Keep this revision in the original research profile.");
+
+  await page.locator(".profile-switch").click();
+  await page.getByRole("button", { name: "Create independent profile", exact: true }).click();
+  await page.getByLabel("Profile name", { exact: true }).fill("Separate Research Profile");
+  await page.getByLabel("Placeholder ticker", { exact: true }).fill("DEMO");
+  await reason(page);
+  await page.getByRole("button", { name: "Create independent profile", exact: true }).click();
+  await expect(dialog(page)).not.toBeVisible();
+  await edit(page, "E-G03");
+  await page.getByLabel("Claim statement", { exact: true }).fill("Separate profile claim must remain unchanged by another profile's draft.");
+  await reason(page);
+  await preview(page);
+  await commit(page);
+  const before = await stored(page);
+  const otherProfile = before.workspace.activeProfileId;
+
+  await preview(second);
+  await second.getByRole("button", { name: "Commit reviewed revision", exact: true }).click();
+  await expect(second.locator(".workflow-error")).toContainText("changed in another tab");
+  await second.getByRole("button", { name: "Use latest basis and preview again", exact: true }).click();
+  await expect(claim).toHaveValue(revised);
+  await preview(second);
+  await expect(second.locator("#revision-preview")).not.toContainText("Separate profile claim");
+  await commit(second);
+
+  const after = await stored(second);
+  const profiles = projectWorkspace(after.dataset, after.workspace).profiles;
+  expect(after.workspace.events.at(-1).profileId).toBe(originalProfile);
+  expect(profiles[originalProfile].evidence["E-G03"].value.statement).toBe(revised);
+  expect(profiles[otherProfile]).toEqual(projectWorkspace(before.dataset, before.workspace).profiles[otherProfile]);
+  await second.close();
+});
+
+test("draft rebase refuses a replacement workspace and retains the original draft", async ({ page, context }) => {
+  const original = await stored(page);
+  const second = await context.newPage();
+  await second.goto("/");
+  await edit(second, "E-G03");
+  const claim = second.getByLabel("Claim statement", { exact: true });
+  const revised = (await claim.inputValue()) + " Preserve this original workspace draft.";
+  await claim.fill(revised);
+  await reason(second);
+  await page.getByRole("button", { name: "Workspace backup and import", exact: true }).click();
+  await page.getByRole("button", { name: "Reset local workspace", exact: true }).click();
+  await expect(page.locator("#utility-dialog")).not.toBeVisible();
+  const replacement = await stored(page);
+  expect(replacement.workspace.id).not.toBe(original.workspace.id);
+
+  await preview(second);
+  await second.getByRole("button", { name: "Commit reviewed revision", exact: true }).click();
+  await expect(second.locator(".workflow-error")).toContainText("changed in another tab");
+  const draftBefore = await second.evaluate(() => localStorage.getItem("stable-desk:drafts-v2"));
+  // Repeated attempts must not adopt the replacement as the draft's new origin.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    await second.getByRole("button", { name: "Use latest basis and preview again", exact: true }).click();
+    await expect(second.locator("#notice")).toContainText("different workspace");
+    await expect(claim).toHaveValue(revised);
+    expect(await stored(second)).toEqual(replacement);
+    expect(await second.evaluate(() => localStorage.getItem("stable-desk:drafts-v2"))).toBe(draftBefore);
+  }
+  await second.close();
+});
+
 test("validated import rejects tampered and divergent histories without replacing saved work", async ({
   page,
 }) => {
@@ -627,6 +703,140 @@ test("a delayed import cannot replace a newer file, rejection or recovery choice
   await page.evaluate(() => window.finishImport());
   await page.getByRole("button", { name: "Workspace backup and import", exact: true }).click();
   await expect(page.locator("[data-apply-import]")).toHaveCount(0);
+});
+
+test("review queue separates due work and opens the exact manual review", async ({ page }, info) => {
+  await page.clock.setFixedTime(new Date("2026-10-30T12:00:00Z"));
+  await evidence(page);
+  const queue = page.locator(".review-queue");
+  await expect(queue.getByRole("heading", { name: "Review queue", exact: true })).toBeVisible();
+  await expect(queue.locator('[data-queue-kind="source"]')).toHaveCount(10);
+  const assumptions = await queue.locator('[data-queue-kind="assumption"]').count();
+  expect(assumptions).toBeGreaterThan(0);
+  await page.locator("#queue-filter").selectOption("source");
+  await expect(queue.locator(".queue-row")).toHaveCount(10);
+  await expect(queue).toContainText("Check due today");
+  const sourceRow = queue.locator('[data-queue-id="S-G01"]');
+  await sourceRow.getByRole("button", { name: "Record check" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("#source-check-form")).toHaveAttribute("data-record", "S-G01");
+  await reason(page, "Public source reviewed unchanged; no assumption endorsement implied.");
+  await dialog(page).getByRole("button", { name: "Record manual check", exact: true }).click();
+  await expect(dialog(page)).not.toBeVisible();
+  await expect(page.locator("#queue-filter")).toHaveValue("source");
+  await expect(sourceRow).toHaveCount(0);
+
+  await page.locator("#queue-filter").selectOption("assumption");
+  await expect(queue.locator(".queue-row")).toHaveCount(assumptions);
+  const assumptionId = await queue.locator(".queue-row").first().getAttribute("data-queue-id");
+  await queue.getByRole("button", { name: "Review assumption", exact: true }).first().click();
+  const checkbox = dialog(page).locator(`input[name="assumptionIds"][value="${assumptionId}"]`);
+  await expect(checkbox).toBeFocused();
+  await expect(checkbox).not.toBeChecked();
+  await checkbox.check();
+  await page.getByLabel("Research notes", { exact: true }).fill("Reviewed only this assumption against its current evidence; other work remains due.");
+  await page.getByLabel("Review by", { exact: true }).fill("2026-11-06");
+  await page.getByRole("button", { name: "Save local assessment", exact: true }).click();
+  await expect(dialog(page)).not.toBeVisible();
+  await expect(queue.locator(`[data-queue-id="${assumptionId}"]`)).toHaveCount(0);
+  await expect(queue.locator(".queue-row")).toHaveCount(assumptions - 1);
+  await page.locator("#queue-filter").selectOption("all");
+  await overflow(page);
+  await queue.screenshot({ path: info.outputPath("review-queue.png") });
+});
+
+test("review queue exposes unresolved coverage and blocked dependencies without endorsement", async ({ page }) => {
+  await page.clock.setFixedTime(new Date("2026-10-05T12:00:00Z"));
+  await evidence(page);
+  const queue = page.locator(".review-queue");
+  await expect(queue).toContainText("No reviews due for this profile");
+  await page.locator('.evidence-workbench > aside #source-S-G02').getByRole("button", { name: "Record manual check" }).click();
+  await page.getByLabel("Check outcome", { exact: true }).selectOption("unreachable");
+  await reason(page);
+  await dialog(page).getByRole("button", { name: "Record manual check", exact: true }).click();
+  await expect(queue.locator('[data-queue-id="S-G02"]')).toContainText("Coverage unresolved");
+  await edit(page, "E-G02");
+  await page.getByLabel("Evidence status", { exact: true }).selectOption("withdrawn");
+  await reason(page);
+  await preview(page);
+  await commit(page);
+  const blocked = queue.locator('[data-queue-id="A-P-G01-2"]');
+  await expect(blocked).toContainText("Blocked by evidence");
+  await blocked.getByRole("button", { name: "Inspect dependencies" }).click();
+  await expect(page.locator("#assumption-form")).toHaveAttribute("data-record", "A-P-G01-2");
+  await close(page);
+  await page.locator("#queue-filter").selectOption("decision");
+  await expect(queue).toContainText("No reviews of this type need attention");
+  await expect(queue.locator("#queue-count")).not.toHaveText("0 of 0 reviews need attention");
+});
+
+test("local review choice cancels delayed files and clears earlier previews on errors", async ({ page }) => {
+  const payload = await stored(page);
+  await saveReview(page, payload);
+  await page.getByRole("button", { name: "Workspace backup and import", exact: true }).click();
+  await page.evaluate(() => {
+    const read = File.prototype.text;
+    File.prototype.text = function () {
+      if (this.name !== "slow.json") return read.call(this);
+      return new Promise((resolve) => { window.finishImport = async () => resolve(await read.call(this)); });
+    };
+  });
+  const file = (name) => ({ name, mimeType: "application/json", buffer: Buffer.from(JSON.stringify({ ...payload, workspace: { ...payload.workspace, id: "WS-SLOW" } })) });
+  await page.locator("#import-file").setInputFiles(file("slow.json"));
+  await page.getByRole("button", { name: "Preview adopted source review" }).click();
+  await expect(page.locator("#import-preview")).toContainText("Source review snapshot, version 0");
+  await page.evaluate(() => window.finishImport());
+  await expect(page.locator("#import-preview")).toContainText("Source review snapshot");
+  await page.getByRole("button", { name: "Use in this browser", exact: true }).click();
+  await expect(page.locator("#utility-dialog")).not.toBeVisible();
+  expect((await stored(page)).workspace.id).toBe(payload.workspace.id);
+  await page.getByRole("button", { name: "Workspace backup and import", exact: true }).click();
+  for (const raw of [null, "{broken review"]) {
+    await page.locator("#import-file").setInputFiles(file("valid.json"));
+    await expect(page.locator("[data-apply-import]")).toBeVisible();
+    await page.evaluate(value => value === null ? localStorage.removeItem("stable-desk:review") : localStorage.setItem("stable-desk:review", value), raw);
+    await page.getByRole("button", { name: "Preview adopted source review" }).click();
+    await expect(page.locator("#import-error")).not.toBeEmpty();
+    await expect(page.locator("[data-apply-import]")).toHaveCount(0);
+    await page.locator("#import-file").setInputFiles(file("slow.json"));
+    await page.getByRole("button", { name: "Preview adopted source review" }).click();
+    await page.evaluate(() => window.finishImport());
+    await expect(page.locator("[data-apply-import]")).toHaveCount(0);
+    expect((await stored(page)).workspace).toEqual(payload.workspace);
+    expect(await page.evaluate(() => localStorage.getItem("stable-desk:review"))).toBe(raw);
+  }
+});
+
+test("review queue supports imported assumptions without a corresponding decision", async ({ page }) => {
+  await page.clock.setFixedTime(new Date("2026-10-30T12:00:00Z"));
+  const partial = structuredClone(seed);
+  partial.decisions = partial.decisions.filter(d => d.id !== "D-G03");
+  await importText(page, partial);
+  await page.getByRole("button", { name: "Use in this browser", exact: true }).click();
+  await expect(page.locator("#utility-dialog")).not.toBeVisible();
+  await evidence(page);
+  const row = page.locator('.review-queue [data-queue-id="A-P-G03-1"]');
+  await expect(row).toContainText("No linked decision is configured");
+  await row.getByRole("button", { name: "Inspect dependencies", exact: true }).click();
+  await expect(page.locator("#assumption-form")).toHaveAttribute("data-record", "A-P-G03-1");
+});
+
+test("same-tab edits invalidate a local review import preview", async ({ page }) => {
+  const original = await stored(page);
+  await saveReview(page, original);
+  await page.getByRole("button", { name: "Workspace backup and import", exact: true }).click();
+  await page.getByRole("button", { name: "Preview adopted source review" }).click();
+  await page.getByRole("button", { name: "Manage profiles", exact: true }).click();
+  await page.getByRole("button", { name: "Edit active profile", exact: true }).click();
+  await page.getByLabel("Profile name", { exact: true }).fill("Newer profile edit");
+  await reason(page);
+  await page.getByRole("button", { name: "Save profile revision", exact: true }).click();
+  await expect(dialog(page)).not.toBeVisible();
+  const newer = await stored(page);
+  expect(newer.workspace.events.length).toBe(original.workspace.events.length + 1);
+  await page.getByRole("button", { name: "Use in this browser", exact: true }).click();
+  await expect(page.locator("#import-error")).toContainText("Workspace changed since this preview");
+  expect(await stored(page)).toEqual(newer);
 });
 
 test("generic v1 migration preserves exact notes, reviews and original activity; reset archives v2", async ({

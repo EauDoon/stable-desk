@@ -14,7 +14,7 @@ One watched public page, dated snapshots, and an explicit human decision before 
 4. A reviewer writes the replacement claim, chooses a supported classification, and records a rationale. Or they reject the difference. The candidate is a suggested source revision, never an AI-written claim.
 5. Acceptance commits exactly one v2 evidence revision through the existing replay, provenance and conflict guards. Affected assumptions become **needing review**; decisions keep their old basis and are never automatically endorsed.
 6. Export the full review backup. On another browser, choose **Restore v4 review backup**, inspect the preview, download the pre-restore backup and confirm. Older or divergent histories require an explicit reset after export.
-7. Choose **Export adopted workspace**, open **Research desk**, then **Workspace backup and import** and select that v2 file. Review affected assumptions and Decisions there. The two stores are separate, and this explicit handoff does not synchronize future edits.
+7. In the same browser, open **Research desk > Workspace backup and import > Preview adopted source review**, inspect the snapshot, then confirm **Use in this browser**. For another browser, choose **Export adopted workspace** and import that v2 file in the desk. Review affected assumptions and Decisions in the Evidence review queue. The two stores are separate, pending candidates are excluded, and this explicit handoff does not synchronize future edits.
 8. Download the seven-day UTC change brief, recovery manifest or a prior committed recovery copy. Restore a recovery copy through the same validated v4 file preview.
 
 ## What changed from v3, and why
