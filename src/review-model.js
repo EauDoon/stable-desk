@@ -32,6 +32,8 @@ export class ReviewError extends Error {
 export const requireThat = (value, message, status = 400) => {
   if (!value) throw new ReviewError(message, status);
 };
+const record = (value) =>
+  !!value && typeof value === "object" && !Array.isArray(value);
 export function initialReview(seed, imported = null) {
   const record = imported
     ? decodeDesk(imported)
@@ -57,15 +59,21 @@ export function validateReview(value) {
   requireThat(
     Array.isArray(value.journal) &&
       value.version === value.journal.length &&
-      value.journal.length <= REVIEW_MAX_EVENTS,
+      value.journal.length <= REVIEW_MAX_EVENTS &&
+      value.journal.every(record),
     "Invalid review history.",
   );
   requireThat(
     Array.isArray(value.checks) &&
+      value.checks.every(record) &&
       Array.isArray(value.candidates) &&
-      value.snapshots &&
-      typeof value.snapshots === "object",
+      record(value.snapshots),
     "Incomplete review state.",
+  );
+  requireThat(value.candidates.every(record), "Invalid candidate.");
+  requireThat(
+    Object.values(value.snapshots).every(record),
+    "Invalid source snapshot.",
   );
   const ops = new Set(),
     ids = new Set();
@@ -90,6 +98,7 @@ export function validateReview(value) {
     requireThat(
       snapshot.sourceId === WATCH.id &&
         snapshot.url === WATCH.url &&
+        typeof snapshot.text === "string" &&
         snapshot.hash === hash(snapshot.text) &&
         snapshot.text.length <= 20000,
       "Invalid source snapshot.",
@@ -423,8 +432,21 @@ export function applyReview(
   next.version++;
   return { state: validateReview(next), duplicate: false };
 }
+// Reviewer labels and rationales come from local input or an imported backup.
+// Keep each on one Markdown line and inert: no headings, lists, links,
+// emphasis, code or HTML can be opened from inside them.
+export function mdInline(value) {
+  return String(value ?? "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/[\\`*_[\]<>]/g, (c) => "\\" + c);
+}
 export function weeklyBrief(review, now = new Date().toISOString()) {
   validateReview(review);
+  requireThat(
+    typeof now === "string" && Number.isFinite(Date.parse(now)),
+    "Invalid brief date.",
+  );
   const end = Date.parse(now),
     start = end - 7 * 86400000;
   const recent = (value) =>
@@ -451,7 +473,7 @@ export function weeklyBrief(review, now = new Date().toISOString()) {
   for (const event of reviews) {
     const c = review.candidates.find((c) => c.id === event.candidateId);
     lines.push(
-      `- ${event.at}: ${event.type} by ${event.actor}; ${c.rationale}. [Source](${c.url}), fetched ${c.fetchedAt}, candidate ${c.id}.`,
+      `- ${event.at}: ${event.type} by ${mdInline(event.actor)}; ${mdInline(c.rationale).replace(/\.$/, "")}. [Source](${c.url}), fetched ${c.fetchedAt}, candidate ${c.id}.`,
     );
     if (event.type === "accepted")
       lines.push(

@@ -47,6 +47,12 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
 - A change that would make the saved workspace too large to reopen is refused
   with a clear message before anything is written, instead of saving a
   workspace the desk could no longer load.
+- Restoring a malformed review backup (null or non-object journal, check,
+  candidate or snapshot entries) reports a review validation error instead of
+  an internal TypeError. Valid schema-4 states are unaffected.
+- The weekly change brief keeps reviewer labels and rationales on one inert
+  Markdown line (no headings, links, emphasis, code or HTML), no longer
+  doubles a trailing period, and rejects an invalid brief date.
 
 ## [4.1.0] - 2026-10-05
 
