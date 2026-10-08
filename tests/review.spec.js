@@ -1,4 +1,8 @@
 import { test, expect } from "@playwright/test";
+import { readFile } from "node:fs/promises";
+const pkg = JSON.parse(
+  await readFile(new URL("../package.json", import.meta.url), "utf8"),
+);
 // v4 review surface. Local storage only: no account, no sign-in, no hosted
 // state. The source check is served by the same /api/check the deployment uses.
 const capture = (n) => ({
@@ -38,6 +42,9 @@ test("review opens with no account, no sign-in and no hosted state", async () =>
   await expect(
     page.getByText("Nothing is uploaded", { exact: false }),
   ).toBeVisible();
+  await expect(page.locator(".review-header .pill")).toHaveText(
+    `v${pkg.version} · bounded source review`,
+  );
 });
 
 test("review file inputs are disabled until the selected backup finishes reading", async () => {

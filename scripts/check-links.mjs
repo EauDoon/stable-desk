@@ -1,4 +1,5 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { VERSION } from "../src/version.js";
 const data = JSON.parse(
   await readFile(new URL("../data/baseline.json", import.meta.url), "utf8"),
 );
@@ -12,7 +13,7 @@ for (let offset = 0; offset < data.sources.length; offset += 4) {
           const response = await fetch(source.url, {
             signal: AbortSignal.timeout(12000),
             headers: {
-              "User-Agent": "StableDesk-public-source-link-check/0.1",
+              "User-Agent": `StableDesk-public-source-link-check/${VERSION}`,
             },
           });
           await response.body?.cancel();

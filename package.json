@@ -14,7 +14,8 @@
     "build": "node scripts/build.mjs",
     "package": "python3 scripts/package.py",
     "audit:content": "python3 scripts/audit-content.py",
-    "test:smoke": "node scripts/smoke.mjs"
+    "test:smoke": "node scripts/smoke.mjs",
+    "check:version": "node scripts/check-version.mjs"
   },
   "engines": {
     "node": ">=22.13"

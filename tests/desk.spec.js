@@ -3,6 +3,9 @@ import { readFile } from "node:fs/promises";
 const baseline = JSON.parse(
   await readFile(new URL("../data/baseline.json", import.meta.url), "utf8"),
 );
+const pkg = JSON.parse(
+  await readFile(new URL("../package.json", import.meta.url), "utf8"),
+);
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveTitle("Stable Desk · Generic stablecoin research");
@@ -311,9 +314,15 @@ test("all source and documentation links render their correct targets", async ({
     "/docs/PRIORITIES.md",
     "/docs/V4_REVIEW.md",
     "/docs/VERIFICATION.md",
+    "/CHANGELOG.md",
     "/data/baseline.json",
   ])
     expect((await request.get(path)).status()).toBe(200);
+});
+test("the footer names the package version", async ({ page }) => {
+  await expect(page.locator(".footer")).toContainText(
+    `Stable Desk v${pkg.version}`,
+  );
 });
 
 test("fictional identity, provenance labels and legacy workspace isolation", async ({

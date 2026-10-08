@@ -1,5 +1,6 @@
 import { load } from "cheerio";
 import { WATCH, requireThat } from "../src/review-model.js";
+import { VERSION } from "../src/version.js";
 export function meaningfulText(raw, contentType = "text/html") {
   let text;
   if (/markdown|text\/plain/.test(contentType))
@@ -33,7 +34,7 @@ export async function collect(fetcher = fetch) {
       signal: AbortSignal.timeout(8000),
       headers: {
         Accept: "text/markdown, text/html;q=0.9",
-        "User-Agent": "StableDeskReview/4 (bounded public source review)",
+        "User-Agent": `StableDeskReview/${VERSION} (bounded public source review)`,
       },
     });
     if (!response.ok)
