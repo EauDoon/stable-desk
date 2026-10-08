@@ -84,6 +84,12 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
   platform error page.
 - The collector releases unread upstream bodies on redirect, error and
   wrong-media-type responses, and `checkedAt` uses the injected clock.
+- Documentation no longer says v4.1 is an unpublished candidate: it was merged
+  through PR #3 and is live. The README states the license terms instead of
+  "no license selected", one menu name is used throughout, the architecture
+  map covers every module and script, a stale 320 px overflow limit is
+  corrected, and the public deployment guide uses placeholders instead of
+  hosting-account identifiers.
 - The desk and source review open on a plain-HTTP preview reached by LAN or VM
   address. IDs fall back to `crypto.getRandomValues` where the secure-context
   `crypto.randomUUID` is missing; the stored ID format is unchanged.

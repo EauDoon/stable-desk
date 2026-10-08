@@ -4,7 +4,7 @@
 
 In **Evidence**, filter the review queue by sources, assumptions or decisions. Blocked evidence and unresolved coverage come first, followed by changed review bases and the oldest deadlines, including work due today (UTC). Each row opens the relevant editor. A source check never clears an assumption or decision review, and an empty queue does not establish commercial readiness.
 
-After adopting evidence in **Source review**, open **Research desk > Workspace & data > Preview adopted source review**. Inspect the snapshot, then choose **Use in this browser**. Pending candidates stay in Source review. Both stores remain separate, later changes require another import, and exports remain the backup and cross-device path. Stale previews and cross-profile draft rebases cannot silently replace newer work.
+After adopting evidence in **Source review**, open **Research desk > Workspace & data (the Workspace backup and import button) > Preview adopted source review**. Inspect the snapshot, then choose **Use in this browser**. Pending candidates stay in Source review. Both stores remain separate, later changes require another import, and exports remain the backup and cross-device path. Stale previews and cross-profile draft rebases cannot silently replace newer work.
 
 The public baseline is dated **September 30, 2026**. Real product names, source titles, URLs and historical dates remain original. Sources about USDC, PYUSD or Open USD never prove STABLE acceptance. Token supply and aggregate transfers do not establish payment adoption.
 
@@ -29,15 +29,15 @@ The working release includes:
 
 A configured real research subject remains unverified. Intended markets, currency or networks establish no issuance, acceptance or commercial relationship. All seeded opportunity fit stays synthetic. New profiles start from shared public baseline context without inheriting another profile's notes, checks or local reviews.
 
-| Local candidate status on 06-10-2026 | Evidence |
+| Status on 09-10-2026 | Evidence |
 | --- | --- |
-| Current source | v4.1 review queue, explicit adopted-workspace handoff, and guarded draft/import recovery; v2/v4 storage formats retained |
-| Deterministic validation | Model/store/HTTP adapter and Chromium desktop/mobile checks; see [verification](docs/VERIFICATION.md) |
-| Hosted source identity | v4.1 has not been published or deployed. Historical deployment observations are recorded separately in [deployment notes](docs/DEPLOYMENT.md) |
-| Storage | Manual exports are backups. Recovery copies may be evicted. No cross-device synchronization. |
-| Reuse terms | No license selected; no reuse permission is inferred from public visibility. |
+| Hosted release | v4.1 (review queue, explicit adopted-workspace handoff, guarded draft and import recovery) was merged through PR #3 on 05-10-2026 and is served at [stable-desk.vercel.app](https://stable-desk.vercel.app); its static desk footer read "Stable Desk v4.1" on 08-10-2026 and 09-10-2026. A merge to `main` deploys production. Hosted interaction acceptance, every flow run on the live URL, remains unverified. See [deployment notes](docs/DEPLOYMENT.md) |
+| Versions and releases | `package.json` holds the app version and `npm run check:version` keeps every copy in agreement. Changes are recorded in the [changelog](CHANGELOG.md). Pushing a `vX.Y.Z` tag on `main` publishes a GitHub Release with the static ZIP; the dataset and storage formats version separately |
+| Deterministic validation | Model/store/HTTP adapter and Chromium desktop/mobile checks, under the production security headers; see [verification](docs/VERIFICATION.md) |
+| Storage | Manual exports are backups. Recovery copies are bounded (the newest is always kept, then up to ten within 2 MB) and may be evicted. No cross-device synchronization. v2/v4 storage formats are retained |
+| Reuse terms | All rights reserved: the source is public for reading only and no reuse permission is granted. See [LICENSE](LICENSE) |
 
-Read the [v4 review contract and its limits](docs/V4_REVIEW.md), [manual workflow guide](docs/UPDATING.md), [architecture and evidence coverage](docs/ARCHITECTURE.md), [synthetic priority brief](docs/PRIORITIES.md) and [verification record](docs/VERIFICATION.md). Versioned public context lives in [data/baseline.json](data/baseline.json); browser work is separate and is never written to GitHub.
+Read the [changelog](CHANGELOG.md), the [v4 review contract and its limits](docs/V4_REVIEW.md), [manual workflow guide](docs/UPDATING.md), [architecture and evidence coverage](docs/ARCHITECTURE.md), [synthetic priority brief](docs/PRIORITIES.md) and [verification record](docs/VERIFICATION.md). Versioned public context lives in [data/baseline.json](data/baseline.json); browser work is separate and is never written to GitHub.
 
 Build and verify:
 
@@ -45,6 +45,7 @@ Build and verify:
 npm ci --ignore-scripts
 npm run validate
 npm test
+npm run check:version
 npx --no-install playwright install chromium
 npm run test:browser
 npm run build
@@ -62,4 +63,4 @@ Local storage is not a shared database or automatic backup. Export after useful 
 
 Delivery is through [EauDoon/stable-desk](https://github.com/EauDoon/stable-desk). The hosted v3 pilot design, which required a Supabase project that was never provisioned, is preserved unmerged on the `v3-pilot` branch; v4 supersedes it for public use. No hosted database, access change, weighted ranking, paid API, automatic collection, live AI chat, payments, subscriptions or outreach is included.
 
-The next research step is two manual review cycles on one selected use case before choosing a prioritization rubric or collector. The repository homepage names a hosted site, but its current source identity and v4 behavior have not been independently verified; see [the deployment status and resume guide](docs/DEPLOYMENT.md).
+The next research step is two manual review cycles on one selected use case before choosing a prioritization rubric or collector. Hosted deployment status and the resume guide are in [the deployment notes](docs/DEPLOYMENT.md).

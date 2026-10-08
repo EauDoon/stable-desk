@@ -1,5 +1,26 @@
 # Stable Desk verification record
 
+## Hardening upgrade pull request, 09-10-2026
+
+This pull request addresses the findings of an independent review of v4.1: a hosted cross-site guard and JSON contract for the check endpoint, typed import errors with one 4 MiB limit and reloadable saves, non-secure-origin IDs, bounded and deletable recovery copies, fewer history replays, keyboard focus and tab state, a strict Content-Security-Policy, a strict preview-server CLI, version single-sourcing with a changelog and a tag-driven release workflow, CI on Node 22.13 and Windows, and documentation corrections. Storage keys, workspace schema 2, review schema 4, the FNV fingerprints and dataset `2026-09-30.generic.2` are unchanged, so existing browser data still loads.
+
+Local results on Windows 11 with Node 24.18.0 and Chromium 1234:
+
+- `npm run validate` passes, and `npm run check:version` reports one consistent version.
+- `npm test`: **102 Node tests pass**, 0 fail, covering the model, workspace, review, review store, HTTP adapters, archive store, CLI, version check and release notes.
+- `CI=1 npx playwright test`: **109 Chromium cases pass**, 56 at 1440 x 1000 and 53 at 390 x 844; three replay, storage-limit and non-secure-origin cases run on desktop only. Every case runs under the production headers from `vercel.json` and fails on any Content-Security-Policy violation.
+- `npm run build`, `npm run package` (**28 ZIP members** compared byte for byte, now including `CHANGELOG.md`, `LICENSE`, `src/version.js` and `src/archive-store.js`) and `npm run test:smoke` on both viewports pass, with no JavaScript errors or policy violations.
+- `npm run audit:content` finds nothing in the structural build and ZIP checks and exits 2 because the guarded-terms file is intentionally kept outside the repository.
+
+Remote CI on the pull request runs the same unit job on Ubuntu and Windows with Node 22.13 and 24, plus the full Linux verify job; its result is recorded on the pull request.
+
+Corrections to earlier records, verified on 08-10-2026 and 09-10-2026:
+
+- The 06-10-2026 entry below says no v4.1 push, merge or deployment occurred. PR #3 merged v4.1 on 05-10-2026 at 16:25 UTC, and the production site's static desk footer read "Stable Desk v4.1" on 08-10-2026 and 09-10-2026.
+- The v4 entry's limit that the desk overflows horizontally at 320 px no longer reproduces: at 320 CSS pixels the document's scroll width is 320 for all four desk views and for `review.html`.
+
+Still unverified: Safari, Firefox, screen readers, hosted interaction acceptance, and production `/api/check`, which was deliberately not called.
+
 ## Local v4.1 candidate, 06-10-2026
 
 The current v4 app was evolved into a local v4.1 candidate. Its Evidence review queue projects active-profile work from existing source, assumption and decision rules, including UTC deadlines due today. Actions open the existing manual forms without selecting or endorsing assumptions. Imported datasets without a corresponding decision route to dependency inspection.

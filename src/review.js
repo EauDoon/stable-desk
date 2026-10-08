@@ -227,7 +227,7 @@ app.addEventListener("click", (event) => {
   if (action === "export-desk") {
     download(review.desk, "stable-desk-adopted-workspace.json");
     message = "";
-    notice = "Open Research desk > Workspace backup and import > Preview adopted source review to copy directly in this browser, or choose this exported file on another device. Review Decisions; review backups remain separate.";
+    notice = "Open Research desk > Workspace & data (the Workspace backup and import button) > Preview adopted source review to copy directly in this browser, or choose this exported file on another device. Review Decisions; review backups remain separate.";
     render();
     return;
   }
