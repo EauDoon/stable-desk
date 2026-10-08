@@ -24,6 +24,17 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
   User-Agent strings, a `npm run check:version` consistency check and this
   changelog.
 
+### Fixed
+
+- The hosted source check now refuses browser requests initiated by another
+  site (`Sec-Fetch-Site` cross-site or same-site, or a foreign `Origin`) with
+  403 before any upstream fetch or cooldown, as the local server already did.
+- A malformed JSON body, or any unexpected adapter failure, now answers the
+  endpoint's JSON contract with no-store and nosniff headers instead of a
+  platform error page.
+- The collector releases unread upstream bodies on redirect, error and
+  wrong-media-type responses, and `checkedAt` uses the injected clock.
+
 ## [4.1.0] - 2026-10-05
 
 ### Added

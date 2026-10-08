@@ -409,6 +409,16 @@ test("the check API returns a bounded capture and ignores caller input", async (
   assert.match((await rejected.json()).error, /one fixed source/);
 });
 
+test("the check API timestamps a capture with its injected clock", async () => {
+  const api = createAPI({
+    now: () => 0,
+    collector: async () => ({ outcome: "ok", status: 200, text: text(1) }),
+  });
+  const response = await api(new Request("https://x/api/check"));
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).checkedAt, "1970-01-01T00:00:00.000Z");
+});
+
 test("the check API rejects a non-JSON body", async () => {
   const api = createAPI({ collector: async () => ({ outcome: "ok", text: text(1) }) });
   const response = await api(

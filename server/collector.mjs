@@ -37,17 +37,22 @@ export async function collect(fetcher = fetch) {
         "User-Agent": `StableDeskReview/${VERSION} (bounded public source review)`,
       },
     });
-    if (!response.ok)
+    // An unread body (a manual-redirect 3xx is a real stream) keeps the
+    // connection open until it is garbage collected, so release it first.
+    const release = () => response.body?.cancel().catch(() => {});
+    if (!response.ok) {
+      await release();
       return {
         outcome: "unreachable",
         status: response.status,
         note: "Restricted, redirected or failed page; no candidate or adoption inferred.",
       };
+    }
     const type = response.headers.get("content-type") ?? "";
-    requireThat(
-      /text\/(html|markdown|plain)/.test(type),
-      "Unsupported source media type.",
-    );
+    if (!/text\/(html|markdown|plain)/.test(type)) {
+      await release();
+      requireThat(false, "Unsupported source media type.");
+    }
     const reader = response.body.getReader();
     let bytes = 0;
     const chunks = [];
