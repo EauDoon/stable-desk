@@ -408,3 +408,19 @@ test("configured fictional placeholder updates labels and flags profile assumpti
   await expect(page.locator(".priority-card .review-dot.warn")).toHaveCount(3);
   await noOverflow(page);
 });
+
+test("keyboard view changes move focus to the new heading and name the view", async ({ page }) => {
+  await page.getByRole("link", { name: "Evidence", exact: true }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("main h1")).toHaveText("What supports the assessment?");
+  await expect(page.locator("main h1")).toBeFocused();
+  await expect(page).toHaveTitle("Evidence · Stable Desk · Generic stablecoin research");
+  await page.getByRole("link", { name: "Decisions", exact: true }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("main h1")).toBeFocused();
+  await expect(page).toHaveTitle(/^Decisions · Stable Desk/);
+  await page.getByRole("link", { name: "Opportunities", exact: true }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("main h1")).toHaveText("Where could STABLE fit?");
+  await expect(page).toHaveTitle("Stable Desk · Generic stablecoin research");
+});

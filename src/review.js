@@ -17,6 +17,8 @@ import { VERSION } from "./version.js";
 const app = document.querySelector("#review-app");
 let review = null,
   message = "",
+  notice = "",
+  pendingFocus = null,
   busy = false,
   selected = null,
   draft = {},
@@ -60,17 +62,47 @@ function deskState() {
   }
   return decoded.state;
 }
+// render() replaces the whole page, which would drop keyboard focus on every
+// action. Remember what had focus by a stable selector and restore it; if it
+// is disabled while busy, restore it on the next render; if it is gone, focus
+// the current panel's heading.
+const FOCUSABLE = "a[href], button, input, select, textarea";
+function focusKey(element) {
+  if (!element || !app.contains(element)) return undefined;
+  for (const attr of ["data-tab", "data-action", "data-candidate"])
+    if (element.hasAttribute(attr))
+      return `[${attr}="${CSS.escape(element.getAttribute(attr))}"]`;
+  if (element.id) return `#${CSS.escape(element.id)}`;
+  const form = element.closest("form[id]");
+  if (form && element.name)
+    return `#${CSS.escape(form.id)} [name="${CSS.escape(element.name)}"]${element.value && element.type === "submit" ? `[value="${CSS.escape(element.value)}"]` : ""}`;
+  return "";
+}
+function focusTarget(target) {
+  if (!target.matches(FOCUSABLE)) target.tabIndex = -1;
+  target.focus({ preventScroll: true });
+}
 function render() {
+  const key = focusKey(document.activeElement) ?? pendingFocus;
+  paint();
+  pendingFocus = null;
+  if (key === undefined || key === null) return;
+  const target = (key && app.querySelector(key)) || app.querySelector("#panel-title");
+  if (!target) return;
+  if (target.disabled) pendingFocus = key;
+  else focusTarget(target);
+}
+function paint() {
   const state = deskState();
   const pending =
       review?.candidates.filter((c) => c.status === "pending") ?? [],
     candidate = review?.candidates.find((c) => c.id === selected);
-  app.innerHTML = `<div class="review-shell"><header class="review-header"><a href="./" class="brand">Stable Desk</a><span class="pill">v${VERSION} · bounded source review</span><nav aria-label="Workspace navigation"><a href="./">Research desk</a></nav></header><main id="review-main"><div class="eyebrow">Public sources · human review</div><h1>Keep the evidence current.</h1><p class="review-lead">One source, dated snapshots, and an explicit decision before any claim changes.</p><aside class="demo-banner"><strong>Generic Stablecoin (STABLE) is fictional.</strong><span>No issuer, deployed token or partners. Public product context never proves STABLE acceptance.</span></aside>${message ? `<div class="storage-banner" role="alert">${esc(message)}</div>` : ""}${unreadable ? `<section class="panel"><h2>Recover unreadable review</h2><p>The saved bytes are preserved. Download them before explicitly discarding this record.</p><button class="button" data-action="backup-raw">Download raw review</button>${confirmReset ? '<button class="button" data-action="confirm-discard">Confirm discard unreadable review</button>' : ""}</section>` : `<section class="panel"><label class="button">Restore v4 review backup<input id="restore-file" type="file" accept="application/json,.json" hidden ${busy ? "disabled" : ""}></label>${restorePreview ? `<h2>Restore preview</h2><p>Version ${restorePreview.version}: ${restorePreview.checks.length} checks, ${restorePreview.candidates.length} candidates, ${restorePreview.desk.workspace.events.length} desk events.</p><p>A different or older history requires an explicit reset after export. This does not change the separate research desk.</p><button class="button" data-action="backup-restore">Download backup before restore</button><button class="button primary" data-action="confirm-restore" ${draft.restoreBackedUp ? "" : "disabled"}>Confirm restore</button>` : ""}</section>`}${
+  app.innerHTML = `<div class="review-shell"><header class="review-header"><a href="./" class="brand">Stable Desk</a><span class="pill">v${VERSION} · bounded source review</span><nav aria-label="Workspace navigation"><a href="./">Research desk</a></nav></header><main id="review-main"><div class="eyebrow">Public sources · human review</div><h1>Keep the evidence current.</h1><p class="review-lead">One source, dated snapshots, and an explicit decision before any claim changes.</p><aside class="demo-banner"><strong>Generic Stablecoin (STABLE) is fictional.</strong><span>No issuer, deployed token or partners. Public product context never proves STABLE acceptance.</span></aside>${message ? `<div class="storage-banner" role="alert">${esc(message)}</div>` : ""}${notice ? `<div class="storage-banner" role="status">${esc(notice)}</div>` : ""}${unreadable ? `<section class="panel"><h2>Recover unreadable review</h2><p>The saved bytes are preserved. Download them before explicitly discarding this record.</p><button class="button" data-action="backup-raw">Download raw review</button>${confirmReset ? '<button class="button" data-action="confirm-discard">Confirm discard unreadable review</button>' : ""}</section>` : `<section class="panel"><h2>Restore a review backup</h2><label class="file-label">Restore v4 review backup<input id="restore-file" type="file" accept="application/json,.json" ${busy ? "disabled" : ""}></label>${restorePreview ? `<h2>Restore preview</h2><p>Version ${restorePreview.version}: ${restorePreview.checks.length} checks, ${restorePreview.candidates.length} candidates, ${restorePreview.desk.workspace.events.length} desk events.</p><p>A different or older history requires an explicit reset after export. This does not change the separate research desk.</p><button class="button" data-action="backup-restore">Download backup before restore</button><button class="button primary" data-action="confirm-restore" ${draft.restoreBackedUp ? "" : "disabled"}>Confirm restore</button>` : ""}</section>`}${
     !review
-      ? `<section class="panel"><h2>Choose a safe starting point</h2><p>Review work is stored in this browser only. Nothing is uploaded. Export the file to keep a copy or move it to another device.</p><button class="button primary" data-action="create">Start from public baseline</button><button class="button" data-action="preview-local">Import local v2 export</button><label class="button">Choose exported v2 file<input id="import-file" type="file" accept="application/json,.json" hidden ${busy ? "disabled" : ""}></label>${importPreview ? `<div class="detail-section"><h3>Import preview</h3><p>${esc(importPreview.workspace.id)} · ${esc(importPreview.workspace.events.length)} preserved v2 events. Reviewer labels are local, not authenticated.</p><p>Download the original first, then confirm the copy into this browser.</p><button class="button" data-action="backup-import">Download original v2 backup</button><button class="button primary" data-action="confirm-import" ${draft.backedUp ? "" : "disabled"}>Confirm import</button></div>` : ""}</section>`
-      : `<div class="review-toolbar"><button class="button ${tab === "inbox" ? "primary" : ""}" data-tab="inbox">Review inbox (${pending.length})</button><button class="button ${tab === "history" ? "primary" : ""}" data-tab="history">Checks & review history</button><button class="button" data-action="export">Export review backup</button><button class="button" data-action="export-desk">Export adopted workspace</button><button class="button" data-action="recovery">Download recovery manifest</button><button class="button" data-action="brief">Weekly change brief</button><button class="button" data-action="reset">Reset local review</button>${confirmReset ? '<button class="button primary" data-action="confirm-reset">Confirm erase local review</button>' : ""}</div>${recoveryVersions ? `<section class="panel"><h2>Prior committed recovery copies</h2><p>Download a prior state for inspection. This never replaces live state or erases history.</p>${recoveryVersions.length ? `<label>Prior version<select id="recovery-version">${recoveryVersions.map((v) => `<option value="${v.key}">Version ${v.version} (${v.key.slice(0, 8)})</option>`).join("")}</select></label><button class="button" data-action="download-recovery">Download selected recovery copy</button>` : "<p>No earlier commits.</p>"}</section>` : ""}<section class="panel review-source"><div><div class="eyebrow">Selected official source</div><h2>${esc(WATCH.title)}</h2><a href="${esc(WATCH.url)}" target="_blank" rel="noopener noreferrer">Original public page ↗</a><p class="muted small">Checks are manually triggered. The first successful capture establishes a monitoring baseline; it does not endorse a claim. Navigation and scripts are excluded. Layout failures remain unresolved.</p></div><button class="button primary" data-action="check" ${busy ? "disabled" : ""}>Check source now</button></section>${
+      ? `<section class="panel"><h2 id="panel-title">Choose a safe starting point</h2><p>Review work is stored in this browser only. Nothing is uploaded. Export the file to keep a copy or move it to another device.</p><button class="button primary" data-action="create">Start from public baseline</button><button class="button" data-action="preview-local">Import local v2 export</button><label class="file-label">Choose exported v2 file<input id="import-file" type="file" accept="application/json,.json" ${busy ? "disabled" : ""}></label>${importPreview ? `<div class="detail-section"><h3>Import preview</h3><p>${esc(importPreview.workspace.id)} · ${esc(importPreview.workspace.events.length)} preserved v2 events. Reviewer labels are local, not authenticated.</p><p>Download the original first, then confirm the copy into this browser.</p><button class="button" data-action="backup-import">Download original v2 backup</button><button class="button primary" data-action="confirm-import" ${draft.backedUp ? "" : "disabled"}>Confirm import</button></div>` : ""}</section>`
+      : `<div class="review-toolbar"><button class="button ${tab === "inbox" ? "primary" : ""}" data-tab="inbox" aria-pressed="${tab === "inbox"}">Review inbox (${pending.length})</button><button class="button ${tab === "history" ? "primary" : ""}" data-tab="history" aria-pressed="${tab === "history"}">Checks & review history</button><button class="button" data-action="export">Export review backup</button><button class="button" data-action="export-desk">Export adopted workspace</button><button class="button" data-action="recovery">Download recovery manifest</button><button class="button" data-action="brief">Weekly change brief</button><button class="button" data-action="reset">Reset local review</button>${confirmReset ? '<button class="button primary" data-action="confirm-reset">Confirm erase local review</button>' : ""}</div>${recoveryVersions ? `<section class="panel"><h2>Prior committed recovery copies</h2><p>Download a prior state for inspection. This never replaces live state or erases history.</p>${recoveryVersions.length ? `<label>Prior version<select id="recovery-version">${recoveryVersions.map((v) => `<option value="${v.key}">Version ${v.version} (${v.key.slice(0, 8)})</option>`).join("")}</select></label><button class="button" data-action="download-recovery">Download selected recovery copy</button>` : "<p>No earlier commits.</p>"}</section>` : ""}<section class="panel review-source"><div><div class="eyebrow">Selected official source</div><h2>${esc(WATCH.title)}</h2><a href="${esc(WATCH.url)}" target="_blank" rel="noopener noreferrer">Original public page ↗</a><p class="muted small">Checks are manually triggered. The first successful capture establishes a monitoring baseline; it does not endorse a claim. Navigation and scripts are excluded. Layout failures remain unresolved.</p></div><button class="button primary" data-action="check" ${busy ? "disabled" : ""}>Check source now</button></section>${
               tab === "history"
-                ? `<section class="panel"><h2>Actual recorded checks</h2>${
+                ? `<section class="panel"><h2 id="panel-title">Actual recorded checks</h2>${
                     review.checks.length
                       ? review.checks
                           .slice()
@@ -91,7 +123,7 @@ function render() {
                       )
                       .join("") || "<p>No changes recorded.</p>"
                   }</section>`
-                : `<section class="panel"><h2>Review inbox</h2><p class="muted">Page-text differences are review candidates, not verified facts or automated recommendations.</p>${pending.map((c) => `<button class="review-candidate" data-candidate="${esc(c.id)}"><strong>Official source text changed</strong><span>Fetched ${esc(c.fetchedAt)} · ${esc(c.id)}</span></button>`).join("") || '<div class="review-empty">No candidates pending. Adopted evidence is unchanged.</div>'}</section>${candidate && candidate.status === "pending" ? `<section class="panel" id="candidate-detail"><div class="eyebrow">${esc(candidate.id)} · ${esc(candidate.status)}</div><h2>Inspect before adopting</h2><p>Previous fetch ${esc(candidate.previousFetchedAt)} → current fetch ${esc(candidate.fetchedAt)}. <a href="${esc(candidate.url)}" target="_blank" rel="noopener noreferrer">Dated source citation ↗</a></p><div class="review-diff"><details open><summary>Previous source text · ${esc(candidate.beforeHash.slice(0, 12))}</summary><pre>${esc(candidate.beforeText)}</pre></details><details open><summary>Current source text · ${esc(candidate.afterHash.slice(0, 12))}</summary><pre>${esc(candidate.afterText)}</pre></details></div><p><strong>Currently adopted claim:</strong> ${esc(state.evidence[candidate.evidenceId].value.statement)}</p><form id="review-form"><label>Reviewed replacement claim<textarea name="statement" maxlength="3000">${esc(draft.statement ?? "")}</textarea></label><label>Classification<select name="classification"><option value="company_claim">Company claim</option><option value="analyst_inference" ${draft.classification === "analyst_inference" ? "selected" : ""}>Analyst inference</option></select></label><label>Review rationale<textarea name="rationale" required minlength="8" maxlength="2000">${esc(draft.rationale ?? "")}</textarea></label><p class="small muted">Acceptance records this source snapshot and invalidates affected assumption reviews. It never endorses decisions or relationships. A stale evidence basis blocks acceptance.</p><button class="button primary" name="choice" value="accepted" type="submit" ${busy ? "disabled" : ""}>Accept reviewed revision</button><button class="button" name="choice" value="rejected" type="submit" ${busy ? "disabled" : ""}>Reject candidate</button></form></section>` : ""}`
+                : `<section class="panel"><h2 id="panel-title">Review inbox</h2><p class="muted">Page-text differences are review candidates, not verified facts or automated recommendations.</p>${pending.map((c) => `<button class="review-candidate" data-candidate="${esc(c.id)}"><strong>Official source text changed</strong><span>Fetched ${esc(c.fetchedAt)} · ${esc(c.id)}</span></button>`).join("") || '<div class="review-empty">No candidates pending. Adopted evidence is unchanged.</div>'}</section>${candidate && candidate.status === "pending" ? `<section class="panel" id="candidate-detail"><div class="eyebrow">${esc(candidate.id)} · ${esc(candidate.status)}</div><h2>Inspect before adopting</h2><p>Previous fetch ${esc(candidate.previousFetchedAt)} → current fetch ${esc(candidate.fetchedAt)}. <a href="${esc(candidate.url)}" target="_blank" rel="noopener noreferrer">Dated source citation ↗</a></p><div class="review-diff"><details open><summary>Previous source text · ${esc(candidate.beforeHash.slice(0, 12))}</summary><pre>${esc(candidate.beforeText)}</pre></details><details open><summary>Current source text · ${esc(candidate.afterHash.slice(0, 12))}</summary><pre>${esc(candidate.afterText)}</pre></details></div><p><strong>Currently adopted claim:</strong> ${esc(state.evidence[candidate.evidenceId].value.statement)}</p><form id="review-form"><label>Reviewed replacement claim<textarea name="statement" maxlength="3000">${esc(draft.statement ?? "")}</textarea></label><label>Classification<select name="classification"><option value="company_claim">Company claim</option><option value="analyst_inference" ${draft.classification === "analyst_inference" ? "selected" : ""}>Analyst inference</option></select></label><label>Review rationale<textarea name="rationale" required minlength="8" maxlength="2000">${esc(draft.rationale ?? "")}</textarea></label><p class="small muted">Acceptance records this source snapshot and invalidates affected assumption reviews. It never endorses decisions or relationships. A stale evidence basis blocks acceptance.</p><button class="button primary" name="choice" value="accepted" type="submit" ${busy ? "disabled" : ""}>Accept reviewed revision</button><button class="button" name="choice" value="rejected" type="submit" ${busy ? "disabled" : ""}>Reject candidate</button></form></section>` : ""}`
             }`
   }</main><footer class="footer"><span>Version ${review?.version ?? "—"} · stored in this browser · no account, server storage or automatic collection</span><a href="./docs/V4_REVIEW.md">Review contract &amp; limitations</a></footer></div>`;
 }
@@ -108,6 +140,7 @@ async function commit(input) {
 async function run(fn) {
   if (busy) return;
   busy = true;
+  notice = "";
   render();
   try {
     await fn();
@@ -169,6 +202,8 @@ app.addEventListener("click", (event) => {
     selected = target.dataset.candidate;
     draft = {};
     render();
+    const heading = app.querySelector("#candidate-detail h2");
+    if (heading) focusTarget(heading);
     return;
   }
   const action = target.dataset.action;
@@ -191,7 +226,8 @@ app.addEventListener("click", (event) => {
   }
   if (action === "export-desk") {
     download(review.desk, "stable-desk-adopted-workspace.json");
-    message = "Open Research desk > Workspace backup and import > Preview adopted source review to copy directly in this browser, or choose this exported file on another device. Review Decisions; review backups remain separate.";
+    message = "";
+    notice = "Open Research desk > Workspace backup and import > Preview adopted source review to copy directly in this browser, or choose this exported file on another device. Review Decisions; review backups remain separate.";
     render();
     return;
   }
@@ -302,6 +338,7 @@ app.addEventListener("click", (event) => {
 app.addEventListener("click", async (event) => {
   if (!event.target.closest('[data-action="check"]') || busy) return;
   busy = true;
+  notice = "";
   render();
   try {
     const result = await fetchSource();

@@ -439,3 +439,45 @@ test("switching review tabs does not decode the adopted desk again", async () =>
   await expect(page.getByRole("heading", { name: "Review inbox", exact: true })).toBeVisible();
   expect(await replays()).toBe(before);
 });
+
+test("review actions keep keyboard focus, expose tab state and use visible file inputs", async () => {
+  await page.goto("/review.html");
+  await expect(page.locator("noscript")).toHaveCount(1);
+  expect(await page.locator('meta[name="description"]').getAttribute("content")).toContain("source checks");
+  for (const id of ["#restore-file", "#import-file"]) {
+    await expect(page.locator(id)).toBeVisible();
+    expect(await page.locator(id).getAttribute("hidden")).toBeNull();
+  }
+  await expect(page.getByRole("heading", { name: "Restore a review backup" })).toBeVisible();
+  await page.getByRole("button", { name: "Start from public baseline" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("heading", { name: "Review inbox", exact: true })).toBeVisible();
+  // The starting button is gone, so focus lands on the new panel heading.
+  await expect(page.getByRole("heading", { name: "Review inbox", exact: true })).toBeFocused();
+  const history = page.getByRole("button", { name: /Checks & review history/ });
+  await expect(history).toHaveAttribute("aria-pressed", "false");
+  await history.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("heading", { name: "Actual recorded checks" })).toBeVisible();
+  await expect(history).toBeFocused();
+  await expect(history).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: /Review inbox/ })).toHaveAttribute("aria-pressed", "false");
+  await page.getByRole("button", { name: /Review inbox/ }).focus();
+  await page.keyboard.press("Enter");
+  const check = page.getByRole("button", { name: "Check source now" });
+  for (const version of [1, 2]) {
+    await check.focus();
+    await page.keyboard.press("Enter");
+    await expect(page.locator(".footer")).toContainText(`Version ${version}`);
+    // The busy render disabled the button; focus returns once it is enabled.
+    await expect(check).toBeFocused();
+  }
+  await page.locator(".review-candidate").focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("#candidate-detail h2")).toBeFocused();
+  const exported = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export adopted workspace" }).click();
+  await exported;
+  await expect(page.getByRole("status").filter({ hasText: "Preview adopted source review" })).toBeVisible();
+  await expect(page.getByRole("alert")).toHaveCount(0);
+});

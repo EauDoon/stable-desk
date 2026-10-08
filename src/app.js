@@ -50,6 +50,13 @@ import {
 } from "./archive-store.js";
 import { VERSION } from "./version.js";
 const STORAGE_KEY = "stable-desk:v2";
+const BASE_TITLE = "Stable Desk · Generic stablecoin research";
+const VIEW_LABELS = {
+  opportunities: "Opportunities",
+  evidence: "Evidence",
+  changes: "Changes",
+  decisions: "Decisions",
+};
 const LEGACY_KEY = "stable-desk:generic-v1";
 const DRAFT_KEY = "stable-desk:drafts-v2";
 const esc = (value) =>
@@ -405,6 +412,8 @@ function render() {
   const overdue = data.priorities.filter(
     (p) => reviewState(data, p, null).tone === "warn",
   ).length;
+  document.title =
+    view === "opportunities" ? BASE_TITLE : `${VIEW_LABELS[view]} · ${BASE_TITLE}`;
   app.innerHTML = `<div class="desk-shell"><aside class="sidebar"><a class="brand" href="#opportunities"><span class="brand-mark"><i></i><i></i><i></i></span><span>Stable <span class="brand-light">Desk</span><small>ECOSYSTEM RESEARCH</small></span></a><div class="workspace-label">GENERIC RESEARCH WORKSPACE</div><nav aria-label="Desk views">${[
     ["opportunities", "Opportunities", "grid"],
     ["evidence", "Evidence", "book"],
@@ -1170,10 +1179,17 @@ document.addEventListener("submit", async (event) => {
 });
 window.addEventListener("hashchange", () => {
   const next = location.hash.slice(1);
-  if (["opportunities", "evidence", "changes", "decisions"].includes(next)) {
+  if (Object.hasOwn(VIEW_LABELS, next)) {
     view = next;
     render();
     window.scrollTo(0, 0);
+    // The whole page was replaced: move focus to the new view's heading so
+    // keyboard and screen-reader users continue from the top of the view.
+    const heading = document.querySelector("main h1");
+    if (heading) {
+      heading.tabIndex = -1;
+      heading.focus({ preventScroll: true });
+    }
   }
 });
 window.addEventListener("storage", (event) => {

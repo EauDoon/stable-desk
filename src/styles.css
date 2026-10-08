@@ -2624,3 +2624,9 @@ input[type="file"] {
     align-self: flex-start;
   }
 }
+/* Headings that receive focus programmatically after a view or panel change. */
+h1[tabindex="-1"]:focus,
+h2[tabindex="-1"]:focus,
+h3[tabindex="-1"]:focus {
+  outline: none;
+}

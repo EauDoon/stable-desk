@@ -36,6 +36,14 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
   computed once per change (saving a decision drops from 9 replays to 5, and
   switching to Decisions from 3 to 0), and Source review decodes the adopted
   desk once per saved review instead of twice per render.
+- Keyboard and screen-reader focus: a desk view change moves focus to the new
+  view's heading and names the view in the page title; Source review keeps
+  focus on the control that was used (or the current panel heading when it
+  is gone), opens a candidate at its heading, exposes the selected tab with
+  `aria-pressed` and announces the export guidance as a status, not an alert.
+- Source review's file pickers are visible labelled inputs instead of hidden
+  inputs inside button-styled labels, the restore panel has a heading, and
+  `review.html` gains a description and a no-JavaScript fallback.
 
 ### Fixed
 
