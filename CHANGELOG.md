@@ -25,9 +25,15 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
   changelog.
 - **Delete copy** for each desk recovery copy in Workspace & data, with a
   confirming second click.
+- `--help` and `--version` for the dev and preview server
+  (`scripts/server.mjs`).
 
 ### Changed
 
+- The dev and preview server parses its arguments strictly: a missing or
+  invalid `--port` or `--host` value or an unknown flag prints the usage to
+  stderr and exits 2, instead of crashing with a stack trace or binding every
+  interface while refusing every request.
 - Desk recovery copies are bounded: after a successful import or reset the
   newest copy is always kept, then older copies while there are at most ten
   within 2 MB of storage. The recovery list labels copies from a plain parse
