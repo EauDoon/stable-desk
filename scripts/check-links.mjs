@@ -47,9 +47,13 @@ const report = {
     "Unauthenticated public GET; separate from browser search-source access.",
   results,
 };
-await mkdir(new URL("../artifacts/", import.meta.url), { recursive: true });
+// New reports go to the ignored test-results/ folder. The tracked
+// artifacts/source-links.json is the historical record and is never rewritten.
+await mkdir(new URL("../test-results/artifacts/", import.meta.url), {
+  recursive: true,
+});
 await writeFile(
-  new URL("../artifacts/source-links.json", import.meta.url),
+  new URL("../test-results/artifacts/source-links.json", import.meta.url),
   JSON.stringify(report, null, 2) + "\n",
 );
 for (const r of results)
@@ -58,5 +62,5 @@ const broken = results.filter((r) => r.status === 404 || r.status === 410);
 if (broken.length) process.exitCode = 1;
 else if (results.some((r) => r.verdict !== "reachable")) process.exitCode = 2;
 console.log(
-  `Checked ${results.length} links. ${results.filter((r) => r.verdict === "reachable").length} reachable; ${results.filter((r) => r.verdict !== "reachable").length} client restrictions/unresolved responses. See artifacts/source-links.json.`,
+  `Checked ${results.length} links. ${results.filter((r) => r.verdict === "reachable").length} reachable; ${results.filter((r) => r.verdict !== "reachable").length} client restrictions/unresolved responses. See test-results/artifacts/source-links.json.`,
 );
