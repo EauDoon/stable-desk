@@ -1,4 +1,6 @@
 import { test, expect } from "@playwright/test";
+import { recordCspViolations } from "./fixtures.js";
+import { crossSiteRefusal } from "../server/api.mjs";
 import { readFile } from "node:fs/promises";
 const pkg = JSON.parse(
   await readFile(new URL("../package.json", import.meta.url), "utf8"),
@@ -12,10 +14,12 @@ const capture = (n) => ({
 });
 let page;
 let context;
+let violations;
 test.beforeEach(async ({ browser }, info) => {
   // A fresh context per test: localStorage is per-origin, so sharing one
   // context across parallel workers would leak review state between tests.
   context = await browser.newContext(info.project.use);
+  violations = await recordCspViolations(context);
   page = await context.newPage();
   // A deterministic capture keeps the test offline and repeatable.
   let n = 0;
@@ -30,6 +34,7 @@ test.beforeEach(async ({ browser }, info) => {
 });
 test.afterEach(async () => {
   await context.close();
+  expect(violations, "Content-Security-Policy violations").toEqual([]);
 });
 
 test("review opens with no account, no sign-in and no hosted state", async () => {
@@ -374,6 +379,7 @@ test('review cycles restore in a fresh browser and hand adopted evidence back to
   await page.getByRole('button', { name: 'Export review backup' }).click();
   const backup = await (await exported).path();
   const fresh = await browser.newContext(info.project.use);
+  const freshViolations = await recordCspViolations(fresh);
   try {
     const restored = await fresh.newPage();
     await restored.goto('/review.html');
@@ -415,6 +421,7 @@ test('review cycles restore in a fresh browser and hand adopted evidence back to
     expect(await restored.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await restored.screenshot({ path: info.outputPath('restored-decision-handoff.png'), fullPage: true });
   } finally { await fresh.close(); }
+  expect(freshViolations).toEqual([]);
 });
 
 test("switching review tabs does not decode the adopted desk again", async () => {
@@ -480,4 +487,29 @@ test("review actions keep keyboard focus, expose tab state and use visible file 
   await exported;
   await expect(page.getByRole("status").filter({ hasText: "Preview adopted source review" })).toBeVisible();
   await expect(page.getByRole("alert")).toHaveCount(0);
+});
+
+test("the source check request a browser sends under the production headers passes the cross-site guard", async () => {
+  let sent;
+  await page.route("**/api/check", async (route) => {
+    sent = await route.request().allHeaders();
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ capture: capture(1) }),
+    });
+  });
+  await page.goto("/review.html");
+  const document = await page.request.get("/review.html");
+  expect(document.headers()["referrer-policy"]).toBe("no-referrer");
+  await page.getByRole("button", { name: "Start from public baseline" }).click();
+  await page.getByRole("button", { name: "Check source now" }).click();
+  await expect(page.locator(".footer")).toContainText("Version 1");
+  // Referrer-Policy no-referrer must not turn the same-origin Origin into "null".
+  // (Sec-Fetch-* headers are added below the interception layer, so the
+  // same-origin value the network sends is supplied here.)
+  expect(sent.origin).toBe("http://127.0.0.1:4173");
+  expect(crossSiteRefusal(new Headers({
+    ...sent, host: "127.0.0.1:4173", "sec-fetch-site": "same-origin",
+  }))).toBe(false);
 });

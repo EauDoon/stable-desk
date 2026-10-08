@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, recordCspViolations } from "./fixtures.js";
 import { readFile } from "node:fs/promises";
 const baseline = JSON.parse(
   await readFile(new URL("../data/baseline.json", import.meta.url), "utf8"),
@@ -202,6 +202,7 @@ test("save local assessment, reload, export and restore in another browser conte
   ).toBe("Researcher");
   expect(exported.dataset.sources).toHaveLength(baseline.sources.length);
   const context = await browser.newContext();
+  const violations = await recordCspViolations(context);
   const second = await context.newPage();
   await second.goto("http://127.0.0.1:4173");
   await second
@@ -217,6 +218,7 @@ test("save local assessment, reload, export and restore in another browser conte
   await expect(second).toHaveURL(/#changes$/);
   await expect(second.locator(".history-list")).toContainText("decision saved");
   await context.close();
+  expect(violations).toEqual([]);
 });
 test("changed evidence flags assumptions; explicit review needs reasoning and persists", async ({
   page,

@@ -68,6 +68,17 @@ const root = await realpath(resolve(
   dist ? "dist" : ".",
 ));
 const publicBind = host === "0.0.0.0" || host === "::";
+// vercel.json is the single source of the production security headers (CSP,
+// framing, referrer, permissions). Static responses carry the same set, so
+// every local and browser test runs under the policy production serves.
+const vercel = JSON.parse(
+  await readFile(resolve(import.meta.dirname, "..", "vercel.json"), "utf8"),
+);
+const securityHeaders = Object.fromEntries(
+  (vercel.headers?.find((rule) => rule.source === "/(.*)")?.headers ?? []).map(
+    ({ key, value }) => [key, value],
+  ),
+);
 const types = {
   ".html": "text/html",
   ".js": "text/javascript",
@@ -117,6 +128,7 @@ const server = createServer(async (req, res) => {
       throw new Error("Unsupported");
     const body = await readFile(file);
     res.writeHead(200, {
+      ...securityHeaders,
       "Content-Type": `${types[extname(file)]}; charset=utf-8`,
       "Cache-Control": "no-store",
       "X-Content-Type-Options": "nosniff",

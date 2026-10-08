@@ -27,6 +27,11 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
   confirming second click.
 - `--help` and `--version` for the dev and preview server
   (`scripts/server.mjs`).
+- A strict Content-Security-Policy and hardening headers (`nosniff`,
+  `Referrer-Policy: no-referrer`, a restrictive `Permissions-Policy`,
+  `X-Frame-Options: DENY`) for every hosted path, defined once in
+  `vercel.json` and served identically by the local server, with browser
+  tests and the build smoke failing on any policy violation.
 
 ### Changed
 

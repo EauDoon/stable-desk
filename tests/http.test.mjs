@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer, request } from 'node:http';
 import { spawn } from 'node:child_process';
-import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import check from '../api/check.js';
@@ -208,4 +208,32 @@ test('unread upstream bodies are released on refusal paths', async () => {
     assert.equal(response.bodyUsed, true);
     await assert.rejects(response.text(), TypeError);
   }
+});
+
+test('the local server serves the production security headers from vercel.json', async () => {
+  const vercel = JSON.parse(await readFile(new URL('../vercel.json', import.meta.url), 'utf8'));
+  const rule = vercel.headers.find(r => r.source === '/(.*)');
+  const expected = Object.fromEntries(rule.headers.map(({ key, value }) => [key.toLowerCase(), value]));
+  const csp = expected['content-security-policy'];
+  assert.match(csp, /frame-ancestors 'none'/);
+  assert.match(csp, /script-src 'self'/);
+  assert.match(csp, /style-src 'self'/);
+  assert.doesNotMatch(csp, /unsafe-inline|unsafe-eval|\*/);
+  assert.equal(expected['x-content-type-options'], 'nosniff');
+  assert.equal(expected['x-frame-options'], 'DENY');
+  assert.equal(expected['referrer-policy'], 'no-referrer');
+  const child = spawn(process.execPath, ['scripts/server.mjs', '--host', '127.0.0.1', '--port', '0'], { cwd: new URL('..', import.meta.url), stdio: ['ignore', 'pipe', 'pipe'] });
+  try {
+    const port = await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('Server startup timeout')), 5000);
+      child.once('error', reject);
+      child.stdout.on('data', chunk => { const match = String(chunk).match(/http:\/\/[^:]+:(\d+)/); if (match) { clearTimeout(timer); resolve(Number(match[1])); }});
+    });
+    for (const path of ['/', '/review.html', '/src/app.js', '/data/baseline.json'])  {
+      const response = await call(port, 'GET', undefined, {}, path);
+      assert.equal(response.status, 200, path);
+      for (const [key, value] of Object.entries(expected))
+        assert.equal(response.headers[key], value, `${path} ${key}`);
+    }
+  } finally { child.kill(); }
 });

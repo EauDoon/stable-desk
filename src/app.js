@@ -474,10 +474,15 @@ function openCompare() {
   openDetail(
     dialogShell(
       "Compare ecosystem fit",
-      `<p class="muted small">Real market context · fictional-profile fit questions · no commercial ranking.</p><div class="comparison-grid" style="--compare-count:${orgs.length}"><div class="compare-label"></div>${orgs.map((o) => `<h3 class="compare-title">${esc(o.name)}</h3>`).join("")}${fields.map(([label, fn]) => `<div class="compare-label">${label}</div>${orgs.map((o) => `<div class="compare-value">${fn(o)}</div>`).join("")}`).join("")}</div>`,
+      `<p class="muted small">Real market context · fictional-profile fit questions · no commercial ranking.</p><div class="comparison-grid"><div class="compare-label"></div>${orgs.map((o) => `<h3 class="compare-title">${esc(o.name)}</h3>`).join("")}${fields.map(([label, fn]) => `<div class="compare-label">${label}</div>${orgs.map((o) => `<div class="compare-value">${fn(o)}</div>`).join("")}`).join("")}</div>`,
       `${orgs.length} organizations`,
     ),
   );
+  // Set through CSSOM: the Content-Security-Policy (style-src 'self') blocks
+  // inline style attributes parsed from markup, but not CSSOM property writes.
+  detailDialog
+    .querySelector(".comparison-grid")
+    .style.setProperty("--compare-count", String(orgs.length));
 }
 function downloadJSON(value, name) {
   const blob = new Blob(
