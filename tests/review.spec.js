@@ -416,3 +416,26 @@ test('review cycles restore in a fresh browser and hand adopted evidence back to
     await restored.screenshot({ path: info.outputPath('restored-decision-handoff.png'), fullPage: true });
   } finally { await fresh.close(); }
 });
+
+test("switching review tabs does not decode the adopted desk again", async () => {
+  await page.route("**/src/workspace.js", async (route) => {
+    const response = await route.fetch();
+    const marker = "export function projectWorkspace(seed, ws) {";
+    const body = (await response.text()).replace(
+      marker,
+      `${marker}\n  globalThis.__replays = (globalThis.__replays ?? 0) + 1;`,
+    );
+    await route.fulfill({ response, body });
+  });
+  const replays = () => page.evaluate(() => globalThis.__replays ?? 0);
+  await page.goto("/review.html");
+  await page.getByRole("button", { name: "Start from public baseline" }).click();
+  await expect(page.getByRole("heading", { name: "Review inbox", exact: true })).toBeVisible();
+  const before = await replays();
+  expect(before).toBeGreaterThan(0);
+  await page.getByRole("button", { name: /Checks & review history/ }).click();
+  await expect(page.getByRole("heading", { name: "Actual recorded checks" })).toBeVisible();
+  await page.getByRole("button", { name: /Review inbox/ }).click();
+  await expect(page.getByRole("heading", { name: "Review inbox", exact: true })).toBeVisible();
+  expect(await replays()).toBe(before);
+});

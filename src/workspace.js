@@ -815,8 +815,9 @@ export function reviewQueue(
     )
     .map(({ rank, ...item }) => item);
 }
-export function materializeDataset(seed, ws) {
-  const state = activeState(seed, ws);
+// Pass the active state when the caller already projected it, to avoid a
+// second full replay of the event history.
+export function materializeDataset(seed, ws, state = activeState(seed, ws)) {
   const data = copy(seed);
   data.profile = copy(state.profile);
   data.sources = Object.values(state.sources).map((s) => copy(s.value));

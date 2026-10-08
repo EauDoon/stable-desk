@@ -46,9 +46,22 @@ function download(value, name, type = "application/json") {
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+// Decoding the adopted desk replays its whole history twice. `review` is
+// replaced, never mutated, on every commit, restore and reset, so the decoded
+// state is cached against that object's identity.
+let decoded = { review: undefined, state: null };
+function deskState() {
+  if (decoded.review !== review) {
+    const parsed = review ? parseV2Import(JSON.stringify(review.desk)) : null;
+    decoded = {
+      review,
+      state: parsed ? activeState(parsed.seed, parsed.workspace) : null,
+    };
+  }
+  return decoded.state;
+}
 function render() {
-  const parsed = review ? parseV2Import(JSON.stringify(review.desk)) : null,
-    state = parsed ? activeState(parsed.seed, parsed.workspace) : null;
+  const state = deskState();
   const pending =
       review?.candidates.filter((c) => c.status === "pending") ?? [],
     candidate = review?.candidates.find((c) => c.id === selected);

@@ -106,9 +106,11 @@ function notify(message) {
   clearTimeout(noticeTimer);
   noticeTimer = setTimeout(() => node.classList.remove("visible"), 6000);
 }
+// The one full replay per change: everything rendered afterwards reads the
+// active state and materialized dataset computed here.
 function hydrate() {
   state = activeState(seed, workspace);
-  data = materializeDataset(seed, workspace);
+  data = materializeDataset(seed, workspace, state);
 }
 const reviewState = (_, p) => priorityStatus(state, p.id);
 const decisionFor = (_, __, id) => ({
@@ -286,12 +288,12 @@ function openOrg(id) {
 }
 function openPriority(id) {
   const p = data.priorities.find((p) => p.id === id),
-    state = reviewState(data, p, null);
+    status = reviewState(data, p, null);
   const d = data.decisions.find((d) => d.priorityId === id);
   openDetail(
     dialogShell(
       p.title,
-      `<div class="detail-tags">${pill("Synthetic example", "synthetic_example")}${pill(p.lane)}${pill(state.label, state.tone)}</div><p class="detail-lead">${esc(p.thesis)}</p><p class="muted">${esc(orgNames(p.organizationIds))}</p><section class="detail-section"><h3>Why investigate</h3><p>${esc(p.whyNow)}</p><p class="small"><strong>Baseline ${esc(p.confidence)} evidence confidence:</strong> ${esc(p.confidenceReason)}</p></section><section class="detail-section next-action"><div class="eyebrow">Concrete next step</div><p>${esc(p.nextAction)}</p><button class="button primary" data-decision="${d.id}">Review proposed decision ${icon("arrow", 16)}</button></section><div class="two-col"><section class="detail-section"><h3>Load-bearing assumptions</h3>${assumptionCards(activeState(seed, workspace), p.id)}</section><section class="detail-section"><h3>What could disprove it</h3><ul>${p.disproves.map((a) => `<li>${esc(a)}</li>`).join("")}</ul></section></div><section class="detail-section callout"><h3>Review status</h3><p>${esc(state.reason)}</p><p class="small muted">Each assumption has its own reviewed dependency revision. An evidence update never automatically endorses this proposal.</p></section><section class="detail-section"><h3>Sources → evidence → recommendation</h3><p class="muted small">${p.id} uses ${p.evidenceIds.join(", ")} as market context. These sources do not prove acceptance, demand or relationships for the fictional profile.</p>${evidenceMarkup(p.evidenceIds)}</section>`,
+      `<div class="detail-tags">${pill("Synthetic example", "synthetic_example")}${pill(p.lane)}${pill(status.label, status.tone)}</div><p class="detail-lead">${esc(p.thesis)}</p><p class="muted">${esc(orgNames(p.organizationIds))}</p><section class="detail-section"><h3>Why investigate</h3><p>${esc(p.whyNow)}</p><p class="small"><strong>Baseline ${esc(p.confidence)} evidence confidence:</strong> ${esc(p.confidenceReason)}</p></section><section class="detail-section next-action"><div class="eyebrow">Concrete next step</div><p>${esc(p.nextAction)}</p><button class="button primary" data-decision="${d.id}">Review proposed decision ${icon("arrow", 16)}</button></section><div class="two-col"><section class="detail-section"><h3>Load-bearing assumptions</h3>${assumptionCards(state, p.id)}</section><section class="detail-section"><h3>What could disprove it</h3><ul>${p.disproves.map((a) => `<li>${esc(a)}</li>`).join("")}</ul></section></div><section class="detail-section callout"><h3>Review status</h3><p>${esc(status.reason)}</p><p class="small muted">Each assumption has its own reviewed dependency revision. An evidence update never automatically endorses this proposal.</p></section><section class="detail-section"><h3>Sources → evidence → recommendation</h3><p class="muted small">${p.id} uses ${p.evidenceIds.join(", ")} as market context. These sources do not prove acceptance, demand or relationships for the fictional profile.</p>${evidenceMarkup(p.evidenceIds)}</section>`,
       `Investigation ${p.id} · Priority ${p.rank}`,
     ),
   );
@@ -353,14 +355,14 @@ function decisions() {
     .map((base) => {
       const d = decisionFor(data, workspace, base.id),
         p = data.priorities.find((p) => p.id === d.priorityId),
-        state = decisionStatus(seed, activeState(seed, workspace), base.id);
-      return `<article class="decision-card"><div class="decision-meta"><span class="mono">${d.id}</span>${pill("Synthetic example", "synthetic_example")}${pill(d.status)}${pill(state.label, state.tone)}</div><div class="decision-content"><div><h3>${esc(d.proposal)}</h3><p>${esc(d.rationale)}</p>${d.notes ? `<p class="saved-note"><strong>Local note:</strong> ${esc(d.notes)}</p>` : ""}<div class="decision-facts"><span>Owner <strong>${esc(d.owner)}</strong></span><span>Review by <strong>${formatDate(d.reviewBy)}</strong></span><span>Evidence ${refs(d.evidenceIds)}</span></div></div><button class="button" data-decision="${d.id}">Review assessment ${icon("arrow", 16)}</button></div></article>`;
+        status = decisionStatus(seed, state, base.id);
+      return `<article class="decision-card"><div class="decision-meta"><span class="mono">${d.id}</span>${pill("Synthetic example", "synthetic_example")}${pill(d.status)}${pill(status.label, status.tone)}</div><div class="decision-content"><div><h3>${esc(d.proposal)}</h3><p>${esc(d.rationale)}</p>${d.notes ? `<p class="saved-note"><strong>Local note:</strong> ${esc(d.notes)}</p>` : ""}<div class="decision-facts"><span>Owner <strong>${esc(d.owner)}</strong></span><span>Review by <strong>${formatDate(d.reviewBy)}</strong></span><span>Evidence ${refs(d.evidenceIds)}</span></div></div><button class="button" data-decision="${d.id}">Review assessment ${icon("arrow", 16)}</button></div></article>`;
     })
     .join("")}</div>`;
 }
+// The count is filled in by renderQueueResults, which computes the queue once.
 function queueMarkup() {
-  const count = reviewQueue(seed, state).length;
-  return `<section class="review-queue" aria-labelledby="queue-title"><div class="queue-heading"><div><h2 id="queue-title">Review queue</h2><p>Current profile only. Resolve blocked evidence and coverage first, then changed review bases, then the oldest deadlines. Dates use UTC.</p></div><label>Show reviews<select id="queue-filter">${[["all", "All reviews"], ["source", "Sources"], ["assumption", "Assumptions"], ["decision", "Decisions"]].map(([value, label]) => `<option value="${value}" ${queueKind === value ? "selected" : ""}>${label}</option>`).join("")}</select></label></div><p id="queue-count" class="small" role="status">${count} reviews due</p><div id="review-queue-results"></div></section>`;
+  return `<section class="review-queue" aria-labelledby="queue-title"><div class="queue-heading"><div><h2 id="queue-title">Review queue</h2><p>Current profile only. Resolve blocked evidence and coverage first, then changed review bases, then the oldest deadlines. Dates use UTC.</p></div><label>Show reviews<select id="queue-filter">${[["all", "All reviews"], ["source", "Sources"], ["assumption", "Assumptions"], ["decision", "Decisions"]].map(([value, label]) => `<option value="${value}" ${queueKind === value ? "selected" : ""}>${label}</option>`).join("")}</select></label></div><p id="queue-count" class="small" role="status"></p><div id="review-queue-results"></div></section>`;
 }
 function renderQueueResults() {
   const results = document.querySelector("#review-queue-results");

@@ -32,6 +32,10 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
   newest copy is always kept, then older copies while there are at most ten
   within 2 MB of storage. The recovery list labels copies from a plain parse
   instead of replaying every copy each time it opens.
+- Fewer full event-history replays: views and dialogs reuse the projection
+  computed once per change (saving a decision drops from 9 replays to 5, and
+  switching to Decisions from 3 to 0), and Source review decodes the adopted
+  desk once per saved review instead of twice per render.
 
 ### Fixed
 

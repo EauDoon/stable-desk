@@ -1183,3 +1183,41 @@ test("recovery copies stay bounded, survive a full quota and can be deleted one 
   expect(remaining).toEqual(after.archives.filter((key) => key !== target));
   expect((await stored(page)).workspace.events).toHaveLength(0);
 });
+
+// Count full event-history replays by instrumenting the served module.
+const countReplays = (page) =>
+  page.route("**/src/workspace.js", async (route) => {
+    const response = await route.fetch();
+    const marker = "export function projectWorkspace(seed, ws) {";
+    const body = (await response.text()).replace(
+      marker,
+      `${marker}\n  globalThis.__replays = (globalThis.__replays ?? 0) + 1;`,
+    );
+    expect(body).toContain("__replays");
+    await route.fulfill({ response, body });
+  });
+const replays = (page) => page.evaluate(() => globalThis.__replays ?? 0);
+
+test("views and decision saves reuse one projection instead of replaying history per render", async ({ page }, info) => {
+  test.skip(info.project.name !== "desktop", "Replay counts do not depend on the layout.");
+  await countReplays(page);
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Where could STABLE fit?", exact: true })).toBeVisible();
+  let before = await replays(page);
+  expect(before).toBeGreaterThan(0);
+  await page.getByRole("link", { name: "Decisions", exact: true }).click();
+  await expect(page.locator(".decision-card")).toHaveCount(3);
+  expect(await replays(page)).toBe(before);
+  before = await replays(page);
+  await saveDecision(page, "Replay budget check; public context only.");
+  const added = (await replays(page)) - before;
+  // commitOperation (2), the cross-tab disk re-parse and serialization (2)
+  // and hydrate (1). Rendering the Decisions view adds none.
+  expect(added).toBeLessThanOrEqual(5);
+  await expect(page.locator(".decision-card").first()).toContainText("Replay budget check");
+  before = await replays(page);
+  await page.getByRole("link", { name: "Opportunities", exact: true }).click();
+  await page.getByRole("button", { name: "Open investigation Define one merchant acceptance problem" }).click();
+  await expect(dialog(page)).toContainText("Load-bearing assumptions");
+  expect(await replays(page)).toBe(before);
+});
