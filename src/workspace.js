@@ -1108,12 +1108,28 @@ export function exportV2(seed, ws) {
     workspace: copy(ws),
   };
 }
-export function parseV2Import(input) {
+// One limit for every desk and review import, file pick and saved workspace:
+// 4 MiB. Strings are measured in UTF-16 code units, which never exceed the
+// UTF-8 byte length of the same text, so a file under the byte limit is never
+// rejected after decoding.
+export const IMPORT_LIMIT_BYTES = 4 * 1024 * 1024;
+export function serializeWorkspace(seed, ws, limit = IMPORT_LIMIT_BYTES) {
+  const raw = JSON.stringify(exportV2(seed, ws));
   assert(
-    typeof input === "string" && input.length <= 4_000_000,
-    "Import is limited to 4 MB.",
+    raw.length <= limit,
+    "This change would make the saved workspace exceed 4 MB, which could not be reopened. Export your workspace; nothing was saved.",
   );
-  const parsed = JSON.parse(input);
+  return raw;
+}
+export function parseV2Import(input) {
+  assert(typeof input === "string", "Import must be JSON text.");
+  assert(input.length <= IMPORT_LIMIT_BYTES, "Import is limited to 4 MB.");
+  let parsed;
+  try {
+    parsed = JSON.parse(input);
+  } catch {
+    throw new Error("Import is not valid JSON.");
+  }
   assert(plain(parsed), "Import must be an object.");
   const seed = prepareDataset(
     parsed.format === "stable-desk-workspace" ? parsed.dataset : parsed,

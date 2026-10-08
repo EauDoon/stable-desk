@@ -22,6 +22,8 @@ import {
   exportV2,
   mergeWorkspace,
   digest,
+  IMPORT_LIMIT_BYTES,
+  serializeWorkspace,
 } from "../src/workspace.js";
 import { blankWorkspace } from "../src/model.js";
 const seed = prepareDataset(
@@ -469,8 +471,32 @@ test("history validation rejects tampering, malformed imports, missing reference
     mutate(payload);
     assert.throws(() => parseV2Import(JSON.stringify(payload)));
   }
-  assert.throws(() => parseV2Import("{"));
-  assert.throws(() => parseV2Import(" ".repeat(4_000_001)), /4 MB/);
+  assert.throws(() => parseV2Import("{"), /not valid JSON/);
+  assert.throws(() => parseV2Import(" ".repeat(IMPORT_LIMIT_BYTES + 1)), /4 MB/);
+});
+test("imports report typed errors and one 4 MiB limit", () => {
+  assert.equal(IMPORT_LIMIT_BYTES, 4 * 1024 * 1024);
+  for (const input of ["{}", '{"meta":null}', "[]", "null", '"text"'])
+    assert.throws(
+      () => parseV2Import(input),
+      (error) => !/Cannot read properties|is not a function|undefined/.test(error.message),
+      input,
+    );
+  assert.throws(() => parseV2Import("{}"), /Dataset meta must be an object/);
+  assert.throws(() => parseV2Import(null), /JSON text/);
+  assert.throws(() => parseV2Import(undefined), /JSON text/);
+  assert.throws(() => parseV2Import("{"), /^Error: Import is not valid JSON\.$/);
+  // The limit only loosened: 4,000,001 characters was refused before and is accepted now.
+  const padded = JSON.stringify(exportV2(seed, fresh())).padEnd(4_000_001, " ");
+  assert.equal(parseV2Import(padded).seed.meta.version, seed.meta.version);
+});
+test("a save that could not be reopened is refused before it is written", () => {
+  const ws = fresh();
+  const raw = serializeWorkspace(seed, ws);
+  assert.ok(raw.length < IMPORT_LIMIT_BYTES);
+  assert.equal(parseV2Import(raw).workspace.id, ws.id);
+  assert.throws(() => serializeWorkspace(seed, ws, 1000), /exceed 4 MB/);
+  assert.throws(() => serializeWorkspace(seed, ws, raw.length - 1), /nothing was saved/);
 });
 test("import merge accepts prefix continuations and rejects divergent or different identities", () => {
   const base = fresh();

@@ -7,6 +7,8 @@ import {
   workspaceHead,
   uid,
   exportV2,
+  createWorkspace,
+  IMPORT_LIMIT_BYTES,
 } from "../src/workspace.js";
 import { blankWorkspace } from "../src/model.js";
 const seed = prepareDataset(
@@ -1054,4 +1056,77 @@ test("a plain-HTTP preview opened by LAN address still opens the desk and source
     page.getByRole("heading", { name: "Review inbox", exact: true }),
   ).toBeVisible();
   await expect(page.locator(".footer")).toContainText("Version 0");
+});
+
+test("wrong JSON files and vanished recovery copies are rejected in plain terms", async ({ page }) => {
+  await importText(page, {});
+  await expect(page.locator("#import-error")).toHaveText(
+    "Import rejected: Dataset meta must be an object.",
+  );
+  await page.locator("#import-file").setInputFiles({
+    name: "broken.json", mimeType: "application/json", buffer: Buffer.from("{"),
+  });
+  await expect(page.locator("#import-error")).toHaveText("Import rejected: Import is not valid JSON.");
+  await expect(page.locator("[data-apply-import]")).toHaveCount(0);
+  await page.keyboard.press("Escape");
+  await page.evaluate(() => localStorage.setItem("stable-desk:archive:1:BACKUP-gone", "{}"));
+  await page.getByRole("button", { name: "Workspace backup and import", exact: true }).click();
+  await page.evaluate(() => localStorage.removeItem("stable-desk:archive:1:BACKUP-gone"));
+  await page.locator('[data-backup="stable-desk:archive:1:BACKUP-gone"]').click();
+  await expect(page.locator("#import-error")).toHaveText(
+    "Recovery rejected: That recovery copy is no longer available.",
+  );
+});
+
+test("a save that would exceed the reload limit is refused and nothing is written", async ({ page }, info) => {
+  test.skip(info.project.name !== "desktop", "Storage limits do not depend on the layout.");
+  // Build a valid history just under the 4 MiB reload limit from long notes.
+  const long = (i, n = 10000) => `${i} `.padEnd(n, "x");
+  const base = seed.decisions.find((d) => d.id === "D-G01");
+  let ws = createWorkspace(seed), i = 0;
+  const save = (from, notes) => {
+    const s = projectWorkspace(seed, from).profiles[from.activeProfileId];
+    return commitOperation(seed, from, {
+      type: "decision_saved",
+      profileId: from.activeProfileId,
+      recordId: "D-G01",
+      expectedRevision: s.decisions["D-G01"].revision,
+      expectedHead: workspaceHead(from),
+      opId: uid("OP"),
+      actor: "Researcher",
+      rationale: notes,
+      after: { status: base.status, owner: base.owner, reviewBy: base.reviewBy, notes },
+      assumptionIds: [],
+    }).workspace;
+  };
+  const size = (value) => JSON.stringify(exportV2(seed, value)).length;
+  // Each event stores the previous note, the new note and the rationale (the
+  // same text), plus a roughly constant overhead. Stop about 8,000 characters
+  // short of the limit, so the browser's 10,000-character note cannot fit.
+  let current = size(ws), previous = 0, overhead = 2000;
+  while (IMPORT_LIMIT_BYTES - current > 10000) {
+    const n = Math.min(10000, Math.floor((IMPORT_LIMIT_BYTES - current - 8000 - previous - overhead) / 2));
+    if (n < 50) break;
+    ws = save(ws, long(++i, n));
+    const next = size(ws);
+    overhead = next - current - previous - 2 * n;
+    current = next;
+    previous = n;
+  }
+  expect(current).toBeLessThan(IMPORT_LIMIT_BYTES);
+  expect(IMPORT_LIMIT_BYTES - current).toBeLessThan(20000);
+  const raw = JSON.stringify(exportV2(seed, ws));
+  await page.evaluate((raw) => localStorage.setItem("stable-desk:v2", raw), raw);
+  await page.reload();
+  await page.getByRole("link", { name: "Decisions", exact: true }).click();
+  await page.getByRole("button", { name: "Review assessment", exact: false }).first().click();
+  await page.getByLabel("Research notes", { exact: true }).fill("y".repeat(10000));
+  await page.getByRole("button", { name: "Save local assessment", exact: true }).click();
+  await expect(dialog(page).locator(".workflow-error")).toContainText(
+    "would make the saved workspace exceed 4 MB",
+  );
+  await expect(dialog(page)).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem("stable-desk:v2"))).toBe(raw);
+  await page.reload();
+  expect((await stored(page)).workspace.events).toHaveLength(ws.events.length);
 });

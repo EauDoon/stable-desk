@@ -37,6 +37,16 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
 - The desk and source review open on a plain-HTTP preview reached by LAN or VM
   address. IDs fall back to `crypto.getRandomValues` where the secure-context
   `crypto.randomUUID` is missing; the stored ID format is unchanged.
+- Choosing a wrong or malformed JSON file reports a validation message
+  ("Dataset meta must be an object.", "Import is not valid JSON.") instead
+  of an internal TypeError, and a recovery copy that vanished reports that
+  it is no longer available instead of a size error.
+- Desk imports, desk file picks and both review file picks share one 4 MiB
+  limit (`IMPORT_LIMIT_BYTES`), which only loosens the earlier
+  4,000,000-character desk limit.
+- A change that would make the saved workspace too large to reopen is refused
+  with a clear message before anything is written, instead of saving a
+  workspace the desk could no longer load.
 
 ## [4.1.0] - 2026-10-05
 

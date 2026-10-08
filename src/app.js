@@ -22,6 +22,8 @@ import {
   previewEvidence,
   exportV2,
   parseV2Import,
+  serializeWorkspace,
+  IMPORT_LIMIT_BYTES,
   mergeWorkspace,
   migrateLegacy,
   uid,
@@ -143,8 +145,11 @@ function persist(next = workspace) {
     throw new Error(
       "Workspace changed in another tab. Reload latest before saving; your draft is retained.",
     );
+  // Refuse a change whose saved form could not be reopened, before anything
+  // is written or the in-memory workspace moves.
+  const serialized = serializeWorkspace(seed, next);
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(exportV2(seed, next)));
+    localStorage.setItem(STORAGE_KEY, serialized);
     lastDiskHead = workspaceHead(next);
   } catch (error) {
     storageWarning =
@@ -760,11 +765,9 @@ async function replaceWorkspace(candidate) {
           "Saved workspace changed in another tab. Load latest before replacing.",
         );
     }
+    const serialized = serializeWorkspace(candidate.seed, candidate.workspace);
     archiveCurrent(); // If backup or write fails, leave the active workspace intact.
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(exportV2(candidate.seed, candidate.workspace)),
-    );
+    localStorage.setItem(STORAGE_KEY, serialized);
     seed = candidate.seed;
     workspace = candidate.workspace;
     lastDiskHead = workspaceHead(workspace);
@@ -950,8 +953,14 @@ document.addEventListener("click", async (event) => {
     }
     if (target.dataset.backup) {
       importRead++;
+      pendingImport = null;
+      document.querySelector("#import-preview").innerHTML = "";
+      document.querySelector("#import-error").textContent = "";
       try {
-        previewImport(localStorage.getItem(target.dataset.backup));
+        const raw = localStorage.getItem(target.dataset.backup);
+        if (raw === null)
+          throw new Error("That recovery copy is no longer available.");
+        previewImport(raw);
       } catch (error) {
         document.querySelector("#import-error").textContent =
           `Recovery rejected: ${error.message}`;
@@ -1034,7 +1043,8 @@ document.addEventListener("change", async (event) => {
     try {
       const file = target.files[0];
       if (!file) return;
-      if (file.size > 4_000_000) throw new Error("Import is limited to 4 MB.");
+      if (file.size > IMPORT_LIMIT_BYTES)
+        throw new Error("Import is limited to 4 MB.");
       const text = await file.text();
       if (current()) previewImport(text);
     } catch (error) {
@@ -1178,19 +1188,13 @@ try {
         const saved = JSON.parse(legacy);
         seed = prepareDataset(saved.data ?? baseline);
         workspace = migrateLegacy(seed, saved.workspace);
-        localStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify(exportV2(seed, workspace)),
-        );
+        localStorage.setItem(STORAGE_KEY, serializeWorkspace(seed, workspace));
         lastDiskHead = workspaceHead(workspace);
         restored = true;
         storageWarning =
           "Generic v1 notes and original history preserved. Explicit v2 reviews are needed; the old storage key remains intact.";
       } else {
-        localStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify(exportV2(seed, workspace)),
-        );
+        localStorage.setItem(STORAGE_KEY, serializeWorkspace(seed, workspace));
         lastDiskHead = workspaceHead(workspace);
       }
     }

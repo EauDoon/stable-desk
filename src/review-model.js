@@ -8,6 +8,7 @@ import {
   workspaceHead,
   canonical,
   uuid,
+  IMPORT_LIMIT_BYTES,
 } from "./workspace.js";
 
 export const WATCH = Object.freeze({
@@ -185,7 +186,7 @@ export function validateReview(value) {
       "Missing or inconsistent latest source snapshot.");
   }
   requireThat(
-    new TextEncoder().encode(JSON.stringify(value)).length <= 4 * 1024 * 1024,
+    new TextEncoder().encode(JSON.stringify(value)).length <= IMPORT_LIMIT_BYTES,
     "Review history exceeds the 4 MB limit; export and review retention before continuing.",
   );
   return value;

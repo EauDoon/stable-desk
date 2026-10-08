@@ -10,6 +10,7 @@ import {
   weeklyBrief,
   WATCH,
   uuid,
+  IMPORT_LIMIT_BYTES,
 } from "./index-review.js";
 import { escapeHTML as esc } from "./workflow-ui.js";
 import { VERSION } from "./version.js";
@@ -313,7 +314,7 @@ app.addEventListener("change", (event) => {
       restorePreview = null;
       draft.restoreBackedUp = false;
       const expected = review;
-      if (file.size > 4 * 1024 * 1024) throw new Error("Import exceeds 4 MB.");
+      if (file.size > IMPORT_LIMIT_BYTES) throw new Error("Import exceeds 4 MB.");
       const parsed = validateReview(JSON.parse(await file.text()));
       reviewStore.assertCurrent(expected);
       restoreExpected = expected;
@@ -324,7 +325,7 @@ app.addEventListener("change", (event) => {
     const file = event.target.files[0];
     if (!file) return;
     run(async () => {
-      if (file.size > 4 * 1024 * 1024) throw new Error("Import exceeds 4 MB.");
+      if (file.size > IMPORT_LIMIT_BYTES) throw new Error("Import exceeds 4 MB.");
       const raw = await file.text();
       importPreview = parseV2Import(raw);
       draft = { raw, backedUp: false };
