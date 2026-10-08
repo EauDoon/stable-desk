@@ -32,6 +32,9 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
   `X-Frame-Options: DENY`) for every hosted path, defined once in
   `vercel.json` and served identically by the local server, with browser
   tests and the build smoke failing on any policy violation.
+- Continuous integration on Node 22.13 (the engines floor) and 24 on Linux
+  and Windows, a version-consistency step, and Dependabot for npm packages
+  and the SHA-pinned actions.
 
 ### Changed
 
@@ -62,6 +65,10 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
 - Source review's file pickers are visible labelled inputs instead of hidden
   inputs inside button-styled labels, the restore panel has a heading, and
   `review.html` gains a description and a no-JavaScript fallback.
+- CI runs once per pull-request update instead of twice (branch pushes outside
+  a pull request no longer run it), cancels superseded pull-request runs,
+  never cancels `main` runs, can be started by hand, and no longer leaves the
+  job token in the checkout.
 
 ### Fixed
 

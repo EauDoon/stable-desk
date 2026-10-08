@@ -1,0 +1,16 @@
+version: 2
+updates:
+  # Runtime (cheerio) and test (Playwright) packages from package-lock.json.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      development-dependencies:
+        dependency-type: development
+  # The workflows pin actions by commit SHA; Dependabot updates the SHA and
+  # its version comment together.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
