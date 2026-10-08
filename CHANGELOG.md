@@ -17,46 +17,40 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
 
 ## [Unreleased]
 
+## [4.2.0] - 2026-10-09
+
+A hardening release. Every persisted format is unchanged: storage keys,
+workspace `schemaVersion` 2, review `schemaVersion` 4, the fingerprints, the ID
+format and dataset `2026-09-30.generic.2`, so data already saved in browsers
+and in exports still loads; fixtures written by v4.1.0 are now part of the
+test suite to prove it.
+
 ### Added
 
 - One application version source (`src/version.js`, mirroring `package.json`)
   shown in the desk footer and the source-review header and sent in both
   User-Agent strings, a `npm run check:version` consistency check and this
   changelog.
-- **Delete copy** for each desk recovery copy in Workspace & data, with a
-  confirming second click.
-- `--help` and `--version` for the dev and preview server
-  (`scripts/server.mjs`).
-- A strict Content-Security-Policy and hardening headers (`nosniff`,
-  `Referrer-Policy: no-referrer`, a restrictive `Permissions-Policy`,
-  `X-Frame-Options: DENY`) for every hosted path, defined once in
-  `vercel.json` and served identically by the local server, with browser
-  tests and the build smoke failing on any policy violation.
 - A tag-driven release workflow (`.github/workflows/release.yml`): a `vX.Y.Z`
   tag on `main` is checked against every version surface, tested, built and
   published as a GitHub Release with the static ZIP and this changelog's
   section as notes (`npm run release:notes`); a manual run is a dry run.
+- `--help` and `--version` for the dev and preview server
+  (`scripts/server.mjs`).
+- **Delete copy** for each desk recovery copy in Workspace & data, with a
+  confirming second click.
 - Continuous integration on Node 22.13 (the engines floor) and 24 on Linux
   and Windows, a version-consistency step, and Dependabot for npm packages
   and the SHA-pinned actions.
+- The static build and its ZIP include `LICENSE`, and `package.json` declares
+  `"license": "UNLICENSED"`, so the published files carry their reuse terms.
 
 ### Changed
 
-- The dev and preview server parses its arguments strictly: a missing or
-  invalid `--port` or `--host` value or an unknown flag prints the usage to
-  stderr and exits 2, instead of crashing with a stack trace or binding every
-  interface while refusing every request.
 - Desk recovery copies are bounded: after a successful import or reset the
   newest copy is always kept, then older copies while there are at most ten
   within 2 MB of storage. The recovery list labels copies from a plain parse
   instead of replaying every copy each time it opens.
-- `npm run check:links` writes its report to the ignored
-  `test-results/artifacts/source-links.json` instead of overwriting the
-  tracked historical `artifacts/source-links.json`.
-- `npm run audit:content` reads its guarded terms from a local file outside
-  the repository (`STABLE_DESK_AUDIT_TERMS`), reports findings by term number
-  only, and exits 2 when that file is absent while still running its
-  structural checks.
 - Fewer full event-history replays: views and dialogs reuse the projection
   computed once per change (saving a decision drops from 9 replays to 5, and
   switching to Decisions from 3 to 0), and Source review decodes the adopted
@@ -69,6 +63,17 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
 - Source review's file pickers are visible labelled inputs instead of hidden
   inputs inside button-styled labels, the restore panel has a heading, and
   `review.html` gains a description and a no-JavaScript fallback.
+- The dev and preview server parses its arguments strictly: a missing or
+  invalid `--port` or `--host` value or an unknown flag prints the usage to
+  stderr and exits 2, instead of crashing with a stack trace or binding every
+  interface while refusing every request.
+- `npm run check:links` writes its report to the ignored
+  `test-results/artifacts/source-links.json` instead of overwriting the
+  tracked historical `artifacts/source-links.json`.
+- `npm run audit:content` reads its guarded terms from a local file outside
+  the repository (`STABLE_DESK_AUDIT_TERMS`), reports findings by term number
+  only, and exits 2 when that file is absent while still running its
+  structural checks.
 - CI runs once per pull-request update instead of twice (branch pushes outside
   a pull request no longer run it), cancels superseded pull-request runs,
   never cancels `main` runs, can be started by hand, and no longer leaves the
@@ -76,20 +81,11 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
 
 ### Fixed
 
-- The hosted source check now refuses browser requests initiated by another
-  site (`Sec-Fetch-Site` cross-site or same-site, or a foreign `Origin`) with
-  403 before any upstream fetch or cooldown, as the local server already did.
 - A malformed JSON body, or any unexpected adapter failure, now answers the
-  endpoint's JSON contract with no-store and nosniff headers instead of a
-  platform error page.
+  check endpoint's JSON contract with no-store and nosniff headers instead of
+  a platform error page.
 - The collector releases unread upstream bodies on redirect, error and
   wrong-media-type responses, and `checkedAt` uses the injected clock.
-- Documentation no longer says v4.1 is an unpublished candidate: it was merged
-  through PR #3 and is live. The README states the license terms instead of
-  "no license selected", one menu name is used throughout, the architecture
-  map covers every module and script, a stale 320 px overflow limit is
-  corrected, and the public deployment guide uses placeholders instead of
-  hosting-account identifiers.
 - The desk and source review open on a plain-HTTP preview reached by LAN or VM
   address. IDs fall back to `crypto.getRandomValues` where the secure-context
   `crypto.randomUUID` is missing; the stored ID format is unchanged.
@@ -103,23 +99,34 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
 - A change that would make the saved workspace too large to reopen is refused
   with a clear message before anything is written, instead of saving a
   workspace the desk could no longer load.
+- A full storage quota no longer blocks import and reset with a raw
+  DOMException: the oldest recovery copies are evicted first (never the live
+  workspace, drafts, legacy or review keys), and if the replacement still
+  cannot fit, nothing is replaced and a clear message explains what to do.
 - Restoring a malformed review backup (null or non-object journal, check,
   candidate or snapshot entries) reports a review validation error instead of
   an internal TypeError. Valid schema-4 states are unaffected.
 - The weekly change brief keeps reviewer labels and rationales on one inert
   Markdown line (no headings, links, emphasis, code or HTML), no longer
   doubles a trailing period, and rejects an invalid brief date.
-- A full storage quota no longer blocks import and reset with a raw
-  DOMException: the oldest recovery copies are evicted first (never the live
-  workspace, drafts, legacy or review keys), and if the replacement still
-  cannot fit, nothing is replaced and a clear message explains what to do.
-
-- The static build and its ZIP now include `LICENSE`, and `package.json`
-  declares `"license": "UNLICENSED"`, so the published files carry their reuse
-  terms.
+- Documentation no longer says v4.1 is an unpublished candidate: it was merged
+  through PR #3 and is live. The README states the license terms instead of
+  "no license selected", one menu name is used throughout, the architecture
+  map covers every module and script, a stale 320 px overflow limit is
+  corrected, and the public deployment guide uses placeholders instead of
+  hosting-account identifiers.
 
 ### Security
 
+- The hosted source check refuses browser requests initiated by another site
+  (`Sec-Fetch-Site` cross-site or same-site, or an `Origin` matching neither
+  `Host` nor `X-Forwarded-Host`) with 403 before any upstream fetch or
+  cooldown, as the local server already did.
+- A strict Content-Security-Policy and hardening headers (`nosniff`,
+  `Referrer-Policy: no-referrer`, a restrictive `Permissions-Policy`,
+  `X-Frame-Options: DENY`) for every hosted path, defined once in
+  `vercel.json` and served identically by the local server, with browser
+  tests and the build smoke failing on any policy violation.
 - The content-audit script no longer reconstructs, from split string
   literals, the former identifiers the repository was genericized to remove;
   its terms now live only in a local file outside the tree. Earlier Git
@@ -170,8 +177,9 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
 
 - Initial desk and genericized demo checkpoints ([0.1.0] and 0.1.1).
 
-[Unreleased]: https://github.com/EauDoon/stable-desk/compare/436f5e11eb2434cb12d352709ae21d66ecb64f07...HEAD
-[4.1.0]: https://github.com/EauDoon/stable-desk/commit/436f5e11eb2434cb12d352709ae21d66ecb64f07
+[Unreleased]: https://github.com/EauDoon/stable-desk/compare/v4.2.0...HEAD
+[4.2.0]: https://github.com/EauDoon/stable-desk/compare/v4.1.0...v4.2.0
+[4.1.0]: https://github.com/EauDoon/stable-desk/releases/tag/v4.1.0
 [4.0.0]: https://github.com/EauDoon/stable-desk/commit/780d4070c331555ffc2718bb54d2d0508bd02f3f
 [0.2.0]: https://github.com/EauDoon/stable-desk/commit/224846c6ce03faadd54d9b6b2c0a397befa928f8
 [0.1.1]: https://github.com/EauDoon/stable-desk/commit/434aac996748482fb4d825b4cb667d11c4e8e324

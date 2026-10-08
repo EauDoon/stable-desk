@@ -47,7 +47,7 @@ test("a missing, empty or unnamed version is refused", () => {
 
 test("the repository changelog has notes for the current and backfilled releases", () => {
   const current = sectionFor(changelog, pkg.version);
-  assert.match(current, /^### /);
+  assert.match(current, /^### (Added|Changed|Fixed|Security)$/m);
   assert.doesNotMatch(current, /^## /m);
   const earlier = sectionFor(changelog, "4.1.0");
   assert.match(earlier, /review queue/);
