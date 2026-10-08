@@ -28,7 +28,18 @@ const equal = (a, b) => canonical(a) === canonical(b);
 const assert = (value, message) => {
   if (!value) throw new Error(message);
 };
-export const uid = (prefix) => `${prefix}-${globalThis.crypto.randomUUID()}`;
+// crypto.randomUUID exists only in secure contexts (HTTPS or localhost). A
+// preview opened over plain HTTP by LAN or VM address still has
+// getRandomValues, so build the same RFC 9562 version 4 form from it.
+export function uuid(c = globalThis.crypto) {
+  if (typeof c?.randomUUID === "function") return c.randomUUID();
+  const b = c.getRandomValues(new Uint8Array(16));
+  b[6] = (b[6] & 0x0f) | 0x40;
+  b[8] = (b[8] & 0x3f) | 0x80;
+  const hex = Array.from(b, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+export const uid = (prefix) => `${prefix}-${uuid()}`;
 export function canonical(value) {
   if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
   if (plain(value))

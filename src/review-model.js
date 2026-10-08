@@ -7,6 +7,7 @@ import {
   parseV2Import,
   workspaceHead,
   canonical,
+  uuid,
 } from "./workspace.js";
 
 export const WATCH = Object.freeze({
@@ -237,7 +238,7 @@ export function applyReview(
       "Invalid collection result.",
     );
     const check = {
-      id: globalThis.crypto.randomUUID(),
+      id: uuid(),
       sourceId: WATCH.id,
       url: WATCH.url,
       profileId,
@@ -275,7 +276,7 @@ export function applyReview(
           "Approved public-market evidence target is unavailable.",
         );
         const candidate = {
-          id: globalThis.crypto.randomUUID(),
+          id: uuid(),
           sourceId: WATCH.id,
           evidenceId: WATCH.evidenceId,
           url: WATCH.url,

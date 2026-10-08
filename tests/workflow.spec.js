@@ -1028,3 +1028,30 @@ test("a cache corrupted during editing is retained rather than mistaken for stor
     }),
   ).toBeVisible();
 });
+
+test("a plain-HTTP preview opened by LAN address still opens the desk and source review", async ({ page }, info) => {
+  test.skip(info.project.name !== "desktop", "One non-secure origin check covers both layouts.");
+  // A LAN or VM address over HTTP is not a secure context, so crypto.randomUUID
+  // is absent there. Proxy a non-loopback origin to the local server.
+  await page.route("http://lan-preview.test/**", async (route) => {
+    const url = new URL(route.request().url());
+    const response = await route.fetch({ url: `http://127.0.0.1:4173${url.pathname}${url.search}` });
+    await route.fulfill({ response });
+  });
+  await page.goto("http://lan-preview.test/");
+  expect(await page.evaluate(() => [isSecureContext, typeof crypto.randomUUID])).toEqual([false, "undefined"]);
+  await expect(
+    page.getByRole("heading", { name: "Where could STABLE fit?", exact: true }),
+  ).toBeVisible();
+  await saveDecision(page, "Assessment saved from a plain-HTTP preview origin.");
+  const events = (await stored(page)).workspace.events;
+  expect(events.at(-1).type).toBe("decision_saved");
+  for (const event of events)
+    expect(event.id).toMatch(/^EV-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+  await page.goto("http://lan-preview.test/review.html");
+  await page.getByRole("button", { name: "Start from public baseline" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Review inbox", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator(".footer")).toContainText("Version 0");
+});

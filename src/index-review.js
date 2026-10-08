@@ -9,4 +9,4 @@ export {
   ReviewError,
 } from "./review-model.js";
 export { reviewStore } from "./review-store.js";
-export { parseV2Import, activeState, prepareDataset } from "./workspace.js";
+export { parseV2Import, activeState, prepareDataset, uuid } from "./workspace.js";

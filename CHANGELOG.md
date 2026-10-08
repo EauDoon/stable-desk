@@ -34,6 +34,9 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
   platform error page.
 - The collector releases unread upstream bodies on redirect, error and
   wrong-media-type responses, and `checkedAt` uses the injected clock.
+- The desk and source review open on a plain-HTTP preview reached by LAN or VM
+  address. IDs fall back to `crypto.getRandomValues` where the secure-context
+  `crypto.randomUUID` is missing; the stored ID format is unchanged.
 
 ## [4.1.0] - 2026-10-05
 

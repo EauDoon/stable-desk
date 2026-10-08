@@ -9,6 +9,7 @@ import {
   commitOperation,
   workspaceHead,
   uid,
+  uuid,
   assumptionStatus,
   priorityStatus,
   decisionStatus,
@@ -807,4 +808,33 @@ test("review queue retains an independent legacy decision without claiming a new
   assert.equal(queue[0].label, "Legacy decision retained");
   assert.equal(queue[0].dueAt, "2026-10-30");
   assert.equal(state.decisions["D-G01"].value.basis, null);
+});
+
+test("IDs fall back to getRandomValues where randomUUID is unavailable", () => {
+  const v4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+  const fallback = uuid({ getRandomValues: (a) => a.fill(0xab) });
+  assert.match(fallback, v4);
+  assert.equal(fallback, "abababab-abab-4bab-abab-abababababab");
+  assert.match(uuid({ getRandomValues: (a) => a.fill(0) }), v4);
+  assert.match(uuid({ getRandomValues: (a) => a.fill(0xff) }), v4);
+  // A secure context keeps using the platform generator.
+  assert.equal(uuid({ randomUUID: () => "platform-value", getRandomValues: () => assert.fail() }), "platform-value");
+  assert.match(uuid(), v4);
+  // The fallback ID still satisfies the stored ID format and replays.
+  const original = Object.getOwnPropertyDescriptor(globalThis, "crypto");
+  const { getRandomValues } = globalThis.crypto;
+  Object.defineProperty(globalThis, "crypto", {
+    configurable: true,
+    value: { getRandomValues: (a) => getRandomValues.call(original.value ?? original.get.call(globalThis), a) },
+  });
+  try {
+    const id = uid("WS");
+    assert.match(id, /^WS-[0-9a-f-]{36}$/);
+    const ws = createWorkspace(seed);
+    assert.match(ws.id, /^WS-/);
+    assert.equal(projectWorkspace(seed, ws).events.length, 0);
+    assert.equal(parseV2Import(JSON.stringify(exportV2(seed, ws))).workspace.id, ws.id);
+  } finally {
+    Object.defineProperty(globalThis, "crypto", original);
+  }
 });

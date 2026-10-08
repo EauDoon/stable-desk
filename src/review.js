@@ -9,6 +9,7 @@ import {
   prepareDataset,
   weeklyBrief,
   WATCH,
+  uuid,
 } from "./index-review.js";
 import { escapeHTML as esc } from "./workflow-ui.js";
 import { VERSION } from "./version.js";
@@ -28,7 +29,7 @@ let review = null,
   restoreExpected = null;
 try { review = reviewStore.read(); }
 catch (error) { message = error.message; unreadable = true; }
-const op = () => `REVIEW-${crypto.randomUUID()}`;
+const op = () => `REVIEW-${uuid()}`;
 const ACTOR = "local-reviewer";
 let seed = null;
 function download(value, name, type = "application/json") {
