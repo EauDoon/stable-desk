@@ -41,6 +41,13 @@ import {
   historyMarkup,
 } from "./workflow-ui.js";
 import { reviewStore } from "./review-store.js";
+import {
+  listArchives,
+  writeArchive,
+  setEvictingArchives,
+  pruneArchives,
+  deleteArchive,
+} from "./archive-store.js";
 import { VERSION } from "./version.js";
 const STORAGE_KEY = "stable-desk:v2";
 const LEGACY_KEY = "stable-desk:generic-v1";
@@ -83,6 +90,7 @@ let data,
   selected = new Set(),
   pendingImport = null,
   importRead = 0,
+  armedBackup = null,
   queueKind = "all";
 let filters = { query: "", lane: "", relationship: "", market: "" };
 let view = ["opportunities", "evidence", "changes", "decisions"].includes(
@@ -162,39 +170,56 @@ const withLock = (fn) =>
   navigator.locks
     ? navigator.locks.request("stable-desk-workspace-write", fn)
     : Promise.resolve().then(fn);
+// Archives the saved copy, and unsaved in-memory work if it differs, before a
+// replacement. Returns the keys written so they survive eviction and pruning.
 function archiveCurrent() {
+  const written = [];
   const raw = localStorage.getItem(STORAGE_KEY);
-  if (raw !== null)
-    localStorage.setItem(
-      `stable-desk:archive:${Date.now()}:${uid("BACKUP")}`,
-      raw,
-    );
+  if (raw !== null) written.push(writeArchive(localStorage, raw, { keep: written }));
   if (!blockedCache && workspaceHead(workspace) !== lastDiskHead)
-    localStorage.setItem(
-      `stable-desk:archive:${Date.now()}:${uid("BACKUP")}`,
-      JSON.stringify(exportV2(seed, workspace)),
+    written.push(
+      writeArchive(localStorage, JSON.stringify(exportV2(seed, workspace)), {
+        keep: written,
+      }),
     );
+  return written;
 }
+// Labels come from a plain parse; full validation and replay run only when a
+// copy is previewed for restore.
 function backups() {
   try {
-    return Object.keys(localStorage)
-      .filter((k) => k.startsWith("stable-desk:archive:"))
-      .sort()
-      .reverse()
-      .map((key) => {
-        try {
-          const parsed = parseV2Import(localStorage.getItem(key));
-          return {
-            key,
-            label: `${parsed.workspace.id} · ${parsed.workspace.events.length} events`,
-          };
-        } catch {
-          return { key, label: "Unparsed recovery copy" };
-        }
-      });
+    return listArchives(localStorage).map((key) => {
+      let ws;
+      try {
+        ws = JSON.parse(localStorage.getItem(key))?.workspace;
+      } catch {
+        ws = null;
+      }
+      return typeof ws?.id === "string" && Array.isArray(ws.events)
+        ? { key, label: `${ws.id} · ${ws.events.length} events` }
+        : { key, label: "Unparsed recovery copy" };
+    });
   } catch {
     return [];
   }
+}
+function backupList() {
+  return (
+    backups()
+      .map(
+        (b) =>
+          `<div class="backup-row"><button class="linked-row" data-backup="${esc(b.key)}">${esc(b.label)}</button><button class="text-button" data-delete-backup="${esc(b.key)}" aria-label="${armedBackup === b.key ? "Confirm delete of" : "Delete"} recovery copy ${esc(b.label)}">${armedBackup === b.key ? "Confirm delete" : "Delete copy"}</button></div>`,
+      )
+      .join("") || '<p class="muted small">No recovery copies yet.</p>'
+  );
+}
+function renderBackups(focusKey = null) {
+  const list = document.querySelector("#backup-list");
+  if (!list) return;
+  list.innerHTML = backupList();
+  const next = focusKey &&
+    [...list.querySelectorAll("[data-delete-backup]")].find((b) => b.dataset.deleteBackup === focusKey);
+  (next ?? document.querySelector("#backup-heading"))?.focus();
 }
 function sourceIds(evidenceIds) {
   return [
@@ -403,14 +428,8 @@ function openUtility(mode) {
       "",
     )}</div><p>Documented facts establish source content and announcement existence, not independent product performance. Performance, launch and availability claims retain company attribution. Synthetic examples are constructed hypotheses; their sources provide market context only.</p><p>The demo has no issuer relationships. Real company-to-company context keeps original names and dates. Token supply, aggregate onchain transfers and card spend do not establish payment adoption.</p><h3>Source coverage</h3><p class="small muted">${data.sources.length} primary sources · baseline as of ${formatDate(data.meta.asOf)} · local check dates shown separately.</p>${data.sources.map(sourceMarkup).join("")}`;
   const method = `<p class="detail-lead">A manual research loop with an inspectable revision trail.</p><ol class="method-steps"><li><strong>Configure a subject.</strong> Keep the fictional placeholder or deliberately enable real research mode. Settings never establish partnerships.</li><li><strong>Review an original source.</strong> In Evidence, record unchanged, unreachable or content revised. A failed check leaves its coverage unresolved; it does not change the claim.</li><li><strong>Preview claim revisions.</strong> Compare old/new values and exact affected assumptions before committing. Add evidence with explicit dependencies.</li><li><strong>Reconsider assumptions and decisions.</strong> Record reasoning against current revisions. Changed or withdrawn evidence requires review and preserves the previous decision.</li><li><strong>Back up the full record.</strong> Export profiles, evidence, decisions and events. Imports validate replay and reject divergent history. Local drafts recover interrupted editing.</li></ol><p>Reload loads saved data. It does not fetch sources. No recurring collection or AI chat is implemented. This local audit record is not cryptographically tamper-proof.</p><p><a href="./docs/UPDATING.md" target="_blank">Update guide</a> · <a href="./docs/PRIORITIES.md" target="_blank">Priority brief</a> · <a href="./docs/V4_REVIEW.md" target="_blank">v4 source review and its limits</a></p>`;
-  const local = `<p class="detail-lead">Local profiles, manual evidence and revision-bound decisions.</p><p>Public information only. Nothing is submitted to a service. Storage is browser-local, with no automatic backup or collaboration sync. Drafts are separate from committed history and exports.</p><div class="utility-actions"><button class="button primary" data-export>${icon("download", 16)} Export full workspace</button><a class="button" href="./data/baseline.json" download="stable-desk-baseline.json">Download repository baseline</a><button class="button" data-profiles>Manage profiles</button></div><section class="detail-section"><h3>Restore or incorporate a workspace</h3><p class="small muted">Import a validated generic JSON baseline or v1/v2 workspace, up to 4 MB. A different workspace archives the current saved copy before opening. Same-identity histories must be a matching prefix; divergent revisions are rejected.</p><div class="utility-actions"><button class="button" data-import-review>Preview adopted source review</button><a class="text-button" href="./review.html">Open Source review</a></div><p class="small muted">Copy adopted research from Source review in this browser. Inspect the preview before applying; this does not synchronize the two workspaces.</p><label class="file-label">Choose JSON file<input type="file" id="import-file" accept=".json,application/json" /></label><div id="import-preview" role="status"></div><div id="import-error" class="error" role="alert"></div></section><section class="detail-section"><h3>Recovery copies</h3><p>Restore a copy through the same validated import preview. Current work is archived before replacement.</p>${
-    backups()
-      .map(
-        (b) =>
-          `<button class="linked-row" data-backup="${esc(b.key)}">${esc(b.label)}</button>`,
-      )
-      .join("") || '<p class="muted small">No recovery copies yet.</p>'
-  }${blockedCache ? '<button class="button" data-export-raw>Download unparsed saved data</button>' : ""}</section><section class="detail-section"><h3>Start from the repository baseline</h3><p class="small muted">Archives saved work first. Existing generic v1 storage and drafts remain preserved separately.</p><button class="button" data-reset>Reset local workspace</button></section><p><a href="./docs/ARCHITECTURE.md" target="_blank">Architecture & limitations</a></p>`;
+  const local = `<p class="detail-lead">Local profiles, manual evidence and revision-bound decisions.</p><p>Public information only. Nothing is submitted to a service. Storage is browser-local, with no automatic backup or collaboration sync. Drafts are separate from committed history and exports.</p><div class="utility-actions"><button class="button primary" data-export>${icon("download", 16)} Export full workspace</button><a class="button" href="./data/baseline.json" download="stable-desk-baseline.json">Download repository baseline</a><button class="button" data-profiles>Manage profiles</button></div><section class="detail-section"><h3>Restore or incorporate a workspace</h3><p class="small muted">Import a validated generic JSON baseline or v1/v2 workspace, up to 4 MB. A different workspace archives the current saved copy before opening. Same-identity histories must be a matching prefix; divergent revisions are rejected.</p><div class="utility-actions"><button class="button" data-import-review>Preview adopted source review</button><a class="text-button" href="./review.html">Open Source review</a></div><p class="small muted">Copy adopted research from Source review in this browser. Inspect the preview before applying; this does not synchronize the two workspaces.</p><label class="file-label">Choose JSON file<input type="file" id="import-file" accept=".json,application/json" /></label><div id="import-preview" role="status"></div><div id="import-error" class="error" role="alert"></div></section><section class="detail-section"><h3 id="backup-heading" tabindex="-1">Recovery copies</h3><p>Restore a copy through the same validated import preview. Current work is archived before replacement. The newest copy is always kept; older copies beyond ten or 2 MB are removed after a replacement.</p><div id="backup-list">${backupList()}</div>${blockedCache ? '<button class="button" data-export-raw>Download unparsed saved data</button>' : ""}</section><section class="detail-section"><h3>Start from the repository baseline</h3><p class="small muted">Archives saved work first. Existing generic v1 storage and drafts remain preserved separately.</p><button class="button" data-reset>Reset local workspace</button></section><p><a href="./docs/ARCHITECTURE.md" target="_blank">Architecture & limitations</a></p>`;
+  armedBackup = null;
   utilityDialog.innerHTML = `<div class="dialog-header"><div><div class="eyebrow">Research method</div><h2 id="utility-title">${mode === "coverage" ? "Evidence coverage" : mode === "method" ? "How to update the desk" : "Workspace & data"}</h2></div><button class="icon-button" data-close aria-label="Close workspace dialog">${icon("close")}</button></div><div class="dialog-body">${mode === "coverage" ? coverage : mode === "method" ? method : local}</div>`;
   pendingImport = null;
   if (!utilityDialog.open) utilityDialog.showModal();
@@ -766,8 +785,15 @@ async function replaceWorkspace(candidate) {
         );
     }
     const serialized = serializeWorkspace(candidate.seed, candidate.workspace);
-    archiveCurrent(); // If backup or write fails, leave the active workspace intact.
-    localStorage.setItem(STORAGE_KEY, serialized);
+    // If an archive or the live write cannot fit even after evicting older
+    // copies, nothing is replaced and the active workspace stays intact.
+    const archived = archiveCurrent();
+    setEvictingArchives(localStorage, STORAGE_KEY, serialized, archived);
+    try {
+      pruneArchives(localStorage, { keep: archived });
+    } catch {
+      /* Pruning is housekeeping; the replacement already succeeded. */
+    }
     seed = candidate.seed;
     workspace = candidate.workspace;
     lastDiskHead = workspaceHead(workspace);
@@ -950,6 +976,18 @@ document.addEventListener("click", async (event) => {
       previewImport(JSON.stringify(review.desk));
       document.querySelector("#import-preview").insertAdjacentHTML("afterbegin",
         `<p class="small">Source review snapshot, version ${review.version}. Only adopted research is included. Pending candidates stay in Source review; later changes require another import.</p>`);
+    }
+    if (target.dataset.deleteBackup) {
+      const key = target.dataset.deleteBackup;
+      if (armedBackup !== key) {
+        armedBackup = key;
+        renderBackups(key);
+      } else {
+        deleteArchive(localStorage, key);
+        armedBackup = null;
+        renderBackups();
+        notify("Deleted one recovery copy.");
+      }
     }
     if (target.dataset.backup) {
       importRead++;

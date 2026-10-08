@@ -1513,6 +1513,22 @@ details[open] summary {
   gap: 10px;
   margin: 20px 0;
 }
+.backup-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.backup-row .linked-row {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.backup-row .text-button {
+  flex: none;
+}
 .import-summary {
   border: 1px solid #c8d8bc;
   background: #f0f5eb;

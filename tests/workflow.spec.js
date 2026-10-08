@@ -1130,3 +1130,56 @@ test("a save that would exceed the reload limit is refused and nothing is writte
   await page.reload();
   expect((await stored(page)).workspace.events).toHaveLength(ws.events.length);
 });
+
+test("recovery copies stay bounded, survive a full quota and can be deleted one at a time", async ({ page }) => {
+  const before = (await stored(page)).workspace.id;
+  // Fill the origin quota with large, valid recovery copies, as repeated
+  // imports and resets used to.
+  const seeded = await page.evaluate(() => {
+    const padded = localStorage.getItem("stable-desk:v2").padEnd(400_000, " ");
+    localStorage.setItem("stable-desk:review-history", "[]");
+    let count = 0;
+    for (let i = 1; i <= 40; i++) {
+      try {
+        localStorage.setItem(`stable-desk:archive:${1000 + i}:BACKUP-seed-${i}`, padded);
+        count++;
+      } catch {
+        break;
+      }
+    }
+    return count;
+  });
+  expect(seeded).toBeGreaterThan(10);
+  expect(seeded).toBeLessThan(40); // the quota refused a further copy
+  await page.getByRole("button", { name: "Workspace backup and import", exact: true }).click();
+  await expect(page.locator("[data-backup]")).toHaveCount(seeded);
+  await page.getByRole("button", { name: "Reset local workspace", exact: true }).click();
+  await expect(page.locator("#utility-dialog")).not.toBeVisible();
+  await expect(page.locator("#notice")).toContainText("Opened validated workspace");
+  const after = await page.evaluate(() => ({
+    archives: Object.keys(localStorage).filter((k) => k.startsWith("stable-desk:archive:")).sort(),
+    history: localStorage.getItem("stable-desk:review-history"),
+  }));
+  expect((await stored(page)).workspace.id).not.toBe(before);
+  expect(after.history).toBe("[]");
+  expect(after.archives.length).toBeGreaterThan(0);
+  expect(after.archives.length).toBeLessThanOrEqual(10);
+  // The newest copy is the workspace that the reset replaced.
+  await page.getByRole("button", { name: "Workspace backup and import", exact: true }).click();
+  const rows = page.locator("[data-backup]");
+  await expect(rows).toHaveCount(after.archives.length);
+  await expect(rows.first()).toContainText(before);
+  expect(await rows.first().getAttribute("data-backup")).toBe(after.archives.at(-1));
+  // Deleting needs a second, confirming click and removes exactly one key.
+  const target = await rows.last().getAttribute("data-backup");
+  const remove = page.locator(`[data-delete-backup="${target}"]`);
+  await remove.click();
+  await expect(remove).toHaveText("Confirm delete");
+  expect(await page.evaluate((key) => localStorage.getItem(key) !== null, target)).toBe(true);
+  await remove.click();
+  await expect(rows).toHaveCount(after.archives.length - 1);
+  const remaining = await page.evaluate(() =>
+    Object.keys(localStorage).filter((k) => k.startsWith("stable-desk:archive:")).sort());
+  expect(remaining).toEqual(after.archives.filter((key) => key !== target));
+  expect((await stored(page)).workspace.events).toHaveLength(0);
+});

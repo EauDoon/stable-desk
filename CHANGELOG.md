@@ -23,6 +23,15 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
   shown in the desk footer and the source-review header and sent in both
   User-Agent strings, a `npm run check:version` consistency check and this
   changelog.
+- **Delete copy** for each desk recovery copy in Workspace & data, with a
+  confirming second click.
+
+### Changed
+
+- Desk recovery copies are bounded: after a successful import or reset the
+  newest copy is always kept, then older copies while there are at most ten
+  within 2 MB of storage. The recovery list labels copies from a plain parse
+  instead of replaying every copy each time it opens.
 
 ### Fixed
 
@@ -53,6 +62,10 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
 - The weekly change brief keeps reviewer labels and rationales on one inert
   Markdown line (no headings, links, emphasis, code or HTML), no longer
   doubles a trailing period, and rejects an invalid brief date.
+- A full storage quota no longer blocks import and reset with a raw
+  DOMException: the oldest recovery copies are evicted first (never the live
+  workspace, drafts, legacy or review keys), and if the replacement still
+  cannot fit, nothing is replaced and a clear message explains what to do.
 
 ## [4.1.0] - 2026-10-05
 
