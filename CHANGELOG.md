@@ -32,6 +32,10 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
   `X-Frame-Options: DENY`) for every hosted path, defined once in
   `vercel.json` and served identically by the local server, with browser
   tests and the build smoke failing on any policy violation.
+- A tag-driven release workflow (`.github/workflows/release.yml`): a `vX.Y.Z`
+  tag on `main` is checked against every version surface, tested, built and
+  published as a GitHub Release with the static ZIP and this changelog's
+  section as notes (`npm run release:notes`); a manual run is a dry run.
 - Continuous integration on Node 22.13 (the engines floor) and 24 on Linux
   and Windows, a version-consistency step, and Dependabot for npm packages
   and the SHA-pinned actions.
@@ -103,6 +107,10 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
   DOMException: the oldest recovery copies are evicted first (never the live
   workspace, drafts, legacy or review keys), and if the replacement still
   cannot fit, nothing is replaced and a clear message explains what to do.
+
+- The static build and its ZIP now include `LICENSE`, and `package.json`
+  declares `"license": "UNLICENSED"`, so the published files carry their reuse
+  terms.
 
 ### Security
 

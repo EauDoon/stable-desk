@@ -25,6 +25,7 @@ for (const file of [
   "favicon.svg",
   "README.md",
   "CHANGELOG.md",
+  "LICENSE",
   "src",
   "data",
   "docs",
