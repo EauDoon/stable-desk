@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures.js";
 import { readFile } from "node:fs/promises";
 import {
   prepareDataset,
@@ -7,6 +7,8 @@ import {
   workspaceHead,
   uid,
   exportV2,
+  createWorkspace,
+  IMPORT_LIMIT_BYTES,
 } from "../src/workspace.js";
 import { blankWorkspace } from "../src/model.js";
 const seed = prepareDataset(
@@ -1027,4 +1029,228 @@ test("a cache corrupted during editing is retained rather than mistaken for stor
       exact: true,
     }),
   ).toBeVisible();
+});
+
+test("a plain-HTTP preview opened by LAN address still opens the desk and source review", async ({ page }, info) => {
+  test.skip(info.project.name !== "desktop", "One non-secure origin check covers both layouts.");
+  // A LAN or VM address over HTTP is not a secure context, so crypto.randomUUID
+  // is absent there. Proxy a non-loopback origin to the local server.
+  await page.route("http://lan-preview.test/**", async (route) => {
+    const url = new URL(route.request().url());
+    const response = await route.fetch({ url: `http://127.0.0.1:4173${url.pathname}${url.search}` });
+    await route.fulfill({ response });
+  });
+  await page.goto("http://lan-preview.test/");
+  expect(await page.evaluate(() => [isSecureContext, typeof crypto.randomUUID])).toEqual([false, "undefined"]);
+  await expect(
+    page.getByRole("heading", { name: "Where could STABLE fit?", exact: true }),
+  ).toBeVisible();
+  await saveDecision(page, "Assessment saved from a plain-HTTP preview origin.");
+  const events = (await stored(page)).workspace.events;
+  expect(events.at(-1).type).toBe("decision_saved");
+  for (const event of events)
+    expect(event.id).toMatch(/^EV-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+  await page.goto("http://lan-preview.test/review.html");
+  await page.getByRole("button", { name: "Start from public baseline" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Review inbox", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator(".footer")).toContainText("Version 0");
+});
+
+test("wrong JSON files and vanished recovery copies are rejected in plain terms", async ({ page }) => {
+  await importText(page, {});
+  await expect(page.locator("#import-error")).toHaveText(
+    "Import rejected: Dataset meta must be an object.",
+  );
+  await page.locator("#import-file").setInputFiles({
+    name: "broken.json", mimeType: "application/json", buffer: Buffer.from("{"),
+  });
+  await expect(page.locator("#import-error")).toHaveText("Import rejected: Import is not valid JSON.");
+  await expect(page.locator("[data-apply-import]")).toHaveCount(0);
+  await page.keyboard.press("Escape");
+  await page.evaluate(() => localStorage.setItem("stable-desk:archive:1:BACKUP-gone", "{}"));
+  await page.getByRole("button", { name: "Workspace backup and import", exact: true }).click();
+  await page.evaluate(() => localStorage.removeItem("stable-desk:archive:1:BACKUP-gone"));
+  await page.locator('[data-backup="stable-desk:archive:1:BACKUP-gone"]').click();
+  await expect(page.locator("#import-error")).toHaveText(
+    "Recovery rejected: That recovery copy is no longer available.",
+  );
+});
+
+test("a save that would exceed the reload limit is refused and nothing is written", async ({ page }, info) => {
+  test.skip(info.project.name !== "desktop", "Storage limits do not depend on the layout.");
+  // Build a valid history just under the 4 MiB reload limit from long notes.
+  const long = (i, n = 10000) => `${i} `.padEnd(n, "x");
+  const base = seed.decisions.find((d) => d.id === "D-G01");
+  let ws = createWorkspace(seed), i = 0;
+  const save = (from, notes) => {
+    const s = projectWorkspace(seed, from).profiles[from.activeProfileId];
+    return commitOperation(seed, from, {
+      type: "decision_saved",
+      profileId: from.activeProfileId,
+      recordId: "D-G01",
+      expectedRevision: s.decisions["D-G01"].revision,
+      expectedHead: workspaceHead(from),
+      opId: uid("OP"),
+      actor: "Researcher",
+      rationale: notes,
+      after: { status: base.status, owner: base.owner, reviewBy: base.reviewBy, notes },
+      assumptionIds: [],
+    }).workspace;
+  };
+  const size = (value) => JSON.stringify(exportV2(seed, value)).length;
+  // Each event stores the previous note, the new note and the rationale (the
+  // same text), plus a roughly constant overhead. Stop about 8,000 characters
+  // short of the limit, so the browser's 10,000-character note cannot fit.
+  let current = size(ws), previous = 0, overhead = 2000;
+  while (IMPORT_LIMIT_BYTES - current > 10000) {
+    const n = Math.min(10000, Math.floor((IMPORT_LIMIT_BYTES - current - 8000 - previous - overhead) / 2));
+    if (n < 50) break;
+    ws = save(ws, long(++i, n));
+    const next = size(ws);
+    overhead = next - current - previous - 2 * n;
+    current = next;
+    previous = n;
+  }
+  expect(current).toBeLessThan(IMPORT_LIMIT_BYTES);
+  expect(IMPORT_LIMIT_BYTES - current).toBeLessThan(20000);
+  const raw = JSON.stringify(exportV2(seed, ws));
+  await page.evaluate((raw) => localStorage.setItem("stable-desk:v2", raw), raw);
+  await page.reload();
+  await page.getByRole("link", { name: "Decisions", exact: true }).click();
+  await page.getByRole("button", { name: "Review assessment", exact: false }).first().click();
+  await page.getByLabel("Research notes", { exact: true }).fill("y".repeat(10000));
+  await page.getByRole("button", { name: "Save local assessment", exact: true }).click();
+  await expect(dialog(page).locator(".workflow-error")).toContainText(
+    "would make the saved workspace exceed 4 MB",
+  );
+  await expect(dialog(page)).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem("stable-desk:v2"))).toBe(raw);
+  await page.reload();
+  expect((await stored(page)).workspace.events).toHaveLength(ws.events.length);
+});
+
+test("recovery copies stay bounded, survive a full quota and can be deleted one at a time", async ({ page }) => {
+  const before = (await stored(page)).workspace.id;
+  // Fill the origin quota with large, valid recovery copies, as repeated
+  // imports and resets used to.
+  const seeded = await page.evaluate(() => {
+    const padded = localStorage.getItem("stable-desk:v2").padEnd(400_000, " ");
+    localStorage.setItem("stable-desk:review-history", "[]");
+    let count = 0;
+    for (let i = 1; i <= 40; i++) {
+      try {
+        localStorage.setItem(`stable-desk:archive:${1000 + i}:BACKUP-seed-${i}`, padded);
+        count++;
+      } catch {
+        break;
+      }
+    }
+    return count;
+  });
+  expect(seeded).toBeGreaterThan(10);
+  expect(seeded).toBeLessThan(40); // the quota refused a further copy
+  await page.getByRole("button", { name: "Workspace backup and import", exact: true }).click();
+  await expect(page.locator("[data-backup]")).toHaveCount(seeded);
+  await page.getByRole("button", { name: "Reset local workspace", exact: true }).click();
+  await expect(page.locator("#utility-dialog")).not.toBeVisible();
+  await expect(page.locator("#notice")).toContainText("Opened validated workspace");
+  const after = await page.evaluate(() => ({
+    archives: Object.keys(localStorage).filter((k) => k.startsWith("stable-desk:archive:")).sort(),
+    history: localStorage.getItem("stable-desk:review-history"),
+  }));
+  expect((await stored(page)).workspace.id).not.toBe(before);
+  expect(after.history).toBe("[]");
+  expect(after.archives.length).toBeGreaterThan(0);
+  expect(after.archives.length).toBeLessThanOrEqual(10);
+  // The newest copy is the workspace that the reset replaced.
+  await page.getByRole("button", { name: "Workspace backup and import", exact: true }).click();
+  const rows = page.locator("[data-backup]");
+  await expect(rows).toHaveCount(after.archives.length);
+  await expect(rows.first()).toContainText(before);
+  expect(await rows.first().getAttribute("data-backup")).toBe(after.archives.at(-1));
+  // Deleting needs a second, confirming click and removes exactly one key.
+  const target = await rows.last().getAttribute("data-backup");
+  const remove = page.locator(`[data-delete-backup="${target}"]`);
+  await remove.click();
+  await expect(remove).toHaveText("Confirm delete");
+  expect(await page.evaluate((key) => localStorage.getItem(key) !== null, target)).toBe(true);
+  await remove.click();
+  await expect(rows).toHaveCount(after.archives.length - 1);
+  const remaining = await page.evaluate(() =>
+    Object.keys(localStorage).filter((k) => k.startsWith("stable-desk:archive:")).sort());
+  expect(remaining).toEqual(after.archives.filter((key) => key !== target));
+  expect((await stored(page)).workspace.events).toHaveLength(0);
+});
+
+// Count full event-history replays by instrumenting the served module.
+const countReplays = (page) =>
+  page.route("**/src/workspace.js", async (route) => {
+    const response = await route.fetch();
+    const marker = "export function projectWorkspace(seed, ws) {";
+    const body = (await response.text()).replace(
+      marker,
+      `${marker}\n  globalThis.__replays = (globalThis.__replays ?? 0) + 1;`,
+    );
+    expect(body).toContain("__replays");
+    await route.fulfill({ response, body });
+  });
+const replays = (page) => page.evaluate(() => globalThis.__replays ?? 0);
+
+test("views and decision saves reuse one projection instead of replaying history per render", async ({ page }, info) => {
+  test.skip(info.project.name !== "desktop", "Replay counts do not depend on the layout.");
+  await countReplays(page);
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Where could STABLE fit?", exact: true })).toBeVisible();
+  let before = await replays(page);
+  expect(before).toBeGreaterThan(0);
+  await page.getByRole("link", { name: "Decisions", exact: true }).click();
+  await expect(page.locator(".decision-card")).toHaveCount(3);
+  expect(await replays(page)).toBe(before);
+  before = await replays(page);
+  await saveDecision(page, "Replay budget check; public context only.");
+  const added = (await replays(page)) - before;
+  // commitOperation (2), the cross-tab disk re-parse and serialization (2)
+  // and hydrate (1). Rendering the Decisions view adds none.
+  expect(added).toBeLessThanOrEqual(5);
+  await expect(page.locator(".decision-card").first()).toContainText("Replay budget check");
+  before = await replays(page);
+  await page.getByRole("link", { name: "Opportunities", exact: true }).click();
+  await page.getByRole("button", { name: "Open investigation Define one merchant acceptance problem" }).click();
+  await expect(dialog(page)).toContainText("Load-bearing assumptions");
+  expect(await replays(page)).toBe(before);
+});
+
+test("browser data saved by v4.1 opens unchanged in the desk and source review", async ({ page }) => {
+  // Generated by the v4.1.0 modules; see tests/compat.test.mjs.
+  const desk = await readFile(new URL("./compat/v4.1-desk-workspace.json", import.meta.url), "utf8");
+  const review = await readFile(new URL("./compat/v4.1-source-review.json", import.meta.url), "utf8");
+  const archiveKey = "stable-desk:archive:1759568400000:BACKUP-00000000-0000-4000-8000-000000000000";
+  await page.evaluate(([desk, review, archiveKey]) => {
+    localStorage.setItem("stable-desk:v2", desk);
+    localStorage.setItem(archiveKey, desk);
+    localStorage.setItem("stable-desk:review", review);
+  }, [desk, review, archiveKey]);
+  await page.reload();
+  await expect(page.locator(".storage-banner")).toHaveCount(0);
+  await page.getByRole("link", { name: "Decisions", exact: true }).click();
+  await expect(page.locator(".decision-card").first()).toContainText("Compatibility fixture");
+  await page.getByRole("link", { name: "Changes", exact: true }).click();
+  await expect(page.locator(".history-list")).toContainText("decision saved");
+  // Opening the desk never rewrites what v4.1 saved.
+  expect(await page.evaluate(() => localStorage.getItem("stable-desk:v2"))).toBe(desk);
+  await page.getByRole("button", { name: "Workspace backup and import", exact: true }).click();
+  const copy = page.locator(`[data-backup="${archiveKey}"]`);
+  await expect(copy).toContainText(`${JSON.parse(desk).workspace.id} · 7 events`);
+  await copy.click();
+  await expect(page.locator("#import-preview")).toContainText("Validated");
+  await page.getByRole("button", { name: "Preview adopted source review" }).click();
+  await expect(page.locator("#import-preview")).toContainText("Source review snapshot, version 6");
+  await page.keyboard.press("Escape");
+  await page.goto("/review.html");
+  await expect(page.locator(".footer")).toContainText("Version 6");
+  await page.getByRole("button", { name: /Checks & review history/ }).click();
+  await expect(page.locator(".journal-event")).toHaveCount(6);
+  expect(await page.evaluate(() => localStorage.getItem("stable-desk:review"))).toBe(review);
 });

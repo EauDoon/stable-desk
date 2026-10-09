@@ -5,6 +5,46 @@ import {
   requireThat,
 } from "../src/review-model.js";
 
+// Every JSON answer from the check endpoint, hosted or local, carries these.
+export const STANDARD_HEADERS = Object.freeze({
+  "Content-Type": "application/json",
+  "Cache-Control": "no-store",
+  "X-Content-Type-Options": "nosniff",
+  Allow: "GET, POST",
+});
+
+// The only legitimate caller is review.html on the same origin, which always
+// sends a JSON POST. A browser request that another site initiated (an <img>,
+// a form, a no-cors fetch) is refused before it can trigger an upstream fetch
+// or hold the cooldown. The comparison uses the Host and X-Forwarded-Host
+// request headers, never request.url: the Node adapter rebuilds the URL on
+// http://localhost, so its host says nothing about the deployment.
+export function crossSiteRefusal(headers) {
+  const site = headers.get("sec-fetch-site")?.trim().toLowerCase();
+  if (site === "cross-site" || site === "same-site") return true;
+  const origin = headers.get("origin");
+  if (origin === null) return false;
+  let parsed;
+  try {
+    parsed = new URL(origin);
+  } catch {
+    return true;
+  }
+  if (origin === "null" || !["http:", "https:"].includes(parsed.protocol))
+    return true;
+  const authorities = [headers.get("host"), headers.get("x-forwarded-host")]
+    .flatMap((value) => value?.split(",") ?? [])
+    .map((value) => value.trim())
+    .filter(Boolean);
+  return !authorities.some((authority) => {
+    try {
+      return new URL(`${parsed.protocol}//${authority}`).host === parsed.host;
+    } catch {
+      return false;
+    }
+  });
+}
+
 // The only server-side capability v4 keeps: a bounded fetch of one fixed public
 // page. It accepts no URL, no redirect target and no credentials, so it is not
 // a general-purpose proxy. All review state is held and validated in the
@@ -13,12 +53,7 @@ export function createAPI({ collector, now = Date.now }) {
   // Per warm process only. A deployment edge budget is still needed for public scale.
   let nextCheckAt = 0, inFlight = false;
   return async function api(request) {
-    const headers = {
-      "Content-Type": "application/json",
-      "Cache-Control": "no-store",
-      "X-Content-Type-Options": "nosniff",
-      Allow: "GET, POST",
-    };
+    const headers = { ...STANDARD_HEADERS };
     const reply = (body, status = 200) =>
       new Response(JSON.stringify(body), { status, headers });
     try {
@@ -27,6 +62,11 @@ export function createAPI({ collector, now = Date.now }) {
         ["GET", "POST"].includes(request.method),
         "Unsupported method.",
         405,
+      );
+      requireThat(
+        !crossSiteRefusal(request.headers),
+        "Cross-site source checks are refused.",
+        403,
       );
       if (request.method === "POST") {
         requireThat(
@@ -75,7 +115,7 @@ export function createAPI({ collector, now = Date.now }) {
         source: WATCH,
         maxEvents: REVIEW_MAX_EVENTS,
         capture,
-        checkedAt: new Date().toISOString(),
+        checkedAt: new Date(now()).toISOString(),
       });
     } catch (error) {
       return reply(

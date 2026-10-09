@@ -2,11 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer, request } from 'node:http';
 import { spawn } from 'node:child_process';
-import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import check from '../api/check.js';
-import { createAPI } from '../server/api.mjs';
+import { createAPI, crossSiteRefusal } from '../server/api.mjs';
+import { createCheckHandler } from '../server/http.mjs';
 import { collect } from '../server/collector.mjs';
 const text = 'Official stablecoin merchant eligibility documentation and supported settlement restrictions. '.repeat(3);
 const call = (port, method = 'GET', body, headers = {}, path = '/api/check') => new Promise((resolve, reject) => {
@@ -107,4 +108,132 @@ test('in-flight collection and cooldown do not permit duplicate upstream calls',
 test('upstream redirects and oversized responses remain unresolved', async () => {
   assert.equal((await collect(async () => new Response('', { status: 302 }))).outcome, 'unreachable');
   assert.equal((await collect(async () => new Response('x'.repeat(1024 * 1024 + 1), { headers: { 'content-type': 'text/plain' } }))).outcome, 'unreachable');
+});
+
+const fakeResponse = () => ({
+  status: null, headers: null, body: null, headersSent: false,
+  writeHead(status, headers) { this.status = status; this.headers = headers; this.headersSent = true; },
+  end(body) { this.body = body; },
+});
+const assertStandardJSON = (res) => {
+  assert.equal(res.headers['Content-Type'], 'application/json');
+  assert.equal(res.headers['Cache-Control'], 'no-store');
+  assert.equal(res.headers['X-Content-Type-Options'], 'nosniff');
+  return JSON.parse(res.body);
+};
+
+test('hosted adapter refuses browser cross-site checks before any collection', async () => {
+  const original = globalThis.fetch;
+  let calls = 0;
+  globalThis.fetch = async () => { calls++; return new Response(text, { headers: { 'content-type': 'text/plain' } }); };
+  const server = createServer(check);
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const port = server.address().port;
+  try {
+    for (const [method, headers, body] of [
+      ['GET', { 'Sec-Fetch-Site': 'cross-site' }],
+      ['GET', { 'Sec-Fetch-Site': 'same-site' }],
+      ['POST', { 'Content-Type': 'application/json', Origin: 'https://outside.example' }, '{}'],
+      ['GET', { Origin: 'https://outside.example', 'Sec-Fetch-Site': 'cross-site' }],
+      ['GET', { Origin: 'null' }],
+      ['GET', { Origin: 'not a url' }],
+      ['POST', { 'Content-Type': 'application/json', Origin: `http://127.0.0.1:${port + 1}` }, '{}'],
+    ]) {
+      const response = await call(port, method, body, headers);
+      assert.equal(response.status, 403, JSON.stringify({ method, headers, response }));
+      assert.equal(response.headers['x-content-type-options'], 'nosniff');
+      assert.equal(response.headers['cache-control'], 'no-store');
+      assert.equal(JSON.parse(response.body).error, 'Cross-site source checks are refused.');
+    }
+    assert.equal(calls, 0);
+  } finally { globalThis.fetch = original; await new Promise(resolve => server.close(resolve)); }
+});
+
+test('a same-origin call with the Vercel header set passes the cross-site guard', async () => {
+  let calls = 0;
+  const api = createAPI({ collector: async () => { calls++; return { outcome: 'ok', status: 200, text }; } });
+  const response = await api(new Request('http://localhost/api/check', {
+    method: 'POST',
+    headers: {
+      Host: 'stable-desk.vercel.app',
+      'X-Forwarded-Host': 'stable-desk.vercel.app',
+      'X-Forwarded-Proto': 'https',
+      Origin: 'https://stable-desk.vercel.app',
+      'Sec-Fetch-Site': 'same-origin',
+      'Content-Type': 'application/json',
+    },
+    body: '{}',
+  }));
+  assert.equal(response.status, 200, await response.clone().text());
+  assert.equal(calls, 1);
+  const headers = (entries) => new Headers(entries);
+  // The function may see an internal Host while X-Forwarded-Host names the public one.
+  assert.equal(crossSiteRefusal(headers({ Host: 'internal.example', 'X-Forwarded-Host': 'stable-desk.vercel.app', Origin: 'https://stable-desk.vercel.app' })), false);
+  assert.equal(crossSiteRefusal(headers({ Host: '127.0.0.1:4173', Origin: 'http://127.0.0.1:4173', 'Sec-Fetch-Site': 'same-origin' })), false);
+  assert.equal(crossSiteRefusal(headers({ Host: 'stable-desk.vercel.app:443', Origin: 'https://stable-desk.vercel.app' })), false);
+  // A same-origin GET from fetch sends no Origin; a non-browser client sends neither header.
+  assert.equal(crossSiteRefusal(headers({ Host: 'stable-desk.vercel.app', 'Sec-Fetch-Site': 'same-origin' })), false);
+  assert.equal(crossSiteRefusal(headers({ Host: 'stable-desk.vercel.app' })), false);
+  assert.equal(crossSiteRefusal(headers({ Host: 'stable-desk.vercel.app', Origin: 'https://stable-desk.vercel.app.evil.example' })), true);
+  assert.equal(crossSiteRefusal(headers({ Host: 'stable-desk.vercel.app', Origin: 'http://stable-desk.vercel.app:8080' })), true);
+});
+
+test('hosted adapter answers its JSON contract when the platform body parser throws', async () => {
+  let calls = 0;
+  const handler = createCheckHandler({ collector: async () => { calls++; return { outcome: 'ok', status: 200, text }; } });
+  const res = fakeResponse();
+  await handler({
+    method: 'POST',
+    url: '/api/check',
+    headers: { host: 'stable-desk.vercel.app', 'content-type': 'application/json' },
+    get body() { throw new SyntaxError('Invalid JSON'); },
+  }, res);
+  assert.equal(res.status, 400);
+  assert.equal(assertStandardJSON(res).error, 'JSON request required.');
+  assert.equal(calls, 0);
+  const failed = fakeResponse();
+  await handler({ method: 'GET', url: '//[', headers: {} }, failed);
+  assert.equal(failed.status, 500);
+  assert.match(assertStandardJSON(failed).error, /coverage remains unresolved/);
+  assert.equal(calls, 0);
+});
+
+test('unread upstream bodies are released on refusal paths', async () => {
+  for (const response of [
+    new Response('moved', { status: 302, headers: { location: 'https://elsewhere.example' } }),
+    new Response('<binary>', { headers: { 'content-type': 'application/octet-stream' } }),
+  ]) {
+    const result = await collect(async () => response);
+    assert.equal(result.outcome, 'unreachable');
+    assert.equal(response.bodyUsed, true);
+    await assert.rejects(response.text(), TypeError);
+  }
+});
+
+test('the local server serves the production security headers from vercel.json', async () => {
+  const vercel = JSON.parse(await readFile(new URL('../vercel.json', import.meta.url), 'utf8'));
+  const rule = vercel.headers.find(r => r.source === '/(.*)');
+  const expected = Object.fromEntries(rule.headers.map(({ key, value }) => [key.toLowerCase(), value]));
+  const csp = expected['content-security-policy'];
+  assert.match(csp, /frame-ancestors 'none'/);
+  assert.match(csp, /script-src 'self'/);
+  assert.match(csp, /style-src 'self'/);
+  assert.doesNotMatch(csp, /unsafe-inline|unsafe-eval|\*/);
+  assert.equal(expected['x-content-type-options'], 'nosniff');
+  assert.equal(expected['x-frame-options'], 'DENY');
+  assert.equal(expected['referrer-policy'], 'no-referrer');
+  const child = spawn(process.execPath, ['scripts/server.mjs', '--host', '127.0.0.1', '--port', '0'], { cwd: new URL('..', import.meta.url), stdio: ['ignore', 'pipe', 'pipe'] });
+  try {
+    const port = await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('Server startup timeout')), 5000);
+      child.once('error', reject);
+      child.stdout.on('data', chunk => { const match = String(chunk).match(/http:\/\/[^:]+:(\d+)/); if (match) { clearTimeout(timer); resolve(Number(match[1])); }});
+    });
+    for (const path of ['/', '/review.html', '/src/app.js', '/data/baseline.json'])  {
+      const response = await call(port, 'GET', undefined, {}, path);
+      assert.equal(response.status, 200, path);
+      for (const [key, value] of Object.entries(expected))
+        assert.equal(response.headers[key], value, `${path} ${key}`);
+    }
+  } finally { child.kill(); }
 });

@@ -409,6 +409,16 @@ test("the check API returns a bounded capture and ignores caller input", async (
   assert.match((await rejected.json()).error, /one fixed source/);
 });
 
+test("the check API timestamps a capture with its injected clock", async () => {
+  const api = createAPI({
+    now: () => 0,
+    collector: async () => ({ outcome: "ok", status: 200, text: text(1) }),
+  });
+  const response = await api(new Request("https://x/api/check"));
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).checkedAt, "1970-01-01T00:00:00.000Z");
+});
+
 test("the check API rejects a non-JSON body", async () => {
   const api = createAPI({ collector: async () => ({ outcome: "ok", text: text(1) }) });
   const response = await api(
@@ -508,4 +518,66 @@ test("assumptions downstream of an adopted revision are marked for review", () =
       assumptionStatus(state, a.value.id).label,
       "Needs assumption review",
     );
+});
+
+test("malformed review backups fail validation with review errors, not TypeErrors", async () => {
+  const { ReviewError } = await import("../src/review-model.js");
+  const initial = initialReview(seed);
+  const reviewed = check(check(initialReview(seed), 1), 2);
+  for (const [label, value] of [
+    ["candidates:[null]", { ...initial, candidates: [null] }],
+    ["checks:[null]", { ...initial, checks: [null] }],
+    ["snapshots:[null]", { ...initial, snapshots: [null] }],
+    ["snapshots:{x:null}", { ...initial, snapshots: { x: null } }],
+    ["journal:[null]", { ...initial, version: 1, journal: [null] }],
+    ["journal:[1]", { ...initial, version: 1, journal: [1] }],
+    ["candidates:[1]", { ...reviewed, candidates: [1] }],
+    ["snapshot text missing", (() => {
+      const copy = structuredClone(reviewed);
+      delete Object.values(copy.snapshots)[0].text;
+      return copy;
+    })()],
+  ])
+    assert.throws(
+      () => validateReview(value),
+      (error) => error instanceof ReviewError && !/Cannot read|destructure|not iterable/.test(error.message),
+      label,
+    );
+  // Valid schema-4 states are unaffected.
+  assert.equal(validateReview(reviewed), reviewed);
+});
+
+test("the weekly brief keeps reviewer text inert and rejects an invalid date", async () => {
+  const { mdInline } = await import("../src/review-model.js");
+  let review = check(initialReview(seed), 1);
+  review = check(review, 2);
+  const c = review.candidates.at(-1);
+  review = applyReview(
+    review,
+    {
+      type: "rejected",
+      opId: "REVIEW-inject",
+      expectedVersion: review.version,
+      candidateId: c.id,
+      expectedCandidateHash: c.afterHash,
+      rationale: "Irrelevant.\n\n# Injected heading\n[click](javascript:alert(1)) <img src=x> *bold* `code` back\\slash.",
+    },
+    "Researcher\n## Actor heading",
+    at,
+  ).state;
+  const brief = weeklyBrief(review, "2026-10-01T07:00:00.000Z");
+  const lines = brief.split("\n");
+  // Nothing from reviewer text can start a line, so no heading or list opens.
+  assert.equal(lines.some((line) => /^#+ (Injected|Actor)/.test(line)), false);
+  // Brackets are escaped, so no unescaped "](" can form a link, and no raw tag remains.
+  assert.doesNotMatch(brief, /(^|[^\\])\]\(javascript:/m);
+  assert.doesNotMatch(brief, /(^|[^\\])<img/m);
+  assert.doesNotMatch(brief, /\.\./);
+  const line = lines.find((l) => l.includes("rejected by"));
+  assert.ok(line.includes("rejected by Researcher ## Actor heading;"), line);
+  assert.ok(line.includes("Irrelevant. # Injected heading \\[click\\](javascript:alert(1)) \\<img src=x\\> \\*bold\\* \\`code\\` back\\\\slash. [Source]("), line);
+  assert.equal(mdInline("ends with a period."), "ends with a period.");
+  assert.equal(mdInline(undefined), "");
+  assert.throws(() => weeklyBrief(review, "nope"), /Invalid brief date/);
+  assert.throws(() => weeklyBrief(review, 12), /Invalid brief date/);
 });

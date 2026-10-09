@@ -1,7 +1,8 @@
 {
   "name": "stable-desk",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "description": "A generic stablecoin research desk with public market context, a fictional STABLE profile, and bounded human-reviewed source checking.",
   "scripts": {
@@ -14,7 +15,9 @@
     "build": "node scripts/build.mjs",
     "package": "python3 scripts/package.py",
     "audit:content": "python3 scripts/audit-content.py",
-    "test:smoke": "node scripts/smoke.mjs"
+    "test:smoke": "node scripts/smoke.mjs",
+    "check:version": "node scripts/check-version.mjs",
+    "release:notes": "node scripts/release-notes.mjs"
   },
   "engines": {
     "node": ">=22.13"

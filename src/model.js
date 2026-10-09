@@ -38,6 +38,8 @@ export function validateDataset(data) {
   const fail = (message) => errors.push(message);
   if (!data || typeof data !== "object" || Array.isArray(data))
     return ["Dataset must be an object."];
+  if (!data.meta || typeof data.meta !== "object" || Array.isArray(data.meta))
+    return ["Dataset meta must be an object."];
   if (
     ![1, 2].includes(data.meta?.schemaVersion) ||
     data.meta?.collectionMode !== "manual"
@@ -273,7 +275,7 @@ export function validateDataset(data) {
     )
       fail(`${c.id}: invalid before/after version.`);
   }
-  if (data.meta.schemaVersion === 2) {
+  if (data.meta?.schemaVersion === 2) {
     const assumptions = Array.isArray(data.assumptions) ? data.assumptions : [];
     const ids = new Set();
     if (!assumptions.length) fail("Missing v2 assumption records.");

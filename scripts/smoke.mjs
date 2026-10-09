@@ -38,6 +38,18 @@ try {
     ["mobile", { width: 390, height: 844 }],
   ]) {
     const context = await browser.newContext({ viewport });
+    // The preview serves vercel.json's Content-Security-Policy; any violation
+    // in the built app is a failure.
+    await context.exposeFunction("__reportCspViolation", (violation) =>
+      report.errors.push(`CSP: ${violation}`),
+    );
+    await context.addInitScript(() =>
+      document.addEventListener("securitypolicyviolation", (event) =>
+        window.__reportCspViolation?.(
+          `${event.effectiveDirective} blocked ${event.blockedURI || "inline"}`,
+        ),
+      ),
+    );
     const page = await context.newPage();
     page.on("pageerror", (error) => report.errors.push(error.message));
     await page.goto("http://127.0.0.1:4176/");

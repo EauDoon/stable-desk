@@ -28,7 +28,18 @@ const equal = (a, b) => canonical(a) === canonical(b);
 const assert = (value, message) => {
   if (!value) throw new Error(message);
 };
-export const uid = (prefix) => `${prefix}-${globalThis.crypto.randomUUID()}`;
+// crypto.randomUUID exists only in secure contexts (HTTPS or localhost). A
+// preview opened over plain HTTP by LAN or VM address still has
+// getRandomValues, so build the same RFC 9562 version 4 form from it.
+export function uuid(c = globalThis.crypto) {
+  if (typeof c?.randomUUID === "function") return c.randomUUID();
+  const b = c.getRandomValues(new Uint8Array(16));
+  b[6] = (b[6] & 0x0f) | 0x40;
+  b[8] = (b[8] & 0x3f) | 0x80;
+  const hex = Array.from(b, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+export const uid = (prefix) => `${prefix}-${uuid()}`;
 export function canonical(value) {
   if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
   if (plain(value))
@@ -804,8 +815,9 @@ export function reviewQueue(
     )
     .map(({ rank, ...item }) => item);
 }
-export function materializeDataset(seed, ws) {
-  const state = activeState(seed, ws);
+// Pass the active state when the caller already projected it, to avoid a
+// second full replay of the event history.
+export function materializeDataset(seed, ws, state = activeState(seed, ws)) {
   const data = copy(seed);
   data.profile = copy(state.profile);
   data.sources = Object.values(state.sources).map((s) => copy(s.value));
@@ -1097,12 +1109,28 @@ export function exportV2(seed, ws) {
     workspace: copy(ws),
   };
 }
-export function parseV2Import(input) {
+// One limit for every desk and review import, file pick and saved workspace:
+// 4 MiB. Strings are measured in UTF-16 code units, which never exceed the
+// UTF-8 byte length of the same text, so a file under the byte limit is never
+// rejected after decoding.
+export const IMPORT_LIMIT_BYTES = 4 * 1024 * 1024;
+export function serializeWorkspace(seed, ws, limit = IMPORT_LIMIT_BYTES) {
+  const raw = JSON.stringify(exportV2(seed, ws));
   assert(
-    typeof input === "string" && input.length <= 4_000_000,
-    "Import is limited to 4 MB.",
+    raw.length <= limit,
+    "This change would make the saved workspace exceed 4 MB, which could not be reopened. Export your workspace; nothing was saved.",
   );
-  const parsed = JSON.parse(input);
+  return raw;
+}
+export function parseV2Import(input) {
+  assert(typeof input === "string", "Import must be JSON text.");
+  assert(input.length <= IMPORT_LIMIT_BYTES, "Import is limited to 4 MB.");
+  let parsed;
+  try {
+    parsed = JSON.parse(input);
+  } catch {
+    throw new Error("Import is not valid JSON.");
+  }
   assert(plain(parsed), "Import must be an object.");
   const seed = prepareDataset(
     parsed.format === "stable-desk-workspace" ? parsed.dataset : parsed,

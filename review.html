@@ -4,6 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#19382f" />
+    <meta
+      name="description"
+      content="Bounded, human-reviewed source checks for the Stable Desk research desk. One public page, dated snapshots and explicit review before any claim changes."
+    />
     <title>Stable Desk · source review</title>
     <link rel="icon" href="./favicon.svg" />
     <link rel="stylesheet" href="./src/styles.css" />
@@ -12,6 +16,12 @@
   <body>
     <a class="skip-link" href="#review-main">Skip to review inbox</a>
     <div id="review-app"><p class="loading">Opening source review…</p></div>
+    <noscript
+      >Source review needs JavaScript to check and compare snapshots. The public
+      evidence is available in <a href="./data/baseline.json">the baseline JSON</a>
+      and the review contract in
+      <a href="./docs/V4_REVIEW.md">docs/V4_REVIEW.md</a>.</noscript
+    >
     <script type="module" src="./src/review.js"></script>
   </body>
 </html>

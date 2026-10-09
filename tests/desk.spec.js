@@ -1,7 +1,10 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, recordCspViolations } from "./fixtures.js";
 import { readFile } from "node:fs/promises";
 const baseline = JSON.parse(
   await readFile(new URL("../data/baseline.json", import.meta.url), "utf8"),
+);
+const pkg = JSON.parse(
+  await readFile(new URL("../package.json", import.meta.url), "utf8"),
 );
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
@@ -199,6 +202,7 @@ test("save local assessment, reload, export and restore in another browser conte
   ).toBe("Researcher");
   expect(exported.dataset.sources).toHaveLength(baseline.sources.length);
   const context = await browser.newContext();
+  const violations = await recordCspViolations(context);
   const second = await context.newPage();
   await second.goto("http://127.0.0.1:4173");
   await second
@@ -214,6 +218,7 @@ test("save local assessment, reload, export and restore in another browser conte
   await expect(second).toHaveURL(/#changes$/);
   await expect(second.locator(".history-list")).toContainText("decision saved");
   await context.close();
+  expect(violations).toEqual([]);
 });
 test("changed evidence flags assumptions; explicit review needs reasoning and persists", async ({
   page,
@@ -311,9 +316,15 @@ test("all source and documentation links render their correct targets", async ({
     "/docs/PRIORITIES.md",
     "/docs/V4_REVIEW.md",
     "/docs/VERIFICATION.md",
+    "/CHANGELOG.md",
     "/data/baseline.json",
   ])
     expect((await request.get(path)).status()).toBe(200);
+});
+test("the footer names the package version", async ({ page }) => {
+  await expect(page.locator(".footer")).toContainText(
+    `Stable Desk v${pkg.version}`,
+  );
 });
 
 test("fictional identity, provenance labels and legacy workspace isolation", async ({
@@ -398,4 +409,20 @@ test("configured fictional placeholder updates labels and flags profile assumpti
   );
   await expect(page.locator(".priority-card .review-dot.warn")).toHaveCount(3);
   await noOverflow(page);
+});
+
+test("keyboard view changes move focus to the new heading and name the view", async ({ page }) => {
+  await page.getByRole("link", { name: "Evidence", exact: true }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("main h1")).toHaveText("What supports the assessment?");
+  await expect(page.locator("main h1")).toBeFocused();
+  await expect(page).toHaveTitle("Evidence · Stable Desk · Generic stablecoin research");
+  await page.getByRole("link", { name: "Decisions", exact: true }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("main h1")).toBeFocused();
+  await expect(page).toHaveTitle(/^Decisions · Stable Desk/);
+  await page.getByRole("link", { name: "Opportunities", exact: true }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("main h1")).toHaveText("Where could STABLE fit?");
+  await expect(page).toHaveTitle("Stable Desk · Generic stablecoin research");
 });

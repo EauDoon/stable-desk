@@ -22,6 +22,8 @@ import {
   previewEvidence,
   exportV2,
   parseV2Import,
+  serializeWorkspace,
+  IMPORT_LIMIT_BYTES,
   mergeWorkspace,
   migrateLegacy,
   uid,
@@ -39,7 +41,22 @@ import {
   historyMarkup,
 } from "./workflow-ui.js";
 import { reviewStore } from "./review-store.js";
+import {
+  listArchives,
+  writeArchive,
+  setEvictingArchives,
+  pruneArchives,
+  deleteArchive,
+} from "./archive-store.js";
+import { VERSION } from "./version.js";
 const STORAGE_KEY = "stable-desk:v2";
+const BASE_TITLE = "Stable Desk · Generic stablecoin research";
+const VIEW_LABELS = {
+  opportunities: "Opportunities",
+  evidence: "Evidence",
+  changes: "Changes",
+  decisions: "Decisions",
+};
 const LEGACY_KEY = "stable-desk:generic-v1";
 const DRAFT_KEY = "stable-desk:drafts-v2";
 const esc = (value) =>
@@ -80,6 +97,7 @@ let data,
   selected = new Set(),
   pendingImport = null,
   importRead = 0,
+  armedBackup = null,
   queueKind = "all";
 let filters = { query: "", lane: "", relationship: "", market: "" };
 let view = ["opportunities", "evidence", "changes", "decisions"].includes(
@@ -95,9 +113,11 @@ function notify(message) {
   clearTimeout(noticeTimer);
   noticeTimer = setTimeout(() => node.classList.remove("visible"), 6000);
 }
+// The one full replay per change: everything rendered afterwards reads the
+// active state and materialized dataset computed here.
 function hydrate() {
   state = activeState(seed, workspace);
-  data = materializeDataset(seed, workspace);
+  data = materializeDataset(seed, workspace, state);
 }
 const reviewState = (_, p) => priorityStatus(state, p.id);
 const decisionFor = (_, __, id) => ({
@@ -142,8 +162,11 @@ function persist(next = workspace) {
     throw new Error(
       "Workspace changed in another tab. Reload latest before saving; your draft is retained.",
     );
+  // Refuse a change whose saved form could not be reopened, before anything
+  // is written or the in-memory workspace moves.
+  const serialized = serializeWorkspace(seed, next);
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(exportV2(seed, next)));
+    localStorage.setItem(STORAGE_KEY, serialized);
     lastDiskHead = workspaceHead(next);
   } catch (error) {
     storageWarning =
@@ -156,39 +179,56 @@ const withLock = (fn) =>
   navigator.locks
     ? navigator.locks.request("stable-desk-workspace-write", fn)
     : Promise.resolve().then(fn);
+// Archives the saved copy, and unsaved in-memory work if it differs, before a
+// replacement. Returns the keys written so they survive eviction and pruning.
 function archiveCurrent() {
+  const written = [];
   const raw = localStorage.getItem(STORAGE_KEY);
-  if (raw !== null)
-    localStorage.setItem(
-      `stable-desk:archive:${Date.now()}:${uid("BACKUP")}`,
-      raw,
-    );
+  if (raw !== null) written.push(writeArchive(localStorage, raw, { keep: written }));
   if (!blockedCache && workspaceHead(workspace) !== lastDiskHead)
-    localStorage.setItem(
-      `stable-desk:archive:${Date.now()}:${uid("BACKUP")}`,
-      JSON.stringify(exportV2(seed, workspace)),
+    written.push(
+      writeArchive(localStorage, JSON.stringify(exportV2(seed, workspace)), {
+        keep: written,
+      }),
     );
+  return written;
 }
+// Labels come from a plain parse; full validation and replay run only when a
+// copy is previewed for restore.
 function backups() {
   try {
-    return Object.keys(localStorage)
-      .filter((k) => k.startsWith("stable-desk:archive:"))
-      .sort()
-      .reverse()
-      .map((key) => {
-        try {
-          const parsed = parseV2Import(localStorage.getItem(key));
-          return {
-            key,
-            label: `${parsed.workspace.id} · ${parsed.workspace.events.length} events`,
-          };
-        } catch {
-          return { key, label: "Unparsed recovery copy" };
-        }
-      });
+    return listArchives(localStorage).map((key) => {
+      let ws;
+      try {
+        ws = JSON.parse(localStorage.getItem(key))?.workspace;
+      } catch {
+        ws = null;
+      }
+      return typeof ws?.id === "string" && Array.isArray(ws.events)
+        ? { key, label: `${ws.id} · ${ws.events.length} events` }
+        : { key, label: "Unparsed recovery copy" };
+    });
   } catch {
     return [];
   }
+}
+function backupList() {
+  return (
+    backups()
+      .map(
+        (b) =>
+          `<div class="backup-row"><button class="linked-row" data-backup="${esc(b.key)}">${esc(b.label)}</button><button class="text-button" data-delete-backup="${esc(b.key)}" aria-label="${armedBackup === b.key ? "Confirm delete of" : "Delete"} recovery copy ${esc(b.label)}">${armedBackup === b.key ? "Confirm delete" : "Delete copy"}</button></div>`,
+      )
+      .join("") || '<p class="muted small">No recovery copies yet.</p>'
+  );
+}
+function renderBackups(focusKey = null) {
+  const list = document.querySelector("#backup-list");
+  if (!list) return;
+  list.innerHTML = backupList();
+  const next = focusKey &&
+    [...list.querySelectorAll("[data-delete-backup]")].find((b) => b.dataset.deleteBackup === focusKey);
+  (next ?? document.querySelector("#backup-heading"))?.focus();
 }
 function sourceIds(evidenceIds) {
   return [
@@ -255,12 +295,12 @@ function openOrg(id) {
 }
 function openPriority(id) {
   const p = data.priorities.find((p) => p.id === id),
-    state = reviewState(data, p, null);
+    status = reviewState(data, p, null);
   const d = data.decisions.find((d) => d.priorityId === id);
   openDetail(
     dialogShell(
       p.title,
-      `<div class="detail-tags">${pill("Synthetic example", "synthetic_example")}${pill(p.lane)}${pill(state.label, state.tone)}</div><p class="detail-lead">${esc(p.thesis)}</p><p class="muted">${esc(orgNames(p.organizationIds))}</p><section class="detail-section"><h3>Why investigate</h3><p>${esc(p.whyNow)}</p><p class="small"><strong>Baseline ${esc(p.confidence)} evidence confidence:</strong> ${esc(p.confidenceReason)}</p></section><section class="detail-section next-action"><div class="eyebrow">Concrete next step</div><p>${esc(p.nextAction)}</p><button class="button primary" data-decision="${d.id}">Review proposed decision ${icon("arrow", 16)}</button></section><div class="two-col"><section class="detail-section"><h3>Load-bearing assumptions</h3>${assumptionCards(activeState(seed, workspace), p.id)}</section><section class="detail-section"><h3>What could disprove it</h3><ul>${p.disproves.map((a) => `<li>${esc(a)}</li>`).join("")}</ul></section></div><section class="detail-section callout"><h3>Review status</h3><p>${esc(state.reason)}</p><p class="small muted">Each assumption has its own reviewed dependency revision. An evidence update never automatically endorses this proposal.</p></section><section class="detail-section"><h3>Sources → evidence → recommendation</h3><p class="muted small">${p.id} uses ${p.evidenceIds.join(", ")} as market context. These sources do not prove acceptance, demand or relationships for the fictional profile.</p>${evidenceMarkup(p.evidenceIds)}</section>`,
+      `<div class="detail-tags">${pill("Synthetic example", "synthetic_example")}${pill(p.lane)}${pill(status.label, status.tone)}</div><p class="detail-lead">${esc(p.thesis)}</p><p class="muted">${esc(orgNames(p.organizationIds))}</p><section class="detail-section"><h3>Why investigate</h3><p>${esc(p.whyNow)}</p><p class="small"><strong>Baseline ${esc(p.confidence)} evidence confidence:</strong> ${esc(p.confidenceReason)}</p></section><section class="detail-section next-action"><div class="eyebrow">Concrete next step</div><p>${esc(p.nextAction)}</p><button class="button primary" data-decision="${d.id}">Review proposed decision ${icon("arrow", 16)}</button></section><div class="two-col"><section class="detail-section"><h3>Load-bearing assumptions</h3>${assumptionCards(state, p.id)}</section><section class="detail-section"><h3>What could disprove it</h3><ul>${p.disproves.map((a) => `<li>${esc(a)}</li>`).join("")}</ul></section></div><section class="detail-section callout"><h3>Review status</h3><p>${esc(status.reason)}</p><p class="small muted">Each assumption has its own reviewed dependency revision. An evidence update never automatically endorses this proposal.</p></section><section class="detail-section"><h3>Sources → evidence → recommendation</h3><p class="muted small">${p.id} uses ${p.evidenceIds.join(", ")} as market context. These sources do not prove acceptance, demand or relationships for the fictional profile.</p>${evidenceMarkup(p.evidenceIds)}</section>`,
       `Investigation ${p.id} · Priority ${p.rank}`,
     ),
   );
@@ -322,14 +362,14 @@ function decisions() {
     .map((base) => {
       const d = decisionFor(data, workspace, base.id),
         p = data.priorities.find((p) => p.id === d.priorityId),
-        state = decisionStatus(seed, activeState(seed, workspace), base.id);
-      return `<article class="decision-card"><div class="decision-meta"><span class="mono">${d.id}</span>${pill("Synthetic example", "synthetic_example")}${pill(d.status)}${pill(state.label, state.tone)}</div><div class="decision-content"><div><h3>${esc(d.proposal)}</h3><p>${esc(d.rationale)}</p>${d.notes ? `<p class="saved-note"><strong>Local note:</strong> ${esc(d.notes)}</p>` : ""}<div class="decision-facts"><span>Owner <strong>${esc(d.owner)}</strong></span><span>Review by <strong>${formatDate(d.reviewBy)}</strong></span><span>Evidence ${refs(d.evidenceIds)}</span></div></div><button class="button" data-decision="${d.id}">Review assessment ${icon("arrow", 16)}</button></div></article>`;
+        status = decisionStatus(seed, state, base.id);
+      return `<article class="decision-card"><div class="decision-meta"><span class="mono">${d.id}</span>${pill("Synthetic example", "synthetic_example")}${pill(d.status)}${pill(status.label, status.tone)}</div><div class="decision-content"><div><h3>${esc(d.proposal)}</h3><p>${esc(d.rationale)}</p>${d.notes ? `<p class="saved-note"><strong>Local note:</strong> ${esc(d.notes)}</p>` : ""}<div class="decision-facts"><span>Owner <strong>${esc(d.owner)}</strong></span><span>Review by <strong>${formatDate(d.reviewBy)}</strong></span><span>Evidence ${refs(d.evidenceIds)}</span></div></div><button class="button" data-decision="${d.id}">Review assessment ${icon("arrow", 16)}</button></div></article>`;
     })
     .join("")}</div>`;
 }
+// The count is filled in by renderQueueResults, which computes the queue once.
 function queueMarkup() {
-  const count = reviewQueue(seed, state).length;
-  return `<section class="review-queue" aria-labelledby="queue-title"><div class="queue-heading"><div><h2 id="queue-title">Review queue</h2><p>Current profile only. Resolve blocked evidence and coverage first, then changed review bases, then the oldest deadlines. Dates use UTC.</p></div><label>Show reviews<select id="queue-filter">${[["all", "All reviews"], ["source", "Sources"], ["assumption", "Assumptions"], ["decision", "Decisions"]].map(([value, label]) => `<option value="${value}" ${queueKind === value ? "selected" : ""}>${label}</option>`).join("")}</select></label></div><p id="queue-count" class="small" role="status">${count} reviews due</p><div id="review-queue-results"></div></section>`;
+  return `<section class="review-queue" aria-labelledby="queue-title"><div class="queue-heading"><div><h2 id="queue-title">Review queue</h2><p>Current profile only. Resolve blocked evidence and coverage first, then changed review bases, then the oldest deadlines. Dates use UTC.</p></div><label>Show reviews<select id="queue-filter">${[["all", "All reviews"], ["source", "Sources"], ["assumption", "Assumptions"], ["decision", "Decisions"]].map(([value, label]) => `<option value="${value}" ${queueKind === value ? "selected" : ""}>${label}</option>`).join("")}</select></label></div><p id="queue-count" class="small" role="status"></p><div id="review-queue-results"></div></section>`;
 }
 function renderQueueResults() {
   const results = document.querySelector("#review-queue-results");
@@ -372,6 +412,8 @@ function render() {
   const overdue = data.priorities.filter(
     (p) => reviewState(data, p, null).tone === "warn",
   ).length;
+  document.title =
+    view === "opportunities" ? BASE_TITLE : `${VIEW_LABELS[view]} · ${BASE_TITLE}`;
   app.innerHTML = `<div class="desk-shell"><aside class="sidebar"><a class="brand" href="#opportunities"><span class="brand-mark"><i></i><i></i><i></i></span><span>Stable <span class="brand-light">Desk</span><small>ECOSYSTEM RESEARCH</small></span></a><div class="workspace-label">GENERIC RESEARCH WORKSPACE</div><nav aria-label="Desk views">${[
     ["opportunities", "Opportunities", "grid"],
     ["evidence", "Evidence", "book"],
@@ -384,7 +426,7 @@ function render() {
     )
     .join(
       "",
-    )}</nav><div class="sidebar-context"><div class="eyebrow">Research focus</div><span class="focus-token">◇</span><h3>${esc(data.profile.name)}</h3><p>${esc(data.profile.ticker)} · ${data.profile.mode === "fictional_demo" ? "Fictional placeholder" : "Research subject · unverified"}</p></div><div class="sidebar-bottom"><span class="manual-dot"></span><strong>Manual research desk</strong><p>No recurring collection or live refresh.</p><button data-utility="method" class="sidebar-help">How to update the desk ${icon("arrow", 14)}</button><div class="profile"><span>SD</span><div>Demo workspace<small>Public market context</small></div></div></div></aside><div class="main-shell"><header class="topbar"><span>Research desk <span class="breadcrumb">/ ${view[0].toUpperCase() + view.slice(1)}</span></span><div class="topbar-right"><button class="button profile-switch" data-profiles>${esc(state.profile.name)}</button><span class="baseline-chip"><span></span>${imported ? "Imported" : "Versioned"} baseline</span><button class="icon-button" data-utility="workspace" aria-label="Workspace backup and import">${icon("download")}</button></div></header><main id="main"><div class="page-heading"><div><div class="eyebrow">${esc(data.profile.ticker)} · ${data.profile.mode === "fictional_demo" ? "FICTIONAL DEMO" : "RESEARCH SUBJECT · UNVERIFIED"}</div><h1>${titles[view][0]}</h1><p>${titles[view][1]}</p></div><button class="button" data-export>${icon("download", 16)} Export workspace</button></div><div class="baseline-line"><span>AS OF <strong>${formatDate(data.meta.asOf)}</strong></span><span class="line-divider"></span><span>${esc(data.meta.version)}</span><span class="baseline-caption">${overdue ? `${overdue} proposal${overdue > 1 ? "s" : ""} need review` : "Baseline market context · manual revisions"}</span></div>${overdue ? `<div class="stale-banner" role="status">${overdue} proposal${overdue > 1 ? "s" : ""} require assumption review. Inspect their status in Decisions.</div>` : ""}<aside class="demo-banner" data-demo-notice><strong>${esc(data.profile.name)} (${esc(data.profile.ticker)}) ${data.profile.mode === "fictional_demo" ? "is fictional." : "is an unverified research subject."}</strong><span>${data.profile.mode === "fictional_demo" ? "No real issuer, deployed token, reserves or partners." : "Intended settings establish no issuance, eligibility, deployment or partnerships."} Public sources describe real market products; example fit remains synthetic.</span></aside>${storageWarning || blockedCache ? `<div class="storage-banner" role="alert">${esc(blockedCache ? "Saved data is invalid and preserved. Recover it in Workspace & data before saving." : storageWarning)}<button class="text-button" data-reload-latest>Load latest saved workspace</button></div>` : ""}<div class="stats-strip"><div><strong>${data.organizations.length.toString().padStart(2, "0")}</strong><span>Organizations mapped</span></div><div><strong>${data.sources.length.toString().padStart(2, "0")}</strong><span>Primary sources</span></div><div><strong>${data.priorities.length.toString().padStart(2, "0")}</strong><span>Synthetic research examples</span></div><div><strong>${data.changes.length.toString().padStart(2, "0")}</strong><span>Baseline versions logged</span></div></div>${view === "opportunities" ? opportunities() : view === "evidence" ? evidenceView() : view === "changes" ? changes() : decisions()}<footer class="footer"><span>Stable Desk v4.1 · Deliberate ecosystem research</span><span class="footer-links"><a class="text-button" href="./review.html">Source review →</a><button class="text-button" data-utility="workspace">Workspace & data ${icon("arrow", 14)}</button></span></footer></main></div></div>`;
+    )}</nav><div class="sidebar-context"><div class="eyebrow">Research focus</div><span class="focus-token">◇</span><h3>${esc(data.profile.name)}</h3><p>${esc(data.profile.ticker)} · ${data.profile.mode === "fictional_demo" ? "Fictional placeholder" : "Research subject · unverified"}</p></div><div class="sidebar-bottom"><span class="manual-dot"></span><strong>Manual research desk</strong><p>No recurring collection or live refresh.</p><button data-utility="method" class="sidebar-help">How to update the desk ${icon("arrow", 14)}</button><div class="profile"><span>SD</span><div>Demo workspace<small>Public market context</small></div></div></div></aside><div class="main-shell"><header class="topbar"><span>Research desk <span class="breadcrumb">/ ${view[0].toUpperCase() + view.slice(1)}</span></span><div class="topbar-right"><button class="button profile-switch" data-profiles>${esc(state.profile.name)}</button><span class="baseline-chip"><span></span>${imported ? "Imported" : "Versioned"} baseline</span><button class="icon-button" data-utility="workspace" aria-label="Workspace backup and import">${icon("download")}</button></div></header><main id="main"><div class="page-heading"><div><div class="eyebrow">${esc(data.profile.ticker)} · ${data.profile.mode === "fictional_demo" ? "FICTIONAL DEMO" : "RESEARCH SUBJECT · UNVERIFIED"}</div><h1>${titles[view][0]}</h1><p>${titles[view][1]}</p></div><button class="button" data-export>${icon("download", 16)} Export workspace</button></div><div class="baseline-line"><span>AS OF <strong>${formatDate(data.meta.asOf)}</strong></span><span class="line-divider"></span><span>${esc(data.meta.version)}</span><span class="baseline-caption">${overdue ? `${overdue} proposal${overdue > 1 ? "s" : ""} need review` : "Baseline market context · manual revisions"}</span></div>${overdue ? `<div class="stale-banner" role="status">${overdue} proposal${overdue > 1 ? "s" : ""} require assumption review. Inspect their status in Decisions.</div>` : ""}<aside class="demo-banner" data-demo-notice><strong>${esc(data.profile.name)} (${esc(data.profile.ticker)}) ${data.profile.mode === "fictional_demo" ? "is fictional." : "is an unverified research subject."}</strong><span>${data.profile.mode === "fictional_demo" ? "No real issuer, deployed token, reserves or partners." : "Intended settings establish no issuance, eligibility, deployment or partnerships."} Public sources describe real market products; example fit remains synthetic.</span></aside>${storageWarning || blockedCache ? `<div class="storage-banner" role="alert">${esc(blockedCache ? "Saved data is invalid and preserved. Recover it in Workspace & data before saving." : storageWarning)}<button class="text-button" data-reload-latest>Load latest saved workspace</button></div>` : ""}<div class="stats-strip"><div><strong>${data.organizations.length.toString().padStart(2, "0")}</strong><span>Organizations mapped</span></div><div><strong>${data.sources.length.toString().padStart(2, "0")}</strong><span>Primary sources</span></div><div><strong>${data.priorities.length.toString().padStart(2, "0")}</strong><span>Synthetic research examples</span></div><div><strong>${data.changes.length.toString().padStart(2, "0")}</strong><span>Baseline versions logged</span></div></div>${view === "opportunities" ? opportunities() : view === "evidence" ? evidenceView() : view === "changes" ? changes() : decisions()}<footer class="footer"><span>Stable Desk v${VERSION} · Deliberate ecosystem research</span><span class="footer-links"><a class="text-button" href="./review.html">Source review →</a><button class="text-button" data-utility="workspace">Workspace & data ${icon("arrow", 14)}</button></span></footer></main></div></div>`;
   renderResults();
   renderQueueResults();
 }
@@ -397,14 +439,8 @@ function openUtility(mode) {
       "",
     )}</div><p>Documented facts establish source content and announcement existence, not independent product performance. Performance, launch and availability claims retain company attribution. Synthetic examples are constructed hypotheses; their sources provide market context only.</p><p>The demo has no issuer relationships. Real company-to-company context keeps original names and dates. Token supply, aggregate onchain transfers and card spend do not establish payment adoption.</p><h3>Source coverage</h3><p class="small muted">${data.sources.length} primary sources · baseline as of ${formatDate(data.meta.asOf)} · local check dates shown separately.</p>${data.sources.map(sourceMarkup).join("")}`;
   const method = `<p class="detail-lead">A manual research loop with an inspectable revision trail.</p><ol class="method-steps"><li><strong>Configure a subject.</strong> Keep the fictional placeholder or deliberately enable real research mode. Settings never establish partnerships.</li><li><strong>Review an original source.</strong> In Evidence, record unchanged, unreachable or content revised. A failed check leaves its coverage unresolved; it does not change the claim.</li><li><strong>Preview claim revisions.</strong> Compare old/new values and exact affected assumptions before committing. Add evidence with explicit dependencies.</li><li><strong>Reconsider assumptions and decisions.</strong> Record reasoning against current revisions. Changed or withdrawn evidence requires review and preserves the previous decision.</li><li><strong>Back up the full record.</strong> Export profiles, evidence, decisions and events. Imports validate replay and reject divergent history. Local drafts recover interrupted editing.</li></ol><p>Reload loads saved data. It does not fetch sources. No recurring collection or AI chat is implemented. This local audit record is not cryptographically tamper-proof.</p><p><a href="./docs/UPDATING.md" target="_blank">Update guide</a> · <a href="./docs/PRIORITIES.md" target="_blank">Priority brief</a> · <a href="./docs/V4_REVIEW.md" target="_blank">v4 source review and its limits</a></p>`;
-  const local = `<p class="detail-lead">Local profiles, manual evidence and revision-bound decisions.</p><p>Public information only. Nothing is submitted to a service. Storage is browser-local, with no automatic backup or collaboration sync. Drafts are separate from committed history and exports.</p><div class="utility-actions"><button class="button primary" data-export>${icon("download", 16)} Export full workspace</button><a class="button" href="./data/baseline.json" download="stable-desk-baseline.json">Download repository baseline</a><button class="button" data-profiles>Manage profiles</button></div><section class="detail-section"><h3>Restore or incorporate a workspace</h3><p class="small muted">Import a validated generic JSON baseline or v1/v2 workspace, up to 4 MB. A different workspace archives the current saved copy before opening. Same-identity histories must be a matching prefix; divergent revisions are rejected.</p><div class="utility-actions"><button class="button" data-import-review>Preview adopted source review</button><a class="text-button" href="./review.html">Open Source review</a></div><p class="small muted">Copy adopted research from Source review in this browser. Inspect the preview before applying; this does not synchronize the two workspaces.</p><label class="file-label">Choose JSON file<input type="file" id="import-file" accept=".json,application/json" /></label><div id="import-preview" role="status"></div><div id="import-error" class="error" role="alert"></div></section><section class="detail-section"><h3>Recovery copies</h3><p>Restore a copy through the same validated import preview. Current work is archived before replacement.</p>${
-    backups()
-      .map(
-        (b) =>
-          `<button class="linked-row" data-backup="${esc(b.key)}">${esc(b.label)}</button>`,
-      )
-      .join("") || '<p class="muted small">No recovery copies yet.</p>'
-  }${blockedCache ? '<button class="button" data-export-raw>Download unparsed saved data</button>' : ""}</section><section class="detail-section"><h3>Start from the repository baseline</h3><p class="small muted">Archives saved work first. Existing generic v1 storage and drafts remain preserved separately.</p><button class="button" data-reset>Reset local workspace</button></section><p><a href="./docs/ARCHITECTURE.md" target="_blank">Architecture & limitations</a></p>`;
+  const local = `<p class="detail-lead">Local profiles, manual evidence and revision-bound decisions.</p><p>Public information only. Nothing is submitted to a service. Storage is browser-local, with no automatic backup or collaboration sync. Drafts are separate from committed history and exports.</p><div class="utility-actions"><button class="button primary" data-export>${icon("download", 16)} Export full workspace</button><a class="button" href="./data/baseline.json" download="stable-desk-baseline.json">Download repository baseline</a><button class="button" data-profiles>Manage profiles</button></div><section class="detail-section"><h3>Restore or incorporate a workspace</h3><p class="small muted">Import a validated generic JSON baseline or v1/v2 workspace, up to 4 MB. A different workspace archives the current saved copy before opening. Same-identity histories must be a matching prefix; divergent revisions are rejected.</p><div class="utility-actions"><button class="button" data-import-review>Preview adopted source review</button><a class="text-button" href="./review.html">Open Source review</a></div><p class="small muted">Copy adopted research from Source review in this browser. Inspect the preview before applying; this does not synchronize the two workspaces.</p><label class="file-label">Choose JSON file<input type="file" id="import-file" accept=".json,application/json" /></label><div id="import-preview" role="status"></div><div id="import-error" class="error" role="alert"></div></section><section class="detail-section"><h3 id="backup-heading" tabindex="-1">Recovery copies</h3><p>Restore a copy through the same validated import preview. Current work is archived before replacement. The newest copy is always kept; older copies beyond ten or 2 MB are removed after a replacement.</p><div id="backup-list">${backupList()}</div>${blockedCache ? '<button class="button" data-export-raw>Download unparsed saved data</button>' : ""}</section><section class="detail-section"><h3>Start from the repository baseline</h3><p class="small muted">Archives saved work first. Existing generic v1 storage and drafts remain preserved separately.</p><button class="button" data-reset>Reset local workspace</button></section><p><a href="./docs/ARCHITECTURE.md" target="_blank">Architecture & limitations</a></p>`;
+  armedBackup = null;
   utilityDialog.innerHTML = `<div class="dialog-header"><div><div class="eyebrow">Research method</div><h2 id="utility-title">${mode === "coverage" ? "Evidence coverage" : mode === "method" ? "How to update the desk" : "Workspace & data"}</h2></div><button class="icon-button" data-close aria-label="Close workspace dialog">${icon("close")}</button></div><div class="dialog-body">${mode === "coverage" ? coverage : mode === "method" ? method : local}</div>`;
   pendingImport = null;
   if (!utilityDialog.open) utilityDialog.showModal();
@@ -438,10 +474,15 @@ function openCompare() {
   openDetail(
     dialogShell(
       "Compare ecosystem fit",
-      `<p class="muted small">Real market context · fictional-profile fit questions · no commercial ranking.</p><div class="comparison-grid" style="--compare-count:${orgs.length}"><div class="compare-label"></div>${orgs.map((o) => `<h3 class="compare-title">${esc(o.name)}</h3>`).join("")}${fields.map(([label, fn]) => `<div class="compare-label">${label}</div>${orgs.map((o) => `<div class="compare-value">${fn(o)}</div>`).join("")}`).join("")}</div>`,
+      `<p class="muted small">Real market context · fictional-profile fit questions · no commercial ranking.</p><div class="comparison-grid"><div class="compare-label"></div>${orgs.map((o) => `<h3 class="compare-title">${esc(o.name)}</h3>`).join("")}${fields.map(([label, fn]) => `<div class="compare-label">${label}</div>${orgs.map((o) => `<div class="compare-value">${fn(o)}</div>`).join("")}`).join("")}</div>`,
       `${orgs.length} organizations`,
     ),
   );
+  // Set through CSSOM: the Content-Security-Policy (style-src 'self') blocks
+  // inline style attributes parsed from markup, but not CSSOM property writes.
+  detailDialog
+    .querySelector(".comparison-grid")
+    .style.setProperty("--compare-count", String(orgs.length));
 }
 function downloadJSON(value, name) {
   const blob = new Blob(
@@ -759,11 +800,16 @@ async function replaceWorkspace(candidate) {
           "Saved workspace changed in another tab. Load latest before replacing.",
         );
     }
-    archiveCurrent(); // If backup or write fails, leave the active workspace intact.
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(exportV2(candidate.seed, candidate.workspace)),
-    );
+    const serialized = serializeWorkspace(candidate.seed, candidate.workspace);
+    // If an archive or the live write cannot fit even after evicting older
+    // copies, nothing is replaced and the active workspace stays intact.
+    const archived = archiveCurrent();
+    setEvictingArchives(localStorage, STORAGE_KEY, serialized, archived);
+    try {
+      pruneArchives(localStorage, { keep: archived });
+    } catch {
+      /* Pruning is housekeeping; the replacement already succeeded. */
+    }
     seed = candidate.seed;
     workspace = candidate.workspace;
     lastDiskHead = workspaceHead(workspace);
@@ -947,10 +993,28 @@ document.addEventListener("click", async (event) => {
       document.querySelector("#import-preview").insertAdjacentHTML("afterbegin",
         `<p class="small">Source review snapshot, version ${review.version}. Only adopted research is included. Pending candidates stay in Source review; later changes require another import.</p>`);
     }
+    if (target.dataset.deleteBackup) {
+      const key = target.dataset.deleteBackup;
+      if (armedBackup !== key) {
+        armedBackup = key;
+        renderBackups(key);
+      } else {
+        deleteArchive(localStorage, key);
+        armedBackup = null;
+        renderBackups();
+        notify("Deleted one recovery copy.");
+      }
+    }
     if (target.dataset.backup) {
       importRead++;
+      pendingImport = null;
+      document.querySelector("#import-preview").innerHTML = "";
+      document.querySelector("#import-error").textContent = "";
       try {
-        previewImport(localStorage.getItem(target.dataset.backup));
+        const raw = localStorage.getItem(target.dataset.backup);
+        if (raw === null)
+          throw new Error("That recovery copy is no longer available.");
+        previewImport(raw);
       } catch (error) {
         document.querySelector("#import-error").textContent =
           `Recovery rejected: ${error.message}`;
@@ -1033,7 +1097,8 @@ document.addEventListener("change", async (event) => {
     try {
       const file = target.files[0];
       if (!file) return;
-      if (file.size > 4_000_000) throw new Error("Import is limited to 4 MB.");
+      if (file.size > IMPORT_LIMIT_BYTES)
+        throw new Error("Import is limited to 4 MB.");
       const text = await file.text();
       if (current()) previewImport(text);
     } catch (error) {
@@ -1119,10 +1184,17 @@ document.addEventListener("submit", async (event) => {
 });
 window.addEventListener("hashchange", () => {
   const next = location.hash.slice(1);
-  if (["opportunities", "evidence", "changes", "decisions"].includes(next)) {
+  if (Object.hasOwn(VIEW_LABELS, next)) {
     view = next;
     render();
     window.scrollTo(0, 0);
+    // The whole page was replaced: move focus to the new view's heading so
+    // keyboard and screen-reader users continue from the top of the view.
+    const heading = document.querySelector("main h1");
+    if (heading) {
+      heading.tabIndex = -1;
+      heading.focus({ preventScroll: true });
+    }
   }
 });
 window.addEventListener("storage", (event) => {
@@ -1177,19 +1249,13 @@ try {
         const saved = JSON.parse(legacy);
         seed = prepareDataset(saved.data ?? baseline);
         workspace = migrateLegacy(seed, saved.workspace);
-        localStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify(exportV2(seed, workspace)),
-        );
+        localStorage.setItem(STORAGE_KEY, serializeWorkspace(seed, workspace));
         lastDiskHead = workspaceHead(workspace);
         restored = true;
         storageWarning =
           "Generic v1 notes and original history preserved. Explicit v2 reviews are needed; the old storage key remains intact.";
       } else {
-        localStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify(exportV2(seed, workspace)),
-        );
+        localStorage.setItem(STORAGE_KEY, serializeWorkspace(seed, workspace));
         lastDiskHead = workspaceHead(workspace);
       }
     }

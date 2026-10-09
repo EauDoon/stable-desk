@@ -201,3 +201,12 @@ test("profile changes flag all examples without relabeling real sources", () => 
   for (const p of d.priorities)
     assert.equal(reviewState(d, p, {}, "2026-09-30").label, "Evidence changed");
 });
+
+test("malformed dataset shells return validation errors instead of throwing", () => {
+  for (const value of [{}, { meta: null }, { meta: [] }, { meta: 1 }]) {
+    let errors;
+    assert.doesNotThrow(() => (errors = validateDataset(value)), JSON.stringify(value));
+    assert.ok(errors.length > 0, JSON.stringify(value));
+  }
+  assert.deepEqual(validateDataset({ meta: [] }), ["Dataset meta must be an object."]);
+});

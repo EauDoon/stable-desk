@@ -24,6 +24,8 @@ for (const file of [
   "review.html",
   "favicon.svg",
   "README.md",
+  "CHANGELOG.md",
+  "LICENSE",
   "src",
   "data",
   "docs",
