@@ -17,6 +17,17 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
 
 ## [Unreleased]
 
+### Removed
+
+- The unused v1 decision helper `decisionFor` in `src/model.js`. The desk
+  reads decisions from the v2 workspace state (`src/app.js` uses its own
+  local helper), and no other file in the repository imported it.
+- The orphaned `docs/V2_PLAN.md` release plan. The v4 port had already
+  retargeted the desk's method-panel link to `docs/V4_REVIEW.md` and the
+  document described a v2 release state the app has moved past, so no
+  document or screen linked to it. The three historical mentions in
+  `docs/VERIFICATION.md` are corrected to describe the orphan accurately.
+
 ## [4.2.0] - 2026-10-09
 
 A hardening release. Every persisted format is unchanged: storage keys,
