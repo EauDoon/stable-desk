@@ -11,8 +11,10 @@ The default local desk retains v2's static ES-module architecture: semantic HTML
 | `src/app.js` | Four views, native dialogs, escaped rendering, drafts, browser persistence, locks, conflict/rebase, recovery and focus on view change |
 | `src/version.js` | The application version, mirroring `package.json` for the no-bundler static site |
 | `src/styles.css` | Responsive visual system; no external fonts |
-| `src/review-model.js` | v4 versioned review state, hash-chained journal, bounded collection outcomes, candidate staging, idempotency and the weekly brief with inert reviewer text |
-| `src/review-store.js` | Browser-local review persistence with immutable prior copies and explicit-only replacement |
+| `src/review-model.js` | v4 versioned review state, hash-chained journal, bounded collection outcomes, candidate staging, idempotency, new review periods, the reviewed-candidate history and the weekly brief with inert reviewer text |
+| `src/review-store.js` | Browser-local review persistence with immutable prior copies, explicit-only replacement and new review periods |
+| `src/change-report.js` | The Markdown change report: one profile's committed events with before and after values, and the records that differ from the repository baseline, with every user value kept inert inside a list item |
+| `src/export-status.js` | The export markers and status lines: committed desk changes or review operations since the last export from this browser |
 | `src/index-review.js` | The single import surface for the review page: the review model, its store and the workspace functions it needs |
 | `src/sha256.js` | Synchronous SHA-256 so the model hashes identically in the browser and in Node tests |
 | `src/review.js` | Review inbox, source diff, acceptance form, brief, backup and recovery downloads, and focus restoration across re-renders |
@@ -27,10 +29,12 @@ The default local desk retains v2's static ES-module architecture: semantic HTML
 | `scripts/build.mjs` | Validates the seed and replay, then copies the app, data, docs, `CHANGELOG.md` and `LICENSE` into `dist/` |
 | `scripts/validate.mjs` | Seed validation and workspace replay (`npm run validate`) |
 | `scripts/package.py` | Byte-compared ZIP of `dist/` |
+| `scripts/python.mjs` | Runs the Python scripts with the first working Python 3 (`PYTHON`, `python3`, `python`, then `py -3` on Windows) and passes their exit code through |
 | `scripts/audit-content.py` | Content audit of current files, the build and the ZIP against guarded terms read from a local file outside the repository |
 | `scripts/check-links.mjs` | Unauthenticated public GET of each source; reports to ignored `test-results/` |
 | `scripts/check-version.mjs` | Agreement of `package.json`, the lockfile, `src/version.js`, `CHANGELOG.md` and a release tag, and no stray version literals |
 | `scripts/release-notes.mjs` | One version's `CHANGELOG.md` section as release notes |
+| `scripts/change-report.mjs` | `npm run report:changes`: the change report for any desk import file, on stdout |
 | `scripts/server.mjs` | Dev and preview server with strict arguments, the same check endpoint behind a stricter loopback origin guard, and the `vercel.json` headers |
 | `scripts/smoke.mjs` | Build smoke against `dist/` on both viewports, failing on JavaScript errors and policy violations |
 
@@ -75,6 +79,8 @@ The direct source-review handoff reads and validates the complete `stable-desk:r
 Cooperating tabs serialize writes through Web Locks where available and compare saved workspace identity/head before committing. Storage events warn other tabs; conflicts retain the draft. Without Web Locks, conflict checks are best effort and an exact simultaneous race is possible. Cross-device collaboration and hostile/non-cooperating writers are unsupported.
 
 Write failure leaves coherent in-memory state and a persistent warning to export before reload. Replacement/reset requires successful recovery-copy storage before replacing the saved workspace. When the origin quota is full, the oldest recovery copies are evicted first, never the live workspace, drafts, legacy or review keys; if the replacement still cannot fit, nothing is replaced. After a successful replacement the newest copy is always kept, then older copies while there are at most ten within 2 MiB of UTF-16 storage, and each copy can be deleted with a confirming second click. Recovery copies preserve prior JSON; raw malformed caches can be downloaded, then explicitly archived/reset. Validated same-identity imports accept a matching history prefix/continuation and reject divergent branches; other workspaces open after archiving the current saved copy. Older imports cannot discard newer committed history.
+
+Two small keys record the last export from this browser: `stable-desk:last-export` (`{ id, head, events, at }` for the desk workspace) and `stable-desk:review-export` (`{ id, head, version, at }` for source review). Only `src/export-status.js` reads them. The desk compares its marker with the committed history and counts operations since, so a decision saved with its assumption reviews is one change; drafts are not counted because exports exclude them. A different workspace, a head no longer in history or a new review period reads as not exported. They are never exported, archived or evicted, an unreadable marker reads as not exported, and a failed marker write never affects the download. They record a download, not whether the file was kept.
 
 Generic v1 storage and exports migrate with exact notes/status/review stamps/original activity in a `legacy_import` event. Old keys remain untouched. Legacy reviews require new explicit dependency review; the migration does not invent approvals. Issuer-specific legacy content is not parsed or loaded. Raw generic baselines are accepted as separate workspaces. Every import and the saved workspace share one 4 MiB limit, and history is capped at 5,000 events. A change that would make the saved workspace exceed the limit is refused before it is written, so the desk can always reopen what it saved; archive reviewed public baselines before large long-term histories.
 

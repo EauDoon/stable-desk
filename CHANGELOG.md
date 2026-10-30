@@ -17,6 +17,67 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
 
 ## [Unreleased]
 
+### Added
+
+- **Reviewed candidates** in Source review's Checks & review history. Once
+  a candidate was accepted, rejected or superseded, the page could not show
+  it again: its rationale, page text and adopted claim were readable only in
+  the seven-day brief or the raw backup, and a superseded candidate was never
+  shown at all. The history now lists each one, newest first in journal
+  order, with its status, fetch and review times, the unauthenticated
+  reviewer label, the rationale, the adopted claim for an acceptance and both
+  page texts with short hashes. It reads fields v4.1 already stores, so
+  existing reviews and backups show their full history.
+
+- **Start new review period** in Source review. The live review stops at 60
+  operations (every check, acceptance and rejection counts), so one check a
+  day ends it in about two months, and the refusal pointed at a retention
+  feature that did not exist. The only way on was Reset, which discards the
+  snapshot: the next capture became a new baseline and any page change since
+  the last check never reached the inbox. When the 60th operation was a
+  changed check, its candidate could be neither accepted nor rejected. The new
+  action downloads the whole period first, then on a second confirmation
+  starts a period that keeps the adopted workspace, the latest snapshot and
+  any pending candidate, which stays reviewable. Carried checks name the
+  period they came from (`carriedFrom`, inside the hash chain) and are
+  labelled as carried in the history and the weekly brief, which no longer
+  counts them as source checks. A backup of the new period restores over
+  the period it continues, so another browser can follow. The footer now
+  counts operations used out of 60, and both bound refusals name the action.
+  The schema stays 4: version 4.2.0 validates and continues a rolled-over
+  state, proven against `tests/compat/v4.3-rolled-over-review.json`.
+
+- Export status on both pages. The repository's most repeated limitation is
+  that browser storage is not a backup, yet neither page showed whether the
+  current work had ever been exported. The desk now shows, under **Export
+  workspace** and in Workspace & data, "Not exported from this browser
+  yet", that nothing changed since the last export, or how many committed
+  changes followed it; Source review's footer shows the version last
+  exported and the operations since, and a new review period reads as not
+  exported. Two new keys (`stable-desk:last-export`,
+  `stable-desk:review-export`) record each download; only this status reads
+  them, and exports, imports and every format are unchanged.
+
+- A change report. To promote reviewed public context, `docs/UPDATING.md`
+  asks a maintainer to review an export's claims and dependency changes and
+  then hand-edit `data/baseline.json`, but the record could only be read one
+  event at a time in a dialog or as raw JSON. **Changes > Download change
+  report** now writes a Markdown record of the active profile: every
+  committed change with reviewer, time, rationale and before and after
+  values, then each profile, source, evidence and assumption record that
+  differs from the repository baseline, with its changed fields. `npm run
+  report:changes -- <export.json> [--profile <id>]` prints the same report for
+  any file the desk imports (`--help`; exit 1 for an invalid file, 2 for a
+  usage error). Reviewer text and values stay inert Markdown.
+
+### Changed
+
+- `npm run test:clock` runs the unit suite with the wall clock moved to
+  `SHIFT_NOW` (default 2030-01-01) through the `tests/shift-clock.mjs`
+  preload, and CI runs it on every unit job. A test that reads today's date
+  instead of `tests/clock.js` now fails in CI, not on a future calendar day.
+  At 2026-12-31, 2027-06-15 and 2030-01-01 the whole unit suite passes.
+
 ### Removed
 
 - The unused v1 decision helper `decisionFor` in `src/model.js`. The desk
@@ -30,6 +91,27 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
 
 ### Fixed
 
+- `npm run package` and `npm run audit:content` work on a standard Windows
+  Python install. Both called `python3`, which Windows does not provide, so
+  the README told Windows users to run the Python scripts by hand. They now
+  run through `scripts/python.mjs`, which uses the first working Python 3
+  among `PYTHON`, `python3`, `python` and `py -3`, skips an app-alias stub or a
+  Python 2 by probing it, passes the script's exit code through and names the
+  `PYTHON` override when none is found. CI now builds and packages on Linux
+  and Windows.
+- Decision reviews work again after the seeded review dates pass. Every
+  seeded review date is `2026-10-30`, the decision form pre-filled the stored
+  date, and an assumption review must be dated on or after the day it is
+  recorded (UTC). So from 31-10-2026 (UTC) ticking the reviewed assumptions
+  and saving with the pre-filled date was refused with "Assumption review does
+  not match the current revision or date." next to a "Use latest basis and
+  preview again" button, a stale-basis remedy that could not help. The form
+  now suggests today plus the dataset's 30-day cadence when the saved date has
+  passed and says so; a past date with an assumption review is refused in the
+  form with "Assumption reviews need a Review by date on or after <today>
+  (UTC).", without the rebase button; and replay reports a past review date
+  with its own message. Replay and imports accept and refuse exactly the
+  events v4.2.0 did, and a decision-only save may still keep an older date.
 - The test suite no longer fails once the seeded review deadlines pass. The
   unit tests, the browser tests and the build smoke read the wall clock, so
   from 2026-10-31 (UTC) a review that kept a seeded `2026-10-30` deadline was

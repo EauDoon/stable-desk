@@ -429,6 +429,21 @@ main {
   color: var(--muted);
   margin-top: 10px;
 }
+.change-report-action {
+  margin: 6px 0 18px;
+}
+.change-report-action p {
+  margin-top: 6px;
+}
+.export-box {
+  flex: 0 1 230px;
+  text-align: right;
+}
+.page-heading .export-status {
+  font-size: 11px;
+  margin-top: 6px;
+  overflow-wrap: anywhere;
+}
 .button {
   display: inline-flex;
   align-items: center;

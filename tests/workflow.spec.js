@@ -1257,3 +1257,143 @@ test("browser data saved by v4.1 opens unchanged in the desk and source review",
   await expect(page.locator(".journal-event")).toHaveCount(6);
   expect(await page.evaluate(() => localStorage.getItem("stable-desk:review"))).toBe(review);
 });
+
+test("decision reviews still save after the seeded review dates pass", async ({
+  page,
+}) => {
+  // The fixture froze the clock at TEST_NOW (2026-10-15). Move this page past
+  // every seeded review date (2026-10-30), as the live site is from 31-10-2026.
+  await page.clock.setFixedTime(new Date("2026-11-15T12:00:00.000Z"));
+  await page.getByRole("link", { name: "Decisions", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Review assessment", exact: false })
+    .first()
+    .click();
+  const date = page.getByLabel("Review by", { exact: true });
+  await expect(date).toHaveValue("2026-12-15");
+  await expect(dialog(page)).toContainText(
+    "The saved review date 2026-10-30 has passed; a new date is suggested.",
+  );
+  await page
+    .getByLabel("Research notes", { exact: true })
+    .fill("Assumptions reviewed after the seeded review date passed.");
+  await page
+    .getByRole("checkbox", {
+      name: "I reviewed these assumptions against the current evidence.",
+      exact: true,
+    })
+    .check();
+  // A past date with an assumption review is refused in the form itself,
+  // without the stale-basis rebase offer, and nothing is committed.
+  await date.fill("2026-10-30");
+  await page
+    .getByRole("button", { name: "Save local assessment", exact: true })
+    .click();
+  await expect(page.locator("#decision-error")).toHaveText(
+    "Assumption reviews need a Review by date on or after 2026-11-15 (UTC).",
+  );
+  await expect(
+    page.getByRole("button", {
+      name: "Use latest basis and preview again",
+      exact: true,
+    }),
+  ).toHaveCount(0);
+  expect((await stored(page))?.workspace.events.length ?? 0).toBe(0);
+  await overflow(page);
+  // The suggested date commits the review.
+  await date.fill("2026-12-15");
+  await page
+    .getByRole("button", { name: "Save local assessment", exact: true })
+    .click();
+  await expect(dialog(page)).not.toBeVisible();
+  const events = (await stored(page)).workspace.events;
+  const reviews = events.filter((e) => e.type === "assumption_review");
+  expect(reviews.length).toBeGreaterThan(0);
+  expect(reviews.every((e) => e.after.reviewBy === "2026-12-15")).toBe(true);
+  expect(events.at(-1).type).toBe("decision_saved");
+});
+
+test("the desk shows whether its committed work has been exported from this browser", async ({
+  page,
+}, info) => {
+  const status = page.locator(".page-heading [data-export-status]");
+  await expect(status).toHaveText("Not exported from this browser yet.");
+  const download = page.waitForEvent("download");
+  await page.locator(".page-heading [data-export]").click();
+  await download;
+  await expect(status).toHaveText(
+    "Exported from this browser 2026-10-15 12:00 UTC; no committed changes since.",
+  );
+  // A decision with its assumption reviews is one committed change.
+  await saveDecision(page, "Assessment recorded after the export.");
+  await expect(status).toHaveText(
+    "1 committed change since the export downloaded 2026-10-15 12:00 UTC.",
+  );
+  await page.reload();
+  await expect(status).toHaveText(
+    "1 committed change since the export downloaded 2026-10-15 12:00 UTC.",
+  );
+  await page
+    .getByRole("button", { name: "Workspace backup and import", exact: true })
+    .click();
+  const inDialog = page.locator("#utility-dialog [data-export-status]");
+  await expect(inDialog).toHaveText(
+    "1 committed change since the export downloaded 2026-10-15 12:00 UTC.",
+  );
+  const again = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export full workspace" }).click();
+  await again;
+  await expect(inDialog).toHaveText(
+    "Exported from this browser 2026-10-15 12:00 UTC; no committed changes since.",
+  );
+  await expect(status).toHaveText(
+    "Exported from this browser 2026-10-15 12:00 UTC; no committed changes since.",
+  );
+  await page.keyboard.press("Escape");
+  await expect(dialog(page)).not.toBeVisible();
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 800 });
+    // The status line wraps inside its box at phone widths.
+    expect(
+      await status.evaluate(
+        (node) =>
+          node.scrollWidth <= node.clientWidth &&
+          node.closest(".export-box").getBoundingClientRect().right <=
+            document.documentElement.clientWidth,
+      ),
+    ).toBe(true);
+    // The whole page is checked in the phone project, which emulates a
+    // phone; a desktop context narrowed to 320 px is not a supported layout.
+    if (info.project.name === "mobile")
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      ).toBe(true);
+  }
+});
+
+test("the Changes view downloads a Markdown change report of committed work", async ({
+  page,
+}) => {
+  await edit(page, "E-G02");
+  await page
+    .getByLabel("Scope and important limits", { exact: true })
+    .fill("Report scope: merchant eligibility <img src=x> stays the issuer's call.");
+  await reason(page, "Checked the original page for the change report.");
+  await preview(page);
+  await commit(page);
+  await page.getByRole("link", { name: "Changes", exact: true }).click();
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download change report" }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe("stable-desk-change-report-generic-stable-2026-10-15.md");
+  const report = await readFile(await file.path(), "utf8");
+  expect(report).toContain("# Stable Desk change report");
+  expect(report).toContain("## Committed changes (1)");
+  expect(report).toContain("evidence revision of E-G02 by Researcher. Rationale: Checked the original page for the change report.");
+  // Reviewer text stays inert: markup characters are escaped.
+  expect(report).toContain(
+    '-> "Report scope: merchant eligibility \\<img src=x\\> stays the issuer\'s call."',
+  );
+  expect(report).toContain("- Evidence E-G02: scope");
+  await overflow(page);
+});

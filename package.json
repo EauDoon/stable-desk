@@ -10,14 +10,16 @@
     "preview": "node scripts/server.mjs --dist",
     "validate": "node scripts/validate.mjs",
     "test": "node --test tests/*.test.mjs",
+    "test:clock": "node --import ./tests/shift-clock.mjs --test tests/*.test.mjs",
     "test:browser": "playwright test",
     "check:links": "node scripts/check-links.mjs",
     "build": "node scripts/build.mjs",
-    "package": "python3 scripts/package.py",
-    "audit:content": "python3 scripts/audit-content.py",
+    "package": "node scripts/python.mjs scripts/package.py",
+    "audit:content": "node scripts/python.mjs scripts/audit-content.py",
     "test:smoke": "node scripts/smoke.mjs",
     "check:version": "node scripts/check-version.mjs",
-    "release:notes": "node scripts/release-notes.mjs"
+    "release:notes": "node scripts/release-notes.mjs",
+    "report:changes": "node scripts/change-report.mjs"
   },
   "engines": {
     "node": ">=22.13"

@@ -19,6 +19,14 @@ const history = () => {
   return value;
 };
 const same = (a, b) => canonical(a) === canonical(b);
+// A new review period continues this one when its carried events name this
+// journal's head and it keeps the adopted desk.
+const continues = (current, next) => {
+  const head = current.journal.at(-1)?.eventHash;
+  return !!head && next.journal.length > 0 &&
+    next.journal.every((e) => e.carriedFrom?.eventHash === head || !e.carriedFrom) &&
+    next.journal[0].carriedFrom?.eventHash === head;
+};
 function save(current, next) {
   validateReview(next);
   const raw = JSON.stringify(next);
@@ -81,15 +89,33 @@ export const reviewStore = {
       return save(current, next);
     });
   },
+  // Start a new review period (rolloverReview) over the stored state. The old
+  // period is kept as a recovery copy by save().
+  rollover(expected, next) {
+    return withLock(() => {
+      const current = this.assertCurrent(expected);
+      validateReview(next);
+      if (!current || !same(current.desk, next.desk) ||
+          !(next.version === 0
+            ? current.version > 0 && Object.keys(current.snapshots).length === 0
+            : continues(current, next)))
+        throw new Error("This new review period does not continue the stored review. Reload and start the new period again.");
+      return save(current, next);
+    });
+  },
   replace(expected, next) {
     return withLock(() => {
       const current = this.assertCurrent(expected);
       validateReview(next);
+      // A backup of a later review period restores over the period it was
+      // started from, as long as its desk extends this one.
+      const sameHistory = current && (continues(current, next) || (
+        same(current.journal, next.journal.slice(0, current.version)) &&
+        !(current.version === next.version && !same(current, next))));
       if (current && (!same(current.desk.dataset, next.desk.dataset) ||
           current.desk.workspace.id !== next.desk.workspace.id ||
-          !same(current.journal, next.journal.slice(0, current.version)) ||
-          !same(current.desk.workspace.events, next.desk.workspace.events.slice(0, current.desk.workspace.events.length)) ||
-          (current.version === next.version && !same(current, next))))
+          !sameHistory ||
+          !same(current.desk.workspace.events, next.desk.workspace.events.slice(0, current.desk.workspace.events.length))))
         throw new Error("Backup diverges from or predates this review. Export and explicitly reset before restoring a different history.");
       return save(current, next);
     });

@@ -452,12 +452,17 @@ function applyEvent(projection, event, seed) {
       plain(r) &&
         r.fingerprint === assumptionFingerprint(state, event.recordId) &&
         validDate(r.reviewBy) &&
-        r.reviewBy >= today &&
         text(r.note) &&
         r.reviewedAt === event.at &&
         r.actor === event.actor &&
         r.eventId === event.id,
       "Assumption review does not match the current revision or date.",
+    );
+    // Same rule as before, reported on its own so a past date is not mistaken
+    // for a stale revision basis.
+    assert(
+      r.reviewBy >= today,
+      "An assumption review date must be on or after the day it was recorded (UTC).",
     );
     assert(
       !state.assumptions[event.recordId].value.evidenceIds.some(

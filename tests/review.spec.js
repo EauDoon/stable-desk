@@ -2,6 +2,8 @@ import { test, expect } from "@playwright/test";
 import { recordCspViolations, freezeClock } from "./fixtures.js";
 import { crossSiteRefusal } from "../server/api.mjs";
 import { readFile } from "node:fs/promises";
+import { initialReview, applyReview, REVIEW_MAX_EVENTS } from "../src/review-model.js";
+import { prepareDataset } from "../src/workspace.js";
 const pkg = JSON.parse(
   await readFile(new URL("../package.json", import.meta.url), "utf8"),
 );
@@ -514,4 +516,213 @@ test("the source check request a browser sends under the production headers pass
   expect(crossSiteRefusal(new Headers({
     ...sent, host: "127.0.0.1:4173", "sec-fetch-site": "same-origin",
   }))).toBe(false);
+});
+
+test("reviewed candidates stay inspectable in the history with reviewer, rationale and adopted claim", async () => {
+  await page.route("**/src/workspace.js", async (route) => {
+    const response = await route.fetch();
+    const marker = "export function projectWorkspace(seed, ws) {";
+    const body = (await response.text()).replace(
+      marker,
+      `${marker}\n  globalThis.__replays = (globalThis.__replays ?? 0) + 1;`,
+    );
+    await route.fulfill({ response, body });
+  });
+  await page.goto("/review.html");
+  await page.getByRole("button", { name: "Start from public baseline" }).click();
+  const checkNow = async (version) => {
+    await page.getByRole("button", { name: "Check source now" }).click();
+    await expect(page.locator(".footer")).toContainText(`Version ${version}`);
+  };
+  await checkNow(1);
+  await checkNow(2);
+  // A second change before review supersedes the first candidate.
+  await checkNow(3);
+  await page.locator(".review-candidate").click();
+  await page
+    .getByLabel("Review rationale")
+    .fill('Navigation churn only <img src=x> [link](https://example.com).');
+  await page.getByRole("button", { name: "Reject candidate" }).click();
+  await expect(page.locator(".footer")).toContainText("Version 4");
+  await checkNow(5);
+  await page.locator(".review-candidate").click();
+  await page
+    .getByLabel("Reviewed replacement claim")
+    .fill("Stripe supports stablecoin settlement for eligible merchants.");
+  await page
+    .getByLabel("Review rationale")
+    .fill("The published page now states merchant eligibility explicitly.");
+  await page.getByRole("button", { name: "Accept reviewed revision" }).click();
+  await expect(page.locator(".footer")).toContainText("Version 6");
+  const replays = () => page.evaluate(() => globalThis.__replays ?? 0);
+  const before = await replays();
+  await page.getByRole("button", { name: /Checks & review history/ }).click();
+  await expect(page.getByRole("heading", { name: "Reviewed candidates" })).toBeVisible();
+  const entries = page.locator(".reviewed-candidate");
+  await expect(entries).toHaveCount(3);
+  await expect(entries.nth(0)).toContainText("accepted");
+  await expect(entries.nth(0)).toContainText("Reviewer local-reviewer (local label, not authenticated)");
+  await expect(entries.nth(0)).toContainText("The published page now states merchant eligibility explicitly.");
+  await expect(entries.nth(0)).toContainText(
+    "Adopted claim: Stripe supports stablecoin settlement for eligible merchants.",
+  );
+  await entries.nth(0).locator("summary").click();
+  await expect(entries.nth(0).locator("pre").nth(0)).toContainText("Revision 3.");
+  await expect(entries.nth(0).locator("pre").nth(1)).toContainText("Revision 4.");
+  await expect(entries.nth(1)).toContainText("rejected");
+  // Reviewer text is shown as text: no element is created from it.
+  await expect(entries.nth(1)).toContainText("Navigation churn only <img src=x> [link](https://example.com).");
+  await expect(entries.locator("img, a")).toHaveCount(0);
+  await expect(entries.nth(2)).toContainText("superseded");
+  await expect(entries.nth(2)).toContainText("Superseded by a later source change before review.");
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+  ).toBe(true);
+  await page.getByRole("button", { name: /Review inbox/ }).click();
+  await page.getByRole("button", { name: /Checks & review history/ }).click();
+  await expect(entries).toHaveCount(3);
+  expect(await replays()).toBe(before);
+});
+
+// A review at the 60-operation bound: a baseline, unchanged checks and, with
+// `pending`, a final changed check whose candidate is still unreviewed.
+const reviewSeed = prepareDataset(
+  JSON.parse(await readFile(new URL("../data/baseline.json", import.meta.url), "utf8")),
+);
+function fullReview(pending) {
+  let review = initialReview(reviewSeed);
+  for (let i = 0; i < REVIEW_MAX_EVENTS; i++) {
+    const n = pending && i === REVIEW_MAX_EVENTS - 1 ? 2 : 1;
+    review = applyReview(
+      review,
+      { type: "check", opId: `FULL-${i}`, expectedVersion: review.version, capture: capture(n) },
+      "local-reviewer",
+      new Date(Date.parse("2026-10-10T00:00:00.000Z") + i * 60000).toISOString(),
+    ).state;
+  }
+  return review;
+}
+const storeReview = (state) =>
+  context.addInitScript((raw) => {
+    if (!localStorage.getItem("stable-desk:review"))
+      localStorage.setItem("stable-desk:review", raw);
+  }, JSON.stringify(state));
+
+test("a full review starts a new period that keeps its pending candidate reviewable", async () => {
+  await storeReview(fullReview(true));
+  await page.goto("/review.html");
+  await expect(page.locator(".footer")).toContainText("Version 60 · 60 of 60 operations used");
+  await page.locator(".review-candidate").click();
+  await page.getByLabel("Review rationale").fill("Page churn only; no material change to eligibility.");
+  await page.getByRole("button", { name: "Reject candidate" }).click();
+  await expect(page.locator('[role="alert"]')).toContainText(
+    "Bounded review limit of 60 operations reached. Export a review backup, then choose Start new review period",
+  );
+  const raw = await page.evaluate(() => localStorage.getItem("stable-desk:review"));
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Start new review period" }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe("stable-desk-v4-review-before-new-period.json");
+  expect(await readFile(await file.path(), "utf8")).toBe(raw);
+  await expect(page.getByRole("heading", { name: "Start a new review period" })).toBeVisible();
+  await page.getByRole("button", { name: "Confirm new review period" }).click();
+  await expect(page.locator(".footer")).toContainText("Version 1 · 1 of 60 operations used");
+  await expect(page.locator('[role="status"]')).toContainText(
+    "New review period started at version 1, carried from version 60.",
+  );
+  await expect(page.locator(".review-candidate")).toHaveCount(1);
+  await page.locator(".review-candidate").click();
+  await page.getByLabel("Review rationale").fill("Page churn only; no material change to eligibility.");
+  await page.getByRole("button", { name: "Reject candidate" }).click();
+  await expect(page.locator(".footer")).toContainText("Version 2 · 2 of 60 operations used");
+  await page.getByRole("button", { name: /Checks & review history/ }).click();
+  await expect(page.locator(".review-event").first()).toContainText("changed carried");
+  await expect(page.locator(".journal-event").last()).toContainText("carried from version 60");
+  await expect(page.locator(".reviewed-candidate")).toHaveCount(1);
+  await expect(page.locator(".reviewed-candidate")).toContainText("rejected");
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+  ).toBe(true);
+  // Recovery copies, newest first: version 1 of the new period (before the
+  // rejection), then the whole previous period at version 60.
+  const copies = await page.evaluate(() => JSON.parse(localStorage.getItem("stable-desk:review-history")));
+  expect(copies.map((copy) => copy.version).slice(0, 2)).toEqual([1, 60]);
+});
+
+test("after a new period an identical capture is unchanged, not a new baseline", async () => {
+  await storeReview(fullReview(false));
+  await page.route("**/api/check", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ capture: capture(1) }),
+    }),
+  );
+  await page.goto("/review.html");
+  await page.getByRole("button", { name: "Check source now" }).click();
+  await expect(page.locator('[role="alert"]')).toContainText("Bounded review limit");
+  await expect(page.locator(".footer")).toContainText("Version 60");
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Start new review period" }).click();
+  await download;
+  await page.getByRole("button", { name: "Confirm new review period" }).click();
+  await expect(page.locator(".footer")).toContainText("Version 1 · 1 of 60 operations used");
+  await page.getByRole("button", { name: "Check source now" }).click();
+  await expect(page.locator(".footer")).toContainText("Version 2");
+  await expect(page.locator(".review-empty")).toContainText("No candidates pending");
+  await page.getByRole("button", { name: /Checks & review history/ }).click();
+  await expect(page.locator(".review-event").first()).toContainText("unchanged");
+  await expect(page.locator(".review-event").nth(1)).toContainText("baseline carried");
+});
+
+test("a new period is refused when the review changed after its download", async () => {
+  await storeReview(fullReview(false));
+  await page.goto("/review.html");
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Start new review period" }).click();
+  await download;
+  // The stored bytes change after the download, as another tab's save would.
+  await page.evaluate(() => {
+    const review = JSON.parse(localStorage.getItem("stable-desk:review"));
+    localStorage.setItem("stable-desk:review", JSON.stringify({ ...review }) + " ");
+  });
+  await page.getByRole("button", { name: "Confirm new review period" }).click();
+  await expect(page.locator('[role="alert"]')).toContainText("The review changed after it was downloaded.");
+  await expect(page.locator(".footer")).toContainText("Version 60");
+  await expect(page.getByRole("button", { name: "Confirm new review period" })).toHaveCount(0);
+});
+
+test("the review footer shows the version last exported from this browser", async () => {
+  await page.goto("/review.html");
+  await page.getByRole("button", { name: "Start from public baseline" }).click();
+  await page.getByRole("button", { name: "Check source now" }).click();
+  await expect(page.locator(".footer")).toContainText("Version 1");
+  const status = page.locator(".footer [data-export-status]");
+  await expect(status).toHaveText("not exported from this browser");
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export review backup" }).click();
+  await download;
+  await expect(status).toHaveText("last exported at version 1 (2026-10-15 12:00 UTC)");
+  await page.getByRole("button", { name: "Check source now" }).click();
+  await expect(page.locator(".footer")).toContainText("Version 2");
+  await expect(status).toHaveText(
+    "last exported at version 1 (2026-10-15 12:00 UTC), 1 operation since",
+  );
+  await page.reload();
+  await expect(status).toHaveText(
+    "last exported at version 1 (2026-10-15 12:00 UTC), 1 operation since",
+  );
+  // A new review period has not been exported yet.
+  const before = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Start new review period" }).click();
+  await before;
+  await page.getByRole("button", { name: "Confirm new review period" }).click();
+  await expect(page.locator(".footer")).toContainText("Version 1 · 1 of 60 operations used");
+  await expect(status).toHaveText("not exported from this browser");
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 800 });
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    ).toBe(true);
+  }
 });

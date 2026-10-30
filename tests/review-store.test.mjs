@@ -2,7 +2,7 @@ import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { reviewStore } from '../src/review-store.js';
-import { initialReview, applyReview } from '../src/review-model.js';
+import { initialReview, applyReview, rolloverReview } from '../src/review-model.js';
 import { prepareDataset } from '../src/workspace.js';
 const KEY = 'stable-desk:review';
 const seed = prepareDataset(JSON.parse(readFileSync(new URL('../data/baseline.json', import.meta.url))));
@@ -105,4 +105,64 @@ test('real store with 20k captures respects whole-origin quota and preserves dur
   if (state.version < 60) await assert.rejects(reviewStore.write(state, next(state, 61)), /Storage is full/);
   else await assert.rejects(reviewStore.replace(state, state), /Storage is full/);
   assert.equal(reviewStore.raw(), raw);
+});
+
+const unreachable = (state, n) => applyReview(state, {
+  type: 'check', opId: `DOWN-${n}`, expectedVersion: state.version,
+  capture: { outcome: 'unreachable', status: 503, note: 'Down.' },
+}, 'test-reviewer').state;
+
+test('a new review period replaces the stored one, archives it and accepts new work', async () => {
+  const start = await reviewStore.replace(null, initialReview(seed));
+  const full = await reviewStore.write(start, next(start, 1));
+  const period = rolloverReview(full, 'test-reviewer');
+  const saved = await reviewStore.rollover(full, period);
+  assert.deepEqual(reviewStore.read(), period);
+  assert.deepEqual(saved, period);
+  // The old period is the newest recovery copy.
+  assert.deepEqual(reviewStore.recovery(reviewStore.backups()[0].key), full);
+  const after = await reviewStore.write(period, next(period, 1));
+  assert.equal(after.version, 2);
+  assert.equal(after.checks.at(-1).outcome, 'unchanged');
+});
+
+test('a new review period is refused over a changed, different or unrelated review', async () => {
+  const start = initialReview(seed), one = next(start, 1), two = next(one, 2);
+  await reviewStore.replace(null, two);
+  const raw = reviewStore.raw();
+  // Stale expectation: the period was started from an older state.
+  await assert.rejects(reviewStore.rollover(one, rolloverReview(one, 'test-reviewer')), /changed/);
+  // A period that names another head.
+  await assert.rejects(reviewStore.rollover(two, rolloverReview(one, 'test-reviewer')), /does not continue/);
+  // A changed desk.
+  const otherDesk = rolloverReview(two, 'test-reviewer');
+  otherDesk.desk = initialReview(seed).desk;
+  await assert.rejects(reviewStore.rollover(two, otherDesk), /does not continue/);
+  // An empty period while snapshots exist would drop the monitoring baseline.
+  await assert.rejects(reviewStore.rollover(two, initialReview(seed)), /does not continue/);
+  assert.equal(reviewStore.raw(), raw);
+});
+
+test('a review with only unreachable checks starts an empty period', async () => {
+  const start = await reviewStore.replace(null, initialReview(seed));
+  const down = await reviewStore.write(start, unreachable(start, 1));
+  const period = rolloverReview(down, 'test-reviewer');
+  assert.equal(period.version, 0);
+  assert.deepEqual(await reviewStore.rollover(down, period), period);
+});
+
+test('a backup of the next review period restores over the period it continues', async () => {
+  const one = next(initialReview(seed), 1), two = next(one, 2);
+  await reviewStore.replace(null, two);
+  const period = next(rolloverReview(two, 'test-reviewer'), 3);
+  // Another browser still holds period one at version 2: the newer period's
+  // backup continues it, so it restores.
+  assert.deepEqual(await reviewStore.replace(two, period), period);
+  // The older period's backup no longer restores over the new one.
+  await assert.rejects(reviewStore.replace(period, two), /diverges/);
+  // Nor does a period that continues another history.
+  await reviewStore.clear(reviewStore.raw());
+  await reviewStore.replace(null, one);
+  await assert.rejects(reviewStore.replace(one, period), /diverges/);
+  assert.deepEqual(reviewStore.read(), one);
 });

@@ -16,6 +16,8 @@ import {
   weeklyBrief,
   WATCH,
   REVIEW_MAX_EVENTS,
+  reviewedCandidates,
+  rolloverReview,
 } from "../src/review-model.js";
 import { meaningfulText, collect } from "../server/collector.mjs";
 import { createAPI } from "../server/api.mjs";
@@ -348,6 +350,11 @@ test("the operation bound is enforced", () => {
     () => check(review, 1, "CHECK-over"),
     /Bounded review limit/,
   );
+  // The refusal names the way on.
+  assert.throws(
+    () => check(review, 1, "CHECK-over"),
+    /choose Start new review period to continue/,
+  );
 });
 
 test("the weekly brief reports real events with citations", () => {
@@ -580,4 +587,223 @@ test("the weekly brief keeps reviewer text inert and rejects an invalid date", a
   assert.equal(mdInline(undefined), "");
   assert.throws(() => weeklyBrief(review, "nope"), /Invalid brief date/);
   assert.throws(() => weeklyBrief(review, 12), /Invalid brief date/);
+});
+
+const decide = (p, type, extra = {}, when = "2026-10-01T06:00:00.000Z") => {
+  const c = p.candidates.find((c) => c.status === "pending");
+  return applyReview(
+    p,
+    {
+      type,
+      opId: `REVIEW-${type}-${p.version}`,
+      expectedVersion: p.version,
+      candidateId: c.id,
+      expectedCandidateHash: c.afterHash,
+      statement: "Stripe supports stablecoin settlement for eligible merchants.",
+      classification: "company_claim",
+      rationale: "The published page now states merchant eligibility explicitly.",
+      ...extra,
+    },
+    actor,
+    when,
+  ).state;
+};
+
+test("reviewed candidates list accepted, rejected and superseded changes newest first", () => {
+  let review = check(initialReview(seed), 1);
+  review = check(review, 2);
+  const superseded = review.candidates.at(-1).id;
+  review = check(review, 3);
+  review = decide(review, "rejected", {
+    rationale: "Navigation churn only; no material change to eligibility.",
+  });
+  review = check(review, 4);
+  review = decide(review, "accepted", {}, "2026-10-01T07:00:00.000Z");
+  const before = structuredClone(review);
+  const list = reviewedCandidates(review);
+  assert.deepEqual(review, before, "listing never changes the state");
+  assert.deepEqual(
+    list.map((c) => c.status),
+    ["accepted", "rejected", "superseded"],
+  );
+  const [accepted, rejected, old] = list;
+  assert.equal(accepted.adoptedStatement, "Stripe supports stablecoin settlement for eligible merchants.");
+  assert.equal(accepted.adoptedClassification, "company_claim");
+  assert.equal(accepted.reviewedBy, actor);
+  assert.equal(accepted.reviewedAt, "2026-10-01T07:00:00.000Z");
+  assert.equal(accepted.beforeText, text(3));
+  assert.equal(accepted.afterText, text(4));
+  assert.equal(accepted.afterHash, sha256(text(4)));
+  assert.equal(rejected.adoptedStatement, null);
+  assert.equal(rejected.rationale, "Navigation churn only; no material change to eligibility.");
+  assert.equal(old.id, superseded);
+  assert.equal(old.reviewedBy, null);
+  assert.equal(old.rationale, null);
+  assert.equal(old.reviewedAt, null);
+  // Pending candidates stay in the inbox, not in this list.
+  review = check(review, 5);
+  assert.equal(reviewedCandidates(review).length, 3);
+  assert.deepEqual(reviewedCandidates(initialReview(seed)), []);
+});
+
+test("reviewed candidates return reviewer text raw for the view to escape", () => {
+  let review = check(initialReview(seed), 1);
+  review = check(review, 2);
+  const rationale = "# Heading <img src=x onerror=alert(1)> [link](https://example.com)";
+  review = decide(review, "rejected", { rationale });
+  assert.equal(reviewedCandidates(review)[0].rationale, rationale);
+});
+
+test("reviewed candidates keep journal order when every timestamp is equal", () => {
+  let review = check(initialReview(seed), 1);
+  review = check(review, 2);
+  review = check(review, 3); // supersedes the candidate from check 2
+  review = decide(review, "rejected", {}, at);
+  review = check(review, 4);
+  review = decide(review, "accepted", {}, at);
+  assert.deepEqual(
+    reviewedCandidates(review).map((c) => c.status),
+    ["accepted", "rejected", "superseded"],
+  );
+});
+
+const later = "2026-10-20T08:00:00.000Z";
+const checkAt = (p, n, id, when) =>
+  applyReview(
+    p,
+    {
+      type: "check",
+      opId: id,
+      expectedVersion: p.version,
+      capture: { outcome: "ok", text: text(n) },
+    },
+    actor,
+    when,
+  ).state;
+
+test("a new review period compares the next capture with the carried snapshot", () => {
+  let review = check(initialReview(seed), 1);
+  review = checkAt(review, 1, "CHECK-same", "2026-10-02T05:00:00.000Z");
+  const snapshot = Object.values(review.snapshots)[0];
+  const next = rolloverReview(review, actor, later);
+  assert.equal(next.version, 1);
+  assert.equal(next.checks[0].outcome, "baseline");
+  assert.equal(next.checks[0].at, snapshot.at);
+  assert.equal(next.checks[0].hash, snapshot.hash);
+  assert.match(next.checks[0].note, /^Carried forward from the previous review period \(version 2, journal head [0-9a-f]{64}\); fetched 2026-10-02T05:00:00\.000Z\.$/);
+  assert.deepEqual(Object.values(next.snapshots), [snapshot]);
+  const same = checkAt(next, 1, "CHECK-after-same", later);
+  assert.equal(same.checks.at(-1).outcome, "unchanged");
+  assert.equal(same.candidates.length, 0);
+  const changed = checkAt(next, 2, "CHECK-after-changed", later);
+  assert.equal(changed.checks.at(-1).outcome, "changed");
+  const c = changed.candidates.at(-1);
+  assert.equal(c.beforeText, text(1));
+  assert.equal(c.beforeHash, sha256(text(1)));
+  assert.equal(c.previousFetchedAt, "2026-10-02T05:00:00.000Z");
+});
+
+test("the rolled-over state is a valid schema 4 state that names the old head", () => {
+  let review = check(initialReview(seed), 1);
+  review = check(review, 2);
+  review = decide(review, "accepted");
+  const head = review.journal.at(-1).eventHash;
+  const before = structuredClone(review);
+  const next = rolloverReview(review, actor, later);
+  assert.deepEqual(review, before, "the old period is not changed");
+  assert.equal(validateReview(next), next);
+  assert.equal(next.schemaVersion, 4);
+  assert.deepEqual(next.desk, review.desk);
+  assert.equal(next.journal[0].seq, 1);
+  assert.equal(next.journal[0].previousHash, "baseline");
+  assert.match(next.journal[0].opId, /^ROLLOVER-/);
+  assert.deepEqual(next.journal[0].carriedFrom, {
+    version: 3,
+    eventHash: head,
+    rolledOverAt: later,
+    rolledOverBy: actor,
+  });
+  assert.deepEqual(next.checks[0].carriedFrom, next.journal[0].carriedFrom);
+  // Reviewed candidates stay with the old period.
+  assert.deepEqual(next.candidates, []);
+  assert.deepEqual(reviewedCandidates(next), []);
+  // The carried event is part of the hash chain: altering it breaks it.
+  const tampered = structuredClone(next);
+  tampered.journal[0].carriedFrom.version = 99;
+  assert.throws(() => validateReview(tampered), /continuity/);
+});
+
+test("at the 60-operation bound a pending candidate is carried and can still be reviewed", () => {
+  let review = check(initialReview(seed), 1);
+  for (let i = 1; i < REVIEW_MAX_EVENTS - 1; i++)
+    review = check(review, 1, `CHECK-bulk-${i}`);
+  review = check(review, 2);
+  assert.equal(review.version, REVIEW_MAX_EVENTS);
+  const pending = review.candidates.find((c) => c.status === "pending");
+  // The deadlock this removes: neither decision fits under the bound.
+  assert.throws(() => decide(review, "rejected"), /Bounded review limit/);
+  assert.throws(() => decide(review, "accepted"), /Bounded review limit/);
+  const next = rolloverReview(review, actor, later);
+  assert.equal(next.version, 1);
+  assert.deepEqual(next.candidates, [pending]);
+  assert.equal(next.checks[0].outcome, "changed");
+  assert.equal(next.checks[0].at, pending.fetchedAt);
+  assert.equal(next.journal[0].candidateId, pending.id);
+  const rejected = decide(next, "rejected", {}, later);
+  assert.equal(rejected.candidates[0].status, "rejected");
+  const accepted = decide(next, "accepted", {}, later);
+  assert.equal(accepted.candidates[0].status, "accepted");
+  const { workspace } = decodeDesk(accepted.desk);
+  assert.equal(
+    activeState(seed, workspace).evidence[WATCH.evidenceId].value.statement,
+    "Stripe supports stablecoin settlement for eligible merchants.",
+  );
+});
+
+test("an unchanged check after a pending change dates the carried snapshot at the candidate's fetch", () => {
+  let review = check(initialReview(seed), 1);
+  review = checkAt(review, 2, "CHECK-change", "2026-10-02T05:00:00.000Z");
+  review = checkAt(review, 2, "CHECK-same", "2026-10-03T05:00:00.000Z");
+  assert.equal(Object.values(review.snapshots)[0].at, "2026-10-03T05:00:00.000Z");
+  const next = rolloverReview(review, actor, later);
+  assert.equal(Object.values(next.snapshots)[0].at, "2026-10-02T05:00:00.000Z");
+  assert.equal(Object.values(next.snapshots)[0].text, text(2));
+  assert.equal(next.candidates[0].status, "pending");
+  assert.equal(decide(next, "rejected", {}, later).candidates[0].status, "rejected");
+});
+
+test("a review with no snapshot rolls over to version 0, and version 0 is refused", () => {
+  const unreachable = applyReview(
+    initialReview(seed),
+    {
+      type: "check",
+      opId: "CHECK-down",
+      expectedVersion: 0,
+      capture: { outcome: "unreachable", status: 503, note: "Down." },
+    },
+    actor,
+    at,
+  ).state;
+  const next = rolloverReview(unreachable, actor, later);
+  assert.equal(next.version, 0);
+  assert.deepEqual(next.journal, []);
+  assert.deepEqual(next.snapshots, {});
+  assert.deepEqual(next.desk, unreachable.desk);
+  assert.throws(
+    () => rolloverReview(initialReview(seed), actor, later),
+    /Nothing to carry into a new review period\./,
+  );
+  assert.throws(() => rolloverReview(unreachable, "", later), /Reviewer label required/);
+  assert.throws(() => rolloverReview(unreachable, actor, "soon"), /Invalid new period date/);
+});
+
+test("the weekly brief marks carried checks and does not count them", () => {
+  let review = check(initialReview(seed), 1);
+  review = check(review, 2);
+  const next = rolloverReview(review, actor, at);
+  const brief = weeklyBrief(next, "2026-10-01T07:00:00.000Z");
+  assert.match(brief, /^0 source checks; 0 accepted revisions; 0 rejected candidates; 1 candidates pending across history\.$/m);
+  assert.match(brief, /changed, carried forward from review period version 2 \(not a new fetch\)/);
+  const after = checkAt(next, 2, "CHECK-new", "2026-10-01T06:30:00.000Z");
+  assert.match(weeklyBrief(after, "2026-10-01T07:00:00.000Z"), /^1 source checks;/m);
 });

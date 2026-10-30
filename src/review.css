@@ -169,3 +169,9 @@
     margin-top: 14px;
   }
 }
+.reviewed-candidate details {
+  margin-top: 10px;
+}
+.reviewed-candidate .review-diff > div {
+  min-width: 0;
+}

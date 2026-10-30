@@ -27,6 +27,7 @@ import {
 } from "../src/workspace.js";
 import { blankWorkspace } from "../src/model.js";
 import { TEST_NOW } from "./clock.js";
+import { suggestedReviewBy } from "../src/workflow-ui.js";
 const seed = prepareDataset(
   JSON.parse(
     await readFile(new URL("../data/baseline.json", import.meta.url), "utf8"),
@@ -658,6 +659,94 @@ test("an assessment deadline is enforced separately from its still-valid assumpt
   assert.equal(
     decisionStatus(seed, s, "D-G01", "2026-09-30").label,
     "Decision review overdue",
+  );
+});
+
+test("an assumption review dated before the day it is recorded is refused with a date message", () => {
+  const ws = fresh();
+  const review = (reviewBy) =>
+    command(
+      ws,
+      "decision_saved",
+      "D-G01",
+      {
+        status: "Investigating",
+        owner: "Researcher",
+        reviewBy,
+        notes: "Assumptions reviewed against the current evidence.",
+      },
+      { assumptionIds: ["A-P-G01-1"] },
+    );
+  // TEST_NOW is 2026-10-15: the day before is refused, the same day is kept.
+  assert.throws(
+    () => apply(ws, review("2026-10-14")),
+    /^Error: An assumption review date must be on or after the day it was recorded \(UTC\)\.$/,
+  );
+  const next = apply(ws, review("2026-10-15"));
+  assert.equal(
+    activeState(seed, next).assumptions["A-P-G01-1"].review.reviewBy,
+    "2026-10-15",
+  );
+  // Replay applies the same rule to a stored event, with the same message.
+  const tampered = structuredClone(next);
+  tampered.events.find((e) => e.type === "assumption_review").after.reviewBy =
+    "2026-10-01";
+  assert.throws(
+    () => projectWorkspace(seed, tampered),
+    /An assumption review date must be on or after the day it was recorded/,
+  );
+});
+
+test("the decision form keeps a current review date and replaces a passed one", () => {
+  // A stored date on or after today is kept as it is.
+  assert.deepEqual(suggestedReviewBy(seed, "2026-10-30", "2026-10-15"), {
+    value: "2026-10-30",
+    passed: false,
+  });
+  assert.deepEqual(suggestedReviewBy(seed, "2026-10-30", "2026-10-30"), {
+    value: "2026-10-30",
+    passed: false,
+  });
+  // A passed date becomes today plus the dataset cadence (30 days), across a
+  // month and a year boundary.
+  assert.deepEqual(suggestedReviewBy(seed, "2026-10-30", "2026-10-31"), {
+    value: "2026-11-30",
+    passed: true,
+  });
+  assert.deepEqual(suggestedReviewBy(seed, "2026-10-30", "2026-12-15"), {
+    value: "2027-01-14",
+    passed: true,
+  });
+  // No stored date suggests a date without claiming one passed.
+  assert.deepEqual(suggestedReviewBy(seed, "", "2026-11-02"), {
+    value: "2026-12-02",
+    passed: false,
+  });
+});
+
+test("a stale assumption review fingerprint keeps the revision message", () => {
+  let ws = fresh();
+  ws = apply(
+    ws,
+    command(
+      ws,
+      "decision_saved",
+      "D-G01",
+      {
+        status: "Investigating",
+        owner: "Researcher",
+        reviewBy: "2026-11-30",
+        notes: "Assumptions reviewed against the current evidence.",
+      },
+      { assumptionIds: ["A-P-G01-1"] },
+    ),
+  );
+  const tampered = structuredClone(ws);
+  tampered.events.find((e) => e.type === "assumption_review").after.fingerprint =
+    "00000000";
+  assert.throws(
+    () => projectWorkspace(seed, tampered),
+    /^Error: Assumption review does not match the current revision or date\.$/,
   );
 });
 
