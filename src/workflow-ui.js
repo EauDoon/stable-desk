@@ -16,6 +16,16 @@ export const escapeHTML = (value) =>
   );
 const esc = escapeHTML;
 const today = () => new Date().toISOString().slice(0, 10);
+// The default Review by date for a decision form. A stored date that is still
+// current is kept; a past one (every seeded date eventually is) is replaced by
+// today plus the dataset's review cadence, because an assumption review must
+// be dated on or after the day it is recorded (UTC).
+export function suggestedReviewBy(seed, stored, now = today()) {
+  if (stored && stored >= now) return { value: stored, passed: false };
+  const due = new Date(`${now}T00:00:00Z`);
+  due.setUTCDate(due.getUTCDate() + (seed.meta.reviewDays ?? 30));
+  return { value: due.toISOString().slice(0, 10), passed: !!stored };
+}
 const options = (items, selected) =>
   items
     .map(
@@ -147,10 +157,11 @@ export function decisionForm(seed, state, id) {
   const base = seed.decisions.find((d) => d.id === id);
   const p = seed.priorities.find((p) => p.id === base.priorityId);
   const status = priorityStatus(state, p.id);
+  const due = suggestedReviewBy(seed, d.reviewBy);
   return `<p class="detail-lead">${esc(base.proposal)}</p><p>Record reasoning against specific evidence revisions. Saving status does not approve a commercial action.</p><form id="decision-form" data-record="${id}" data-expected="${esc(state.decisions[id].revision)}"><div class="two-col"><label>Status<select name="status" aria-label="Status">${options(
     DECISION_STATUSES.map((s) => [s, s]),
     d.status,
-  )}</select></label><label>Owner<input name="owner" value="${esc(d.owner)}" maxlength="200" required /></label></div><label>Review by<input type="date" name="reviewBy" value="${esc(d.reviewBy)}" required /></label><label>Research notes<textarea name="notes" rows="4" maxlength="10000" placeholder="Explain the evidence scope, unresolved questions and reasoning…">${esc(d.notes)}</textarea></label><label>Reviewer<input name="actor" value="Researcher" maxlength="200" required /></label><fieldset class="review-box"><legend>Review exact assumptions</legend><p class="small">${esc(status.reason)}</p><label class="check-label"><input type="checkbox" name="reviewed" /> I reviewed these assumptions against the current evidence.</label>${Object.values(
+  )}</select></label><label>Owner<input name="owner" value="${esc(d.owner)}" maxlength="200" required /></label></div><label>Review by<input type="date" name="reviewBy" value="${esc(due.value)}" required /></label>${due.passed ? `<p class="small muted review-date-hint">The saved review date ${esc(d.reviewBy)} has passed; a new date is suggested.</p>` : ""}<label>Research notes<textarea name="notes" rows="4" maxlength="10000" placeholder="Explain the evidence scope, unresolved questions and reasoning…">${esc(d.notes)}</textarea></label><label>Reviewer<input name="actor" value="Researcher" maxlength="200" required /></label><fieldset class="review-box"><legend>Review exact assumptions</legend><p class="small">${esc(status.reason)}</p><label class="check-label"><input type="checkbox" name="reviewed" /> I reviewed these assumptions against the current evidence.</label>${Object.values(
     state.assumptions,
   )
     .filter((a) => a.value.priorityId === p.id)

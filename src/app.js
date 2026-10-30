@@ -605,9 +605,15 @@ function clearDraft(form) {
     /* Saved operation IDs make a retained draft retry idempotent. */
   }
 }
+// An input the user can correct in the form itself. It is shown without the
+// rebase button, which only helps with a stale revision basis.
+class FormInputError extends Error {}
 function formError(form, error) {
   const node = form.querySelector(".workflow-error");
-  node.innerHTML = `${esc(error.message)} <button class="text-button" type="button" data-rebase-draft>Use latest basis and preview again</button>`;
+  node.innerHTML =
+    error instanceof FormInputError
+      ? esc(error.message)
+      : `${esc(error.message)} <button class="text-button" type="button" data-rebase-draft>Use latest basis and preview again</button>`;
   const decision = form.querySelector("#decision-error");
   if (decision) decision.textContent = error.message;
 }
@@ -722,7 +728,7 @@ function commandFor(form) {
     };
     cmd.rationale = cmd.after.notes;
     if (!cmd.after.notes)
-      throw new Error(
+      throw new FormInputError(
         "Add a note explaining your assessment or assumption review.",
       );
     cmd.assumptionIds = fields.has("reviewed")
@@ -734,6 +740,11 @@ function commandFor(form) {
           )
           .map((a) => a.value.id)
       : array("assumptionIds");
+    const now = new Date().toISOString().slice(0, 10);
+    if (cmd.assumptionIds.length && cmd.after.reviewBy < now)
+      throw new FormInputError(
+        `Assumption reviews need a Review by date on or after ${now} (UTC).`,
+      );
   } else throw new Error("Unsupported editor.");
   return cmd;
 }

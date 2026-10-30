@@ -30,6 +30,19 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
 
 ### Fixed
 
+- Decision reviews work again after the seeded review dates pass. Every
+  seeded review date is `2026-10-30`, the decision form pre-filled the stored
+  date, and an assumption review must be dated on or after the day it is
+  recorded (UTC). So from 31-10-2026 (UTC) ticking the reviewed assumptions
+  and saving with the pre-filled date was refused with "Assumption review does
+  not match the current revision or date." next to a "Use latest basis and
+  preview again" button, a stale-basis remedy that could not help. The form
+  now suggests today plus the dataset's 30-day cadence when the saved date has
+  passed and says so; a past date with an assumption review is refused in the
+  form with "Assumption reviews need a Review by date on or after <today>
+  (UTC).", without the rebase button; and replay reports a past review date
+  with its own message. Replay and imports accept and refuse exactly the
+  events v4.2.0 did, and a decision-only save may still keep an older date.
 - The test suite no longer fails once the seeded review deadlines pass. The
   unit tests, the browser tests and the build smoke read the wall clock, so
   from 2026-10-31 (UTC) a review that kept a seeded `2026-10-30` deadline was

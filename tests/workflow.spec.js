@@ -1257,3 +1257,58 @@ test("browser data saved by v4.1 opens unchanged in the desk and source review",
   await expect(page.locator(".journal-event")).toHaveCount(6);
   expect(await page.evaluate(() => localStorage.getItem("stable-desk:review"))).toBe(review);
 });
+
+test("decision reviews still save after the seeded review dates pass", async ({
+  page,
+}) => {
+  // The fixture froze the clock at TEST_NOW (2026-10-15). Move this page past
+  // every seeded review date (2026-10-30), as the live site is from 31-10-2026.
+  await page.clock.setFixedTime(new Date("2026-11-15T12:00:00.000Z"));
+  await page.getByRole("link", { name: "Decisions", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Review assessment", exact: false })
+    .first()
+    .click();
+  const date = page.getByLabel("Review by", { exact: true });
+  await expect(date).toHaveValue("2026-12-15");
+  await expect(dialog(page)).toContainText(
+    "The saved review date 2026-10-30 has passed; a new date is suggested.",
+  );
+  await page
+    .getByLabel("Research notes", { exact: true })
+    .fill("Assumptions reviewed after the seeded review date passed.");
+  await page
+    .getByRole("checkbox", {
+      name: "I reviewed these assumptions against the current evidence.",
+      exact: true,
+    })
+    .check();
+  // A past date with an assumption review is refused in the form itself,
+  // without the stale-basis rebase offer, and nothing is committed.
+  await date.fill("2026-10-30");
+  await page
+    .getByRole("button", { name: "Save local assessment", exact: true })
+    .click();
+  await expect(page.locator("#decision-error")).toHaveText(
+    "Assumption reviews need a Review by date on or after 2026-11-15 (UTC).",
+  );
+  await expect(
+    page.getByRole("button", {
+      name: "Use latest basis and preview again",
+      exact: true,
+    }),
+  ).toHaveCount(0);
+  expect((await stored(page))?.workspace.events.length ?? 0).toBe(0);
+  await overflow(page);
+  // The suggested date commits the review.
+  await date.fill("2026-12-15");
+  await page
+    .getByRole("button", { name: "Save local assessment", exact: true })
+    .click();
+  await expect(dialog(page)).not.toBeVisible();
+  const events = (await stored(page)).workspace.events;
+  const reviews = events.filter((e) => e.type === "assumption_review");
+  expect(reviews.length).toBeGreaterThan(0);
+  expect(reviews.every((e) => e.after.reviewBy === "2026-12-15")).toBe(true);
+  expect(events.at(-1).type).toBe("decision_saved");
+});
