@@ -58,6 +58,18 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
   `stable-desk:review-export`) record each download; only this status reads
   them, and exports, imports and every format are unchanged.
 
+- A change report. To promote reviewed public context, `docs/UPDATING.md`
+  asks a maintainer to review an export's claims and dependency changes and
+  then hand-edit `data/baseline.json`, but the record could only be read one
+  event at a time in a dialog or as raw JSON. **Changes > Download change
+  report** now writes a Markdown record of the active profile: every
+  committed change with reviewer, time, rationale and before and after
+  values, then each profile, source, evidence and assumption record that
+  differs from the repository baseline, with its changed fields. `npm run
+  report:changes -- <export.json> [--profile <id>]` prints the same report for
+  any file the desk imports (`--help`; exit 1 for an invalid file, 2 for a
+  usage error). Reviewer text and values stay inert Markdown.
+
 ### Changed
 
 - `npm run test:clock` runs the unit suite with the wall clock moved to

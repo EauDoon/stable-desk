@@ -18,7 +18,8 @@
     "audit:content": "python3 scripts/audit-content.py",
     "test:smoke": "node scripts/smoke.mjs",
     "check:version": "node scripts/check-version.mjs",
-    "release:notes": "node scripts/release-notes.mjs"
+    "release:notes": "node scripts/release-notes.mjs",
+    "report:changes": "node scripts/change-report.mjs"
   },
   "engines": {
     "node": ">=22.13"

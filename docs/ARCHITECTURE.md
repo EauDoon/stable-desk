@@ -13,6 +13,7 @@ The default local desk retains v2's static ES-module architecture: semantic HTML
 | `src/styles.css` | Responsive visual system; no external fonts |
 | `src/review-model.js` | v4 versioned review state, hash-chained journal, bounded collection outcomes, candidate staging, idempotency, new review periods, the reviewed-candidate history and the weekly brief with inert reviewer text |
 | `src/review-store.js` | Browser-local review persistence with immutable prior copies, explicit-only replacement and new review periods |
+| `src/change-report.js` | The Markdown change report: one profile's committed events with before and after values, and the records that differ from the repository baseline, with every user value kept inert inside a list item |
 | `src/export-status.js` | The export markers and status lines: committed desk changes or review operations since the last export from this browser |
 | `src/index-review.js` | The single import surface for the review page: the review model, its store and the workspace functions it needs |
 | `src/sha256.js` | Synchronous SHA-256 so the model hashes identically in the browser and in Node tests |
@@ -32,6 +33,7 @@ The default local desk retains v2's static ES-module architecture: semantic HTML
 | `scripts/check-links.mjs` | Unauthenticated public GET of each source; reports to ignored `test-results/` |
 | `scripts/check-version.mjs` | Agreement of `package.json`, the lockfile, `src/version.js`, `CHANGELOG.md` and a release tag, and no stray version literals |
 | `scripts/release-notes.mjs` | One version's `CHANGELOG.md` section as release notes |
+| `scripts/change-report.mjs` | `npm run report:changes`: the change report for any desk import file, on stdout |
 | `scripts/server.mjs` | Dev and preview server with strict arguments, the same check endpoint behind a stricter loopback origin guard, and the `vercel.json` headers |
 | `scripts/smoke.mjs` | Build smoke against `dist/` on both viewports, failing on JavaScript errors and policy violations |
 

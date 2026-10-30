@@ -1357,3 +1357,30 @@ test("the desk shows whether its committed work has been exported from this brow
     ).toBe(true);
   }
 });
+
+test("the Changes view downloads a Markdown change report of committed work", async ({
+  page,
+}) => {
+  await edit(page, "E-G02");
+  await page
+    .getByLabel("Scope and important limits", { exact: true })
+    .fill("Report scope: merchant eligibility <img src=x> stays the issuer's call.");
+  await reason(page, "Checked the original page for the change report.");
+  await preview(page);
+  await commit(page);
+  await page.getByRole("link", { name: "Changes", exact: true }).click();
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download change report" }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe("stable-desk-change-report-generic-stable-2026-10-15.md");
+  const report = await readFile(await file.path(), "utf8");
+  expect(report).toContain("# Stable Desk change report");
+  expect(report).toContain("## Committed changes (1)");
+  expect(report).toContain("evidence revision of E-G02 by Researcher. Rationale: Checked the original page for the change report.");
+  // Reviewer text stays inert: markup characters are escaped.
+  expect(report).toContain(
+    '-> "Report scope: merchant eligibility \\<img src=x\\> stays the issuer\'s call."',
+  );
+  expect(report).toContain("- Evidence E-G02: scope");
+  await overflow(page);
+});
