@@ -43,6 +43,15 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
   `--port`; and `--dist` before a build exits 1 and says to run
   `npm run build` first.
 
+### Security
+
+- `package-lock.json` moves the transitive `undici` (required by `cheerio`)
+  from 7.30.0 to 7.30.1, the first release outside the vulnerable range of
+  the eight advisories `npm audit` reported as high severity. `cheerio`
+  imports it when the check function loads, but the app never calls its
+  client, so no exploitable path was found. `cheerio` 1.2.0 is already the
+  latest release, so Dependabot's version updates would not have moved it.
+
 ## [4.2.0] - 2026-10-09
 
 A hardening release. Every persisted format is unchanged: storage keys,
