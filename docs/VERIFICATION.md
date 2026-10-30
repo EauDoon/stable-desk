@@ -1,5 +1,19 @@
 # Stable Desk verification record
 
+## Upgrade pull request for the next minor release, 31-10-2026
+
+This pull request fixes decision reviews after the seeded review dates pass and adds reviewed candidates in the Source review history, a new review period past the 60-operation bound, export status on both pages and a Markdown change report with `npm run report:changes`, plus a shifted-clock unit run and a Python 3 resolver for packaging. Storage keys gain two optional export markers; workspace schema 2, review schema 4, the fingerprints and dataset `2026-09-30.generic.2` are unchanged.
+
+Local results on Windows 11 with Node 24.18.0 and Chromium 1248:
+
+- `npm run validate` passes and `npm run check:version` is consistent.
+- `npm test`: **150 Node tests pass**, 0 fail. `npm run test:clock` passes the same 150 with the wall clock moved to 2030-01-01, 2027-06-15 and 2026-12-31T23:30Z; with it moved before the fixtures (2020-01-01) 22 workspace tests fail, which proves the preload reaches each test process.
+- `CI=1 npx playwright test`: **127 Chromium cases pass**, 65 at 1440 x 1000 and 62 at 390 x 844, with the same three desktop-only cases skipped on mobile. New cases cover a decision review at 2026-11-15 (the suggested date, the in-form refusal of a past date without the rebase button), reviewed candidates with escaped reviewer text and no extra desk replay, a new review period from a full review with and without a pending candidate (and its refusal after a stale download), export status on both pages at 320 and 390 px, and the change report download. The new date and change-report cases fail on the previous code.
+- `npm run build`, `npm run package` (**29 ZIP members** compared byte for byte, adding `src/change-report.js` and `src/export-status.js`) and `npm run test:smoke` pass. `npm run package` and `npm run audit:content` now run on this Windows machine without `python3`.
+- Backward compatibility with version 4.2.0: `tests/compat/v4.3-rolled-over-review.json` (the v4.1 review plus a pending change, rolled over) was loaded with the modules from tag `v4.2.0`. Their `validateReview` accepts it, `applyReview` records an unchanged check on it and accepts its carried candidate, and their store restores and continues it.
+
+Correction: the 09-10-2026 entry's 28 ZIP members were right for 4.2.0; the build had 27 after `docs/V2_PLAN.md` was removed on 30-10-2026, and 29 now.
+
 ## Version 4.2.0 hardening pull request, 09-10-2026
 
 This pull request (application version 4.2.0) addresses the findings of an independent review of v4.1: a hosted cross-site guard and JSON contract for the check endpoint, typed import errors with one 4 MiB limit and reloadable saves, non-secure-origin IDs, bounded and deletable recovery copies, fewer history replays, keyboard focus and tab state, a strict Content-Security-Policy, a strict preview-server CLI, version single-sourcing with a changelog and a tag-driven release workflow, CI on Node 22.13 and Windows, and documentation corrections. Storage keys, workspace schema 2, review schema 4, the FNV fingerprints and dataset `2026-09-30.generic.2` are unchanged, so existing browser data still loads.
