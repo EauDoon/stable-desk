@@ -7,9 +7,11 @@ on:
 permissions:
   contents: read
 # One run per PR (a newer push cancels the older PR run); main runs are never
-# cancelled.
+# cancelled. Each main commit gets its own group because every merge deploys
+# production, and GitHub cancels a pending run when a newer one joins its
+# group even with cancel-in-progress off.
 concurrency:
-  group: verify-${{ github.event.pull_request.number || github.ref }}
+  group: verify-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   unit:

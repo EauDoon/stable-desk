@@ -46,6 +46,12 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
   hosted release three weeks after v4.2.0 went live. They now record v4.2.0,
   with the version and security headers checked on the live site on
   30-10-2026.
+- CI on `main` no longer drops a commit's run when merges land close
+  together. All `main` pushes shared one concurrency group, and GitHub
+  cancels a pending run when a newer one joins its group, even with
+  `cancel-in-progress` off: on 30-10-2026 the run for `f806f35`, which was
+  deployed to production, was cancelled before any job started. Each `main`
+  commit now gets its own group; pull requests still cancel superseded runs.
 
 ### Security
 
