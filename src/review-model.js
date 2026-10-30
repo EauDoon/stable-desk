@@ -432,6 +432,74 @@ export function applyReview(
   next.version++;
   return { state: validateReview(next), duplicate: false };
 }
+// Every candidate that has left the inbox (accepted, rejected or superseded),
+// newest first, with the text a reviewer saw and what was decided. Order is
+// the journal's, which stays exact when timestamps tie: the review event, or
+// for a superseded candidate the later check that replaced it. The adopted
+// claim is read straight from the stored desk events by the journal's
+// adoptedHead, so listing never replays the desk. Text is returned raw: the
+// view escapes it.
+export function reviewedCandidates(review) {
+  const events = review.desk.workspace.events,
+    journal = review.journal;
+  const profileOf = new Map(review.candidates.map((c) => [c.id, c.profileId]));
+  const leftInbox = (c) => {
+    if (c.status !== "superseded")
+      return journal.findIndex(
+        (e) => e.type === c.status && e.candidateId === c.id,
+      );
+    const created = journal.findIndex(
+      (e) => e.type === "check" && e.candidateId === c.id,
+    );
+    const next = journal.findIndex(
+      (e, i) =>
+        i > created &&
+        e.type === "check" &&
+        e.candidateId &&
+        profileOf.get(e.candidateId) === c.profileId,
+    );
+    return next === -1 ? created : next;
+  };
+  return review.candidates
+    .filter((c) => c.status !== "pending")
+    .map((c) => [leftInbox(c), c])
+    .sort((a, b) => b[0] - a[0])
+    .map(([, c]) => {
+      const event =
+        c.status === "accepted"
+          ? review.journal.find(
+              (e) => e.type === "accepted" && e.candidateId === c.id,
+            )
+          : null;
+      const head = event && events.find((v) => v.id === event.adoptedHead);
+      const revision =
+        head &&
+        events.find(
+          (v) =>
+            v.opId === head.opId &&
+            v.type === "evidence_revision" &&
+            v.recordId === c.evidenceId,
+        );
+      return {
+        id: c.id,
+        status: c.status,
+        evidenceId: c.evidenceId,
+        url: c.url,
+        previousFetchedAt: c.previousFetchedAt,
+        fetchedAt: c.fetchedAt,
+        beforeHash: c.beforeHash,
+        afterHash: c.afterHash,
+        beforeText: c.beforeText,
+        afterText: c.afterText,
+        reviewedAt: c.reviewedAt ?? null,
+        reviewedBy: c.reviewedBy ?? null,
+        rationale: c.rationale ?? null,
+        adoptedHead: event?.adoptedHead ?? null,
+        adoptedStatement: revision?.after.statement ?? null,
+        adoptedClassification: revision?.after.type ?? null,
+      };
+    });
+}
 // Reviewer labels and rationales come from local input or an imported backup.
 // Keep each on one Markdown line and inert: no headings, lists, links,
 // emphasis, code or HTML can be opened from inside them.

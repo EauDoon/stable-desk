@@ -8,6 +8,7 @@ import {
   activeState,
   prepareDataset,
   weeklyBrief,
+  reviewedCandidates,
   WATCH,
   uuid,
   IMPORT_LIMIT_BYTES,
@@ -122,10 +123,28 @@ function paint() {
                           `<article class="review-event journal-event"><strong>${esc(e.type)}</strong> · ${esc(e.at)}<p class="small">${esc(e.actor)} · operation ${esc(e.opId)} · ${esc(e.candidateId ?? "")}<br>SHA-256 ${esc(e.eventHash)}</p></article>`,
                       )
                       .join("") || "<p>No changes recorded.</p>"
-                  }</section>`
+                  }${reviewedMarkup(review)}</section>`
                 : `<section class="panel"><h2 id="panel-title">Review inbox</h2><p class="muted">Page-text differences are review candidates, not verified facts or automated recommendations.</p>${pending.map((c) => `<button class="review-candidate" data-candidate="${esc(c.id)}"><strong>Official source text changed</strong><span>Fetched ${esc(c.fetchedAt)} · ${esc(c.id)}</span></button>`).join("") || '<div class="review-empty">No candidates pending. Adopted evidence is unchanged.</div>'}</section>${candidate && candidate.status === "pending" ? `<section class="panel" id="candidate-detail"><div class="eyebrow">${esc(candidate.id)} · ${esc(candidate.status)}</div><h2>Inspect before adopting</h2><p>Previous fetch ${esc(candidate.previousFetchedAt)} → current fetch ${esc(candidate.fetchedAt)}. <a href="${esc(candidate.url)}" target="_blank" rel="noopener noreferrer">Dated source citation ↗</a></p><div class="review-diff"><details open><summary>Previous source text · ${esc(candidate.beforeHash.slice(0, 12))}</summary><pre>${esc(candidate.beforeText)}</pre></details><details open><summary>Current source text · ${esc(candidate.afterHash.slice(0, 12))}</summary><pre>${esc(candidate.afterText)}</pre></details></div><p><strong>Currently adopted claim:</strong> ${esc(state.evidence[candidate.evidenceId].value.statement)}</p><form id="review-form"><label>Reviewed replacement claim<textarea name="statement" maxlength="3000">${esc(draft.statement ?? "")}</textarea></label><label>Classification<select name="classification"><option value="company_claim">Company claim</option><option value="analyst_inference" ${draft.classification === "analyst_inference" ? "selected" : ""}>Analyst inference</option></select></label><label>Review rationale<textarea name="rationale" required minlength="8" maxlength="2000">${esc(draft.rationale ?? "")}</textarea></label><p class="small muted">Acceptance records this source snapshot and invalidates affected assumption reviews. It never endorses decisions or relationships. A stale evidence basis blocks acceptance.</p><button class="button primary" name="choice" value="accepted" type="submit" ${busy ? "disabled" : ""}>Accept reviewed revision</button><button class="button" name="choice" value="rejected" type="submit" ${busy ? "disabled" : ""}>Reject candidate</button></form></section>` : ""}`
             }`
   }</main><footer class="footer"><span>Version ${review?.version ?? "—"} · stored in this browser · no account, server storage or automatic collection</span><a href="./docs/V4_REVIEW.md">Review contract &amp; limitations</a></footer></div>`;
+}
+// Candidates that left the inbox stay inspectable: what changed, who decided,
+// why, and the claim adopted. Reviewer labels are local and unauthenticated.
+const STATUS_TONE = { accepted: "good", rejected: "", superseded: "warn" };
+function reviewedMarkup(review) {
+  const list = reviewedCandidates(review);
+  return `<h2>Reviewed candidates</h2>${
+    list
+      .map(
+        (c) =>
+          `<article class="review-event reviewed-candidate" data-reviewed="${esc(c.id)}"><div><span class="pill ${STATUS_TONE[c.status] ?? ""}">${esc(c.status)}</span> · fetched ${esc(c.fetchedAt)}${c.reviewedAt ? ` · reviewed ${esc(c.reviewedAt)}` : ""}</div>${
+            c.status === "superseded"
+              ? '<p class="small">Superseded by a later source change before review.</p>'
+              : `<p class="small">Reviewer ${esc(c.reviewedBy)} (local label, not authenticated). Rationale: ${esc(c.rationale)}</p>`
+          }${c.adoptedStatement ? `<p class="small"><strong>Adopted claim:</strong> ${esc(c.adoptedStatement)}</p>` : ""}<details><summary>Source text: previous fetch ${esc(c.previousFetchedAt)} and this fetch</summary><div class="review-diff"><div><p class="small">Previous · SHA-256 ${esc(c.beforeHash.slice(0, 12))}</p><pre>${esc(c.beforeText)}</pre></div><div><p class="small">This fetch · SHA-256 ${esc(c.afterHash.slice(0, 12))}</p><pre>${esc(c.afterText)}</pre></div></div></details><p class="small muted">Candidate ${esc(c.id)}</p></article>`,
+      )
+      .join("") || "<p>No candidates reviewed yet.</p>"
+  }`;
 }
 // The model runs synchronously, then the commit is persisted under the store's
 // cross-tab lock. A rejected commit throws, so no caller can mistake a failure

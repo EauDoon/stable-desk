@@ -17,6 +17,18 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
 
 ## [Unreleased]
 
+### Added
+
+- **Reviewed candidates** in Source review's Checks & review history. Once
+  a candidate was accepted, rejected or superseded, the page could not show
+  it again: its rationale, page text and adopted claim were readable only in
+  the seven-day brief or the raw backup, and a superseded candidate was never
+  shown at all. The history now lists each one, newest first in journal
+  order, with its status, fetch and review times, the unauthenticated
+  reviewer label, the rationale, the adopted claim for an acceptance and both
+  page texts with short hashes. It reads fields v4.1 already stores, so
+  existing reviews and backups show their full history.
+
 ### Changed
 
 - `npm run test:clock` runs the unit suite with the wall clock moved to

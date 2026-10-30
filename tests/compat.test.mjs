@@ -7,7 +7,12 @@ import {
   projectWorkspace,
   serializeWorkspace,
 } from "../src/workspace.js";
-import { validateReview, applyReview, weeklyBrief } from "../src/review-model.js";
+import {
+  validateReview,
+  applyReview,
+  weeklyBrief,
+  reviewedCandidates,
+} from "../src/review-model.js";
 import { listArchives, pruneArchives } from "../src/archive-store.js";
 
 // Both fixtures were generated on 09-10-2026 by the v4.1.0 modules (commit
@@ -61,6 +66,18 @@ test("a source review saved by v4.1 validates and accepts new work", () => {
   const brief = weeklyBrief(next, "2026-10-09T12:00:00.000Z");
   assert.match(brief, /accepted by local-reviewer; The page now states merchant eligibility explicitly\. \[Source\]/);
   assert.match(brief, /rejected by local-reviewer; Irrelevant page churn; the claim is unaffected\. \[Source\]/);
+});
+
+test("the reviewed candidates of a v4.1 source review are listed with their decisions", () => {
+  const review = validateReview(JSON.parse(reviewRaw));
+  const list = reviewedCandidates(review);
+  assert.deepEqual(list.map((c) => c.status), ["rejected", "accepted"]);
+  assert.equal(list[0].rationale, "Irrelevant page churn; the claim is unaffected.");
+  assert.equal(list[0].adoptedStatement, null);
+  assert.match(list[1].rationale, /The page now states merchant eligibility explicitly/);
+  assert.equal(typeof list[1].adoptedStatement, "string");
+  assert.ok(list[1].adoptedStatement.length >= 15);
+  assert.ok(list.every((c) => c.reviewedBy === "local-reviewer"));
 });
 
 test("a v4.1 recovery copy keeps its key, is listed and is never pruned as the only copy", () => {

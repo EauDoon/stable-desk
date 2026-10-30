@@ -515,3 +515,69 @@ test("the source check request a browser sends under the production headers pass
     ...sent, host: "127.0.0.1:4173", "sec-fetch-site": "same-origin",
   }))).toBe(false);
 });
+
+test("reviewed candidates stay inspectable in the history with reviewer, rationale and adopted claim", async () => {
+  await page.route("**/src/workspace.js", async (route) => {
+    const response = await route.fetch();
+    const marker = "export function projectWorkspace(seed, ws) {";
+    const body = (await response.text()).replace(
+      marker,
+      `${marker}\n  globalThis.__replays = (globalThis.__replays ?? 0) + 1;`,
+    );
+    await route.fulfill({ response, body });
+  });
+  await page.goto("/review.html");
+  await page.getByRole("button", { name: "Start from public baseline" }).click();
+  const checkNow = async (version) => {
+    await page.getByRole("button", { name: "Check source now" }).click();
+    await expect(page.locator(".footer")).toContainText(`Version ${version}`);
+  };
+  await checkNow(1);
+  await checkNow(2);
+  // A second change before review supersedes the first candidate.
+  await checkNow(3);
+  await page.locator(".review-candidate").click();
+  await page
+    .getByLabel("Review rationale")
+    .fill('Navigation churn only <img src=x> [link](https://example.com).');
+  await page.getByRole("button", { name: "Reject candidate" }).click();
+  await expect(page.locator(".footer")).toContainText("Version 4");
+  await checkNow(5);
+  await page.locator(".review-candidate").click();
+  await page
+    .getByLabel("Reviewed replacement claim")
+    .fill("Stripe supports stablecoin settlement for eligible merchants.");
+  await page
+    .getByLabel("Review rationale")
+    .fill("The published page now states merchant eligibility explicitly.");
+  await page.getByRole("button", { name: "Accept reviewed revision" }).click();
+  await expect(page.locator(".footer")).toContainText("Version 6");
+  const replays = () => page.evaluate(() => globalThis.__replays ?? 0);
+  const before = await replays();
+  await page.getByRole("button", { name: /Checks & review history/ }).click();
+  await expect(page.getByRole("heading", { name: "Reviewed candidates" })).toBeVisible();
+  const entries = page.locator(".reviewed-candidate");
+  await expect(entries).toHaveCount(3);
+  await expect(entries.nth(0)).toContainText("accepted");
+  await expect(entries.nth(0)).toContainText("Reviewer local-reviewer (local label, not authenticated)");
+  await expect(entries.nth(0)).toContainText("The published page now states merchant eligibility explicitly.");
+  await expect(entries.nth(0)).toContainText(
+    "Adopted claim: Stripe supports stablecoin settlement for eligible merchants.",
+  );
+  await entries.nth(0).locator("summary").click();
+  await expect(entries.nth(0).locator("pre").nth(0)).toContainText("Revision 3.");
+  await expect(entries.nth(0).locator("pre").nth(1)).toContainText("Revision 4.");
+  await expect(entries.nth(1)).toContainText("rejected");
+  // Reviewer text is shown as text: no element is created from it.
+  await expect(entries.nth(1)).toContainText("Navigation churn only <img src=x> [link](https://example.com).");
+  await expect(entries.locator("img, a")).toHaveCount(0);
+  await expect(entries.nth(2)).toContainText("superseded");
+  await expect(entries.nth(2)).toContainText("Superseded by a later source change before review.");
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+  ).toBe(true);
+  await page.getByRole("button", { name: /Review inbox/ }).click();
+  await page.getByRole("button", { name: /Checks & review history/ }).click();
+  await expect(entries).toHaveCount(3);
+  expect(await replays()).toBe(before);
+});

@@ -16,6 +16,7 @@ import {
   weeklyBrief,
   WATCH,
   REVIEW_MAX_EVENTS,
+  reviewedCandidates,
 } from "../src/review-model.js";
 import { meaningfulText, collect } from "../server/collector.mjs";
 import { createAPI } from "../server/api.mjs";
@@ -580,4 +581,82 @@ test("the weekly brief keeps reviewer text inert and rejects an invalid date", a
   assert.equal(mdInline(undefined), "");
   assert.throws(() => weeklyBrief(review, "nope"), /Invalid brief date/);
   assert.throws(() => weeklyBrief(review, 12), /Invalid brief date/);
+});
+
+const decide = (p, type, extra = {}, when = "2026-10-01T06:00:00.000Z") => {
+  const c = p.candidates.find((c) => c.status === "pending");
+  return applyReview(
+    p,
+    {
+      type,
+      opId: `REVIEW-${type}-${p.version}`,
+      expectedVersion: p.version,
+      candidateId: c.id,
+      expectedCandidateHash: c.afterHash,
+      statement: "Stripe supports stablecoin settlement for eligible merchants.",
+      classification: "company_claim",
+      rationale: "The published page now states merchant eligibility explicitly.",
+      ...extra,
+    },
+    actor,
+    when,
+  ).state;
+};
+
+test("reviewed candidates list accepted, rejected and superseded changes newest first", () => {
+  let review = check(initialReview(seed), 1);
+  review = check(review, 2);
+  const superseded = review.candidates.at(-1).id;
+  review = check(review, 3);
+  review = decide(review, "rejected", {
+    rationale: "Navigation churn only; no material change to eligibility.",
+  });
+  review = check(review, 4);
+  review = decide(review, "accepted", {}, "2026-10-01T07:00:00.000Z");
+  const before = structuredClone(review);
+  const list = reviewedCandidates(review);
+  assert.deepEqual(review, before, "listing never changes the state");
+  assert.deepEqual(
+    list.map((c) => c.status),
+    ["accepted", "rejected", "superseded"],
+  );
+  const [accepted, rejected, old] = list;
+  assert.equal(accepted.adoptedStatement, "Stripe supports stablecoin settlement for eligible merchants.");
+  assert.equal(accepted.adoptedClassification, "company_claim");
+  assert.equal(accepted.reviewedBy, actor);
+  assert.equal(accepted.reviewedAt, "2026-10-01T07:00:00.000Z");
+  assert.equal(accepted.beforeText, text(3));
+  assert.equal(accepted.afterText, text(4));
+  assert.equal(accepted.afterHash, sha256(text(4)));
+  assert.equal(rejected.adoptedStatement, null);
+  assert.equal(rejected.rationale, "Navigation churn only; no material change to eligibility.");
+  assert.equal(old.id, superseded);
+  assert.equal(old.reviewedBy, null);
+  assert.equal(old.rationale, null);
+  assert.equal(old.reviewedAt, null);
+  // Pending candidates stay in the inbox, not in this list.
+  review = check(review, 5);
+  assert.equal(reviewedCandidates(review).length, 3);
+  assert.deepEqual(reviewedCandidates(initialReview(seed)), []);
+});
+
+test("reviewed candidates return reviewer text raw for the view to escape", () => {
+  let review = check(initialReview(seed), 1);
+  review = check(review, 2);
+  const rationale = "# Heading <img src=x onerror=alert(1)> [link](https://example.com)";
+  review = decide(review, "rejected", { rationale });
+  assert.equal(reviewedCandidates(review)[0].rationale, rationale);
+});
+
+test("reviewed candidates keep journal order when every timestamp is equal", () => {
+  let review = check(initialReview(seed), 1);
+  review = check(review, 2);
+  review = check(review, 3); // supersedes the candidate from check 2
+  review = decide(review, "rejected", {}, at);
+  review = check(review, 4);
+  review = decide(review, "accepted", {}, at);
+  assert.deepEqual(
+    reviewedCandidates(review).map((c) => c.status),
+    ["accepted", "rejected", "superseded"],
+  );
 });

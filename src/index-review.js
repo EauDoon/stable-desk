@@ -5,6 +5,7 @@ export {
   initialReview,
   validateReview,
   weeklyBrief,
+  reviewedCandidates,
   WATCH,
   ReviewError,
 } from "./review-model.js";
