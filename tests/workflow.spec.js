@@ -1315,7 +1315,7 @@ test("decision reviews still save after the seeded review dates pass", async ({
 
 test("the desk shows whether its committed work has been exported from this browser", async ({
   page,
-}) => {
+}, info) => {
   const status = page.locator(".page-heading [data-export-status]");
   await expect(status).toHaveText("Not exported from this browser yet.");
   const download = page.waitForEvent("download");
@@ -1350,11 +1350,24 @@ test("the desk shows whether its committed work has been exported from this brow
     "Exported from this browser 2026-10-15 12:00 UTC; no committed changes since.",
   );
   await page.keyboard.press("Escape");
+  await expect(dialog(page)).not.toBeVisible();
   for (const width of [320, 390]) {
     await page.setViewportSize({ width, height: 800 });
+    // The status line wraps inside its box at phone widths.
     expect(
-      await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      await status.evaluate(
+        (node) =>
+          node.scrollWidth <= node.clientWidth &&
+          node.closest(".export-box").getBoundingClientRect().right <=
+            document.documentElement.clientWidth,
+      ),
     ).toBe(true);
+    // The whole page is checked in the phone project, which emulates a
+    // phone; a desktop context narrowed to 320 px is not a supported layout.
+    if (info.project.name === "mobile")
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      ).toBe(true);
   }
 });
 
