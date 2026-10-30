@@ -1,4 +1,4 @@
-import { test, expect, recordCspViolations } from "./fixtures.js";
+import { test, expect, recordCspViolations, freezeClock } from "./fixtures.js";
 import { readFile } from "node:fs/promises";
 const baseline = JSON.parse(
   await readFile(new URL("../data/baseline.json", import.meta.url), "utf8"),
@@ -203,6 +203,7 @@ test("save local assessment, reload, export and restore in another browser conte
   expect(exported.dataset.sources).toHaveLength(baseline.sources.length);
   const context = await browser.newContext();
   const violations = await recordCspViolations(context);
+  await freezeClock(context);
   const second = await context.newPage();
   await second.goto("http://127.0.0.1:4173");
   await second
