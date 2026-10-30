@@ -62,11 +62,17 @@ const { dist = false, port = 4173, host = "127.0.0.1" } = cli;
 // The dev/preview server exposes the same bounded source check the hosted
 // function provides, so the review flow is testable without a deployment.
 const checkAPI = createCheckHandler({ collector: collect });
+// --dist before a build names the missing folder instead of a stack trace.
 const root = await realpath(resolve(
   import.meta.dirname,
   "..",
   dist ? "dist" : ".",
-));
+)).catch((error) => {
+  if (!dist || error.code !== "ENOENT") throw error;
+  console.error("dist/ does not exist: run `npm run build` before serving it with --dist.");
+  process.exitCode = 1;
+  return null;
+});
 const publicBind = host === "0.0.0.0" || host === "::";
 // vercel.json is the single source of the production security headers (CSP,
 // framing, referrer, permissions). Static responses carry the same set, so
@@ -139,7 +145,22 @@ const server = createServer(async (req, res) => {
     res.end("Not found");
   }
 });
-if (cli.exit === undefined)
-  server.listen(port, host, () =>
-    console.log(`Stable Desk: http://${host}:${server.address().port} (${root})`),
-  );
+// A busy port, or an address this machine cannot bind, prints one line (with
+// the usage for a bad --host) instead of an unhandled 'error' stack trace.
+const listenFailed = (error) => {
+  if (error.code === "EADDRINUSE" || error.code === "EACCES") {
+    const reason = error.code === "EADDRINUSE" ? "the port is already in use" : "permission denied";
+    console.error(`Cannot listen on ${host}:${port}: ${reason}. Choose another --port.`);
+    process.exitCode = 1;
+  } else {
+    console.error(usageError(`Invalid --host "${host}": cannot listen on it (${error.code ?? error.message}).`).output);
+    process.exitCode = 2;
+  }
+};
+if (cli.exit === undefined && root !== null) {
+  server.once("error", listenFailed);
+  server.listen(port, host, () => {
+    server.off("error", listenFailed);
+    console.log(`Stable Desk: http://${host}:${server.address().port} (${root})`);
+  });
+}

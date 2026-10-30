@@ -36,6 +36,12 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
   refused and 3 unit tests, 24 browser tests and the build smoke failed. They
   now run on one fixed date inside the baseline window (`tests/clock.js`).
   The app and the dataset are unchanged.
+- The dev and preview server no longer crashes with a stack trace when it
+  cannot start. A `--host` this machine cannot bind (`192.0.2.1`,
+  `999.1.1.1`) exits 2 with the usage, as the README already said an invalid
+  value does; a port already in use exits 1 and says to choose another
+  `--port`; and `--dist` before a build exits 1 and says to run
+  `npm run build` first.
 
 ## [4.2.0] - 2026-10-09
 
