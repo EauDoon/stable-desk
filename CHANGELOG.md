@@ -47,6 +47,17 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
   The schema stays 4: version 4.2.0 validates and continues a rolled-over
   state, proven against `tests/compat/v4.3-rolled-over-review.json`.
 
+- Export status on both pages. The repository's most repeated limitation is
+  that browser storage is not a backup, yet neither page showed whether the
+  current work had ever been exported. The desk now shows, under **Export
+  workspace** and in Workspace & data, "Not exported from this browser
+  yet", that nothing changed since the last export, or how many committed
+  changes followed it; Source review's footer shows the version last
+  exported and the operations since, and a new review period reads as not
+  exported. Two new keys (`stable-desk:last-export`,
+  `stable-desk:review-export`) record each download; only this status reads
+  them, and exports, imports and every format are unchanged.
+
 ### Changed
 
 - `npm run test:clock` runs the unit suite with the wall clock moved to

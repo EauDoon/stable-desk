@@ -691,3 +691,38 @@ test("a new period is refused when the review changed after its download", async
   await expect(page.locator(".footer")).toContainText("Version 60");
   await expect(page.getByRole("button", { name: "Confirm new review period" })).toHaveCount(0);
 });
+
+test("the review footer shows the version last exported from this browser", async () => {
+  await page.goto("/review.html");
+  await page.getByRole("button", { name: "Start from public baseline" }).click();
+  await page.getByRole("button", { name: "Check source now" }).click();
+  await expect(page.locator(".footer")).toContainText("Version 1");
+  const status = page.locator(".footer [data-export-status]");
+  await expect(status).toHaveText("not exported from this browser");
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export review backup" }).click();
+  await download;
+  await expect(status).toHaveText("last exported at version 1 (2026-10-15 12:00 UTC)");
+  await page.getByRole("button", { name: "Check source now" }).click();
+  await expect(page.locator(".footer")).toContainText("Version 2");
+  await expect(status).toHaveText(
+    "last exported at version 1 (2026-10-15 12:00 UTC), 1 operation since",
+  );
+  await page.reload();
+  await expect(status).toHaveText(
+    "last exported at version 1 (2026-10-15 12:00 UTC), 1 operation since",
+  );
+  // A new review period has not been exported yet.
+  const before = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Start new review period" }).click();
+  await before;
+  await page.getByRole("button", { name: "Confirm new review period" }).click();
+  await expect(page.locator(".footer")).toContainText("Version 1 · 1 of 60 operations used");
+  await expect(status).toHaveText("not exported from this browser");
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 800 });
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    ).toBe(true);
+  }
+});

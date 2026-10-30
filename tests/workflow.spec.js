@@ -1312,3 +1312,48 @@ test("decision reviews still save after the seeded review dates pass", async ({
   expect(reviews.every((e) => e.after.reviewBy === "2026-12-15")).toBe(true);
   expect(events.at(-1).type).toBe("decision_saved");
 });
+
+test("the desk shows whether its committed work has been exported from this browser", async ({
+  page,
+}) => {
+  const status = page.locator(".page-heading [data-export-status]");
+  await expect(status).toHaveText("Not exported from this browser yet.");
+  const download = page.waitForEvent("download");
+  await page.locator(".page-heading [data-export]").click();
+  await download;
+  await expect(status).toHaveText(
+    "Exported from this browser 2026-10-15 12:00 UTC; no committed changes since.",
+  );
+  // A decision with its assumption reviews is one committed change.
+  await saveDecision(page, "Assessment recorded after the export.");
+  await expect(status).toHaveText(
+    "1 committed change since the export downloaded 2026-10-15 12:00 UTC.",
+  );
+  await page.reload();
+  await expect(status).toHaveText(
+    "1 committed change since the export downloaded 2026-10-15 12:00 UTC.",
+  );
+  await page
+    .getByRole("button", { name: "Workspace backup and import", exact: true })
+    .click();
+  const inDialog = page.locator("#utility-dialog [data-export-status]");
+  await expect(inDialog).toHaveText(
+    "1 committed change since the export downloaded 2026-10-15 12:00 UTC.",
+  );
+  const again = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export full workspace" }).click();
+  await again;
+  await expect(inDialog).toHaveText(
+    "Exported from this browser 2026-10-15 12:00 UTC; no committed changes since.",
+  );
+  await expect(status).toHaveText(
+    "Exported from this browser 2026-10-15 12:00 UTC; no committed changes since.",
+  );
+  await page.keyboard.press("Escape");
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 800 });
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    ).toBe(true);
+  }
+});

@@ -17,6 +17,15 @@ import {
 } from "./index-review.js";
 import { escapeHTML as esc } from "./workflow-ui.js";
 import { VERSION } from "./version.js";
+import {
+  REVIEW_EXPORT_KEY,
+  recordExport,
+  readExport,
+  exportStatus,
+  reviewIdentity,
+  reviewMarker,
+  reviewExportLabel,
+} from "./export-status.js";
 const app = document.querySelector("#review-app");
 let review = null,
   message = "",
@@ -130,7 +139,7 @@ function paint() {
                   }${reviewedMarkup(review)}</section>`
                 : `<section class="panel"><h2 id="panel-title">Review inbox</h2><p class="muted">Page-text differences are review candidates, not verified facts or automated recommendations.</p>${pending.map((c) => `<button class="review-candidate" data-candidate="${esc(c.id)}"><strong>Official source text changed</strong><span>Fetched ${esc(c.fetchedAt)} · ${esc(c.id)}</span></button>`).join("") || '<div class="review-empty">No candidates pending. Adopted evidence is unchanged.</div>'}</section>${candidate && candidate.status === "pending" ? `<section class="panel" id="candidate-detail"><div class="eyebrow">${esc(candidate.id)} · ${esc(candidate.status)}</div><h2>Inspect before adopting</h2><p>Previous fetch ${esc(candidate.previousFetchedAt)} → current fetch ${esc(candidate.fetchedAt)}. <a href="${esc(candidate.url)}" target="_blank" rel="noopener noreferrer">Dated source citation ↗</a></p><div class="review-diff"><details open><summary>Previous source text · ${esc(candidate.beforeHash.slice(0, 12))}</summary><pre>${esc(candidate.beforeText)}</pre></details><details open><summary>Current source text · ${esc(candidate.afterHash.slice(0, 12))}</summary><pre>${esc(candidate.afterText)}</pre></details></div><p><strong>Currently adopted claim:</strong> ${esc(state.evidence[candidate.evidenceId].value.statement)}</p><form id="review-form"><label>Reviewed replacement claim<textarea name="statement" maxlength="3000">${esc(draft.statement ?? "")}</textarea></label><label>Classification<select name="classification"><option value="company_claim">Company claim</option><option value="analyst_inference" ${draft.classification === "analyst_inference" ? "selected" : ""}>Analyst inference</option></select></label><label>Review rationale<textarea name="rationale" required minlength="8" maxlength="2000">${esc(draft.rationale ?? "")}</textarea></label><p class="small muted">Acceptance records this source snapshot and invalidates affected assumption reviews. It never endorses decisions or relationships. A stale evidence basis blocks acceptance.</p><button class="button primary" name="choice" value="accepted" type="submit" ${busy ? "disabled" : ""}>Accept reviewed revision</button><button class="button" name="choice" value="rejected" type="submit" ${busy ? "disabled" : ""}>Reject candidate</button></form></section>` : ""}`
             }`
-  }</main><footer class="footer"><span>Version ${review?.version ?? "—"}${review ? ` · ${review.version} of ${REVIEW_MAX_EVENTS} operations used` : ""} · stored in this browser · no account, server storage or automatic collection</span><a href="./docs/V4_REVIEW.md">Review contract &amp; limitations</a></footer></div>`;
+  }</main><footer class="footer"><span>Version ${review?.version ?? "—"}${review ? ` · ${review.version} of ${REVIEW_MAX_EVENTS} operations used · <span data-export-status>${esc(reviewExportLabel(exportStatus(readExport(localStorage, REVIEW_EXPORT_KEY), reviewIdentity(review))))}</span>` : ""} · stored in this browser · no account, server storage or automatic collection</span><a href="./docs/V4_REVIEW.md">Review contract &amp; limitations</a></footer></div>`;
 }
 // Candidates that left the inbox stay inspectable: what changed, who decided,
 // why, and the claim adopted. Reviewer labels are local and unauthenticated.
@@ -296,6 +305,8 @@ app.addEventListener("click", (event) => {
   }
   if (action === "export") {
     download(review, "stable-desk-v4-review-backup.json");
+    recordExport(localStorage, REVIEW_EXPORT_KEY, reviewMarker(review));
+    render();
     return;
   }
   if (action === "reset") {
