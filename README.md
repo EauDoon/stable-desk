@@ -45,6 +45,7 @@ Build and verify:
 npm ci --ignore-scripts
 npm run validate
 npm test
+npm run test:clock
 npm run check:version
 npx --no-install playwright install chromium
 npm run test:browser
@@ -55,7 +56,7 @@ npm run audit:content
 npm run preview -- --host 0.0.0.0 --port 4174
 ```
 
-`dist/` is the complete static app: `index.html` for the research desk and `review.html` for source review. The only server-side piece is `api/check.js`, a function that fetches one fixed public URL with a short per-process cooldown. It stores no research records and needs no environment variables. Browser tests use Playwright's installed Chromium, or set `CHROMIUM_PATH`; packaging/audit use Python 3. New reports, screenshots and ZIPs go to ignored `test-results/`; checked-in `artifacts/` are historical. On Windows use `npm.cmd`, and run `py scripts/package.py` and `py scripts/audit-content.py` if `python3` is unavailable. Resolve an installed Python 3 interpreter if `py` is absent. Current files, build and unpacked ZIP are scanned; Git history is deliberately excluded. The audit's guarded terms are never stored in the repository: it reads them from a local file outside the tree, named by `STABLE_DESK_AUDIT_TERMS` or by default `stable-desk-audit-terms.txt` beside the repository folder, reports findings by term number only, and exits 2 with its structural checks still run when that file is absent.
+`dist/` is the complete static app: `index.html` for the research desk and `review.html` for source review. The only server-side piece is `api/check.js`, a function that fetches one fixed public URL with a short per-process cooldown. It stores no research records and needs no environment variables. `npm run test:clock` reruns the unit suite with the wall clock moved to `SHIFT_NOW` (default 2030-01-01), so a test that reads today's date instead of `tests/clock.js` fails at once. Browser tests use Playwright's installed Chromium, or set `CHROMIUM_PATH`; packaging/audit use Python 3. New reports, screenshots and ZIPs go to ignored `test-results/`; checked-in `artifacts/` are historical. On Windows use `npm.cmd`, and run `py scripts/package.py` and `py scripts/audit-content.py` if `python3` is unavailable. Resolve an installed Python 3 interpreter if `py` is absent. Current files, build and unpacked ZIP are scanned; Git history is deliberately excluded. The audit's guarded terms are never stored in the repository: it reads them from a local file outside the tree, named by `STABLE_DESK_AUDIT_TERMS` or by default `stable-desk-audit-terms.txt` beside the repository folder, reports findings by term number only, and exits 2 with its structural checks still run when that file is absent.
 
 `npm run check:links` tests unauthenticated public GET requests, separately from research. Exit 1 means 404/410; exit 2 means unresolved/restricted responses. The original public pages were reviewed through the research tool on the baseline date. New runs write `test-results/artifacts/source-links.json`; the checked-in [artifacts/source-links.json](artifacts/source-links.json) is the historical record and is not rewritten.
 

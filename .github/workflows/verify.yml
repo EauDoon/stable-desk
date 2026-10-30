@@ -36,6 +36,9 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run validate
       - run: npm test
+      # The same suite with the wall clock moved years ahead: a test that
+      # reads today's date instead of tests/clock.js fails here first.
+      - run: npm run test:clock
       - run: npm run check:version
   verify:
     runs-on: ubuntu-latest

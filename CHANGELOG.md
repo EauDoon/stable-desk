@@ -17,6 +17,14 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
 
 ## [Unreleased]
 
+### Changed
+
+- `npm run test:clock` runs the unit suite with the wall clock moved to
+  `SHIFT_NOW` (default 2030-01-01) through the `tests/shift-clock.mjs`
+  preload, and CI runs it on every unit job. A test that reads today's date
+  instead of `tests/clock.js` now fails in CI, not on a future calendar day.
+  At 2026-12-31, 2027-06-15 and 2030-01-01 the whole unit suite passes.
+
 ### Removed
 
 - The unused v1 decision helper `decisionFor` in `src/model.js`. The desk
