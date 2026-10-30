@@ -2,6 +2,8 @@ import { test, expect } from "@playwright/test";
 import { recordCspViolations, freezeClock } from "./fixtures.js";
 import { crossSiteRefusal } from "../server/api.mjs";
 import { readFile } from "node:fs/promises";
+import { initialReview, applyReview, REVIEW_MAX_EVENTS } from "../src/review-model.js";
+import { prepareDataset } from "../src/workspace.js";
 const pkg = JSON.parse(
   await readFile(new URL("../package.json", import.meta.url), "utf8"),
 );
@@ -580,4 +582,112 @@ test("reviewed candidates stay inspectable in the history with reviewer, rationa
   await page.getByRole("button", { name: /Checks & review history/ }).click();
   await expect(entries).toHaveCount(3);
   expect(await replays()).toBe(before);
+});
+
+// A review at the 60-operation bound: a baseline, unchanged checks and, with
+// `pending`, a final changed check whose candidate is still unreviewed.
+const reviewSeed = prepareDataset(
+  JSON.parse(await readFile(new URL("../data/baseline.json", import.meta.url), "utf8")),
+);
+function fullReview(pending) {
+  let review = initialReview(reviewSeed);
+  for (let i = 0; i < REVIEW_MAX_EVENTS; i++) {
+    const n = pending && i === REVIEW_MAX_EVENTS - 1 ? 2 : 1;
+    review = applyReview(
+      review,
+      { type: "check", opId: `FULL-${i}`, expectedVersion: review.version, capture: capture(n) },
+      "local-reviewer",
+      new Date(Date.parse("2026-10-10T00:00:00.000Z") + i * 60000).toISOString(),
+    ).state;
+  }
+  return review;
+}
+const storeReview = (state) =>
+  context.addInitScript((raw) => {
+    if (!localStorage.getItem("stable-desk:review"))
+      localStorage.setItem("stable-desk:review", raw);
+  }, JSON.stringify(state));
+
+test("a full review starts a new period that keeps its pending candidate reviewable", async () => {
+  await storeReview(fullReview(true));
+  await page.goto("/review.html");
+  await expect(page.locator(".footer")).toContainText("Version 60 · 60 of 60 operations used");
+  await page.locator(".review-candidate").click();
+  await page.getByLabel("Review rationale").fill("Page churn only; no material change to eligibility.");
+  await page.getByRole("button", { name: "Reject candidate" }).click();
+  await expect(page.locator('[role="alert"]')).toContainText(
+    "Bounded review limit of 60 operations reached. Export a review backup, then choose Start new review period",
+  );
+  const raw = await page.evaluate(() => localStorage.getItem("stable-desk:review"));
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Start new review period" }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe("stable-desk-v4-review-before-new-period.json");
+  expect(await readFile(await file.path(), "utf8")).toBe(raw);
+  await expect(page.getByRole("heading", { name: "Start a new review period" })).toBeVisible();
+  await page.getByRole("button", { name: "Confirm new review period" }).click();
+  await expect(page.locator(".footer")).toContainText("Version 1 · 1 of 60 operations used");
+  await expect(page.locator('[role="status"]')).toContainText(
+    "New review period started at version 1, carried from version 60.",
+  );
+  await expect(page.locator(".review-candidate")).toHaveCount(1);
+  await page.locator(".review-candidate").click();
+  await page.getByLabel("Review rationale").fill("Page churn only; no material change to eligibility.");
+  await page.getByRole("button", { name: "Reject candidate" }).click();
+  await expect(page.locator(".footer")).toContainText("Version 2 · 2 of 60 operations used");
+  await page.getByRole("button", { name: /Checks & review history/ }).click();
+  await expect(page.locator(".review-event").first()).toContainText("changed carried");
+  await expect(page.locator(".journal-event").last()).toContainText("carried from version 60");
+  await expect(page.locator(".reviewed-candidate")).toHaveCount(1);
+  await expect(page.locator(".reviewed-candidate")).toContainText("rejected");
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+  ).toBe(true);
+  // Recovery copies, newest first: version 1 of the new period (before the
+  // rejection), then the whole previous period at version 60.
+  const copies = await page.evaluate(() => JSON.parse(localStorage.getItem("stable-desk:review-history")));
+  expect(copies.map((copy) => copy.version).slice(0, 2)).toEqual([1, 60]);
+});
+
+test("after a new period an identical capture is unchanged, not a new baseline", async () => {
+  await storeReview(fullReview(false));
+  await page.route("**/api/check", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ capture: capture(1) }),
+    }),
+  );
+  await page.goto("/review.html");
+  await page.getByRole("button", { name: "Check source now" }).click();
+  await expect(page.locator('[role="alert"]')).toContainText("Bounded review limit");
+  await expect(page.locator(".footer")).toContainText("Version 60");
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Start new review period" }).click();
+  await download;
+  await page.getByRole("button", { name: "Confirm new review period" }).click();
+  await expect(page.locator(".footer")).toContainText("Version 1 · 1 of 60 operations used");
+  await page.getByRole("button", { name: "Check source now" }).click();
+  await expect(page.locator(".footer")).toContainText("Version 2");
+  await expect(page.locator(".review-empty")).toContainText("No candidates pending");
+  await page.getByRole("button", { name: /Checks & review history/ }).click();
+  await expect(page.locator(".review-event").first()).toContainText("unchanged");
+  await expect(page.locator(".review-event").nth(1)).toContainText("baseline carried");
+});
+
+test("a new period is refused when the review changed after its download", async () => {
+  await storeReview(fullReview(false));
+  await page.goto("/review.html");
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Start new review period" }).click();
+  await download;
+  // The stored bytes change after the download, as another tab's save would.
+  await page.evaluate(() => {
+    const review = JSON.parse(localStorage.getItem("stable-desk:review"));
+    localStorage.setItem("stable-desk:review", JSON.stringify({ ...review }) + " ");
+  });
+  await page.getByRole("button", { name: "Confirm new review period" }).click();
+  await expect(page.locator('[role="alert"]')).toContainText("The review changed after it was downloaded.");
+  await expect(page.locator(".footer")).toContainText("Version 60");
+  await expect(page.getByRole("button", { name: "Confirm new review period" })).toHaveCount(0);
 });

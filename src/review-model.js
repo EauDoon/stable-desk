@@ -196,7 +196,7 @@ export function validateReview(value) {
   }
   requireThat(
     new TextEncoder().encode(JSON.stringify(value)).length <= IMPORT_LIMIT_BYTES,
-    "Review history exceeds the 4 MB limit; export and review retention before continuing.",
+    "Review history exceeds the 4 MB limit; export a review backup, then choose Start new review period to continue.",
   );
   return value;
 }
@@ -228,7 +228,7 @@ export function applyReview(
   );
   requireThat(
     current.version < REVIEW_MAX_EVENTS,
-    "Bounded review limit of 60 operations reached. Export and review retention before continuing.",
+    "Bounded review limit of 60 operations reached. Export a review backup, then choose Start new review period to continue from the current snapshots and pending candidates.",
   );
   const next = structuredClone(current),
     parsed = decodeDesk(next.desk),
@@ -432,6 +432,111 @@ export function applyReview(
   next.version++;
   return { state: validateReview(next), duplicate: false };
 }
+// Start a new review period from a full one. The live state is bounded (60
+// operations, 4 MB) and every check and decision counts, so a review that is
+// checked regularly reaches the bound. Resetting would discard the monitoring
+// snapshot, and the next capture would then be a new baseline that hides any
+// page change since the last check. Instead the new period carries forward,
+// per profile with a snapshot:
+// - the pending candidate, unchanged, with one carried "changed" check dated
+//   at its fetch, so it can still be accepted or rejected; or
+// - one carried "baseline" check holding the latest snapshot, so the next
+//   capture is compared with it.
+// The adopted desk is kept byte for byte. Every carried check and journal
+// event names the period it came from in `carriedFrom`, inside the hashed
+// event body. Reviewed candidates and the old journal stay in the previous
+// period's backup and recovery copies. The result is a plain schema 4 state:
+// version 4.2 validates it and continues it as it is.
+export function rolloverReview(review, actor, now = new Date().toISOString()) {
+  validateReview(review);
+  requireThat(review.version > 0, "Nothing to carry into a new review period.");
+  requireThat(
+    typeof actor === "string" && actor.length > 0 && actor.length <= 200,
+    "Reviewer label required.",
+  );
+  requireThat(Number.isFinite(Date.parse(now)), "Invalid new period date.");
+  const carriedFrom = {
+    version: review.version,
+    eventHash: review.journal.at(-1).eventHash,
+    rolledOverAt: now,
+    rolledOverBy: actor,
+  };
+  const next = {
+    schemaVersion: 4,
+    version: 0,
+    desk: structuredClone(review.desk),
+    snapshots: {},
+    checks: [],
+    candidates: [],
+    journal: [],
+  };
+  for (const key of Object.keys(review.snapshots).sort()) {
+    const snapshot = review.snapshots[key];
+    const pending = review.candidates.find(
+      (c) =>
+        c.status === "pending" && `${c.profileId}:${WATCH.id}` === key,
+    );
+    // The check that produced what is carried: the candidate's own check, or
+    // the latest successful check, which the snapshot must match.
+    const source = pending
+      ? review.checks.find(
+          (c) =>
+            c.id ===
+            review.journal.find(
+              (e) => e.type === "check" && e.candidateId === pending.id,
+            )?.checkId,
+        )
+      : review.checks
+          .filter(
+            (c) =>
+              `${c.profileId}:${WATCH.id}` === key && c.outcome !== "unreachable",
+          )
+          .at(-1);
+    requireThat(
+      source &&
+        (pending
+          ? pending.afterHash === snapshot.hash && source.hash === snapshot.hash
+          : source.hash === snapshot.hash && source.at === snapshot.at),
+      "Review snapshot does not match its latest check.",
+    );
+    const at = pending ? pending.fetchedAt : snapshot.at;
+    const check = {
+      id: uuid(),
+      sourceId: WATCH.id,
+      url: WATCH.url,
+      profileId: snapshot.profileId,
+      at,
+      actor: source.actor,
+      outcome: pending ? "changed" : "baseline",
+      status: source.status ?? null,
+      note: `Carried forward from the previous review period (version ${review.version}, journal head ${carriedFrom.eventHash}); fetched ${at}.`,
+      hash: snapshot.hash,
+      carriedFrom,
+    };
+    const event = {
+      seq: next.journal.length + 1,
+      opId: `ROLLOVER-${uuid()}`,
+      previousHash: next.journal.at(-1)?.eventHash ?? "baseline",
+      at,
+      actor: source.actor,
+      type: "check",
+      checkId: check.id,
+      outcome: check.outcome,
+      ...(pending ? { candidateId: pending.id } : {}),
+      carriedFrom,
+    };
+    event.intentHash = hash({ type: "rollover", key, carriedFrom });
+    event.eventHash = hash(event);
+    next.checks.push(check);
+    next.journal.push(event);
+    if (pending) next.candidates.push(structuredClone(pending));
+    // A pending candidate's text is the snapshot; date the snapshot at its
+    // fetch so it matches the carried check, as every period requires.
+    next.snapshots[key] = { ...snapshot, at };
+  }
+  next.version = next.journal.length;
+  return validateReview(next);
+}
 // Every candidate that has left the inbox (accepted, rejected or superseded),
 // newest first, with the text a reviewer saw and what was decided. Order is
 // the journal's, which stays exact when timestamps tie: the review event, or
@@ -519,7 +624,10 @@ export function weeklyBrief(review, now = new Date().toISOString()) {
     start = end - 7 * 86400000;
   const recent = (value) =>
     Date.parse(value.at) >= start && Date.parse(value.at) <= end;
+  // A carried check repeats an earlier fetch into a new review period. It is
+  // listed as carried and never counted as a source check of this week.
   const checks = review.checks.filter(recent),
+    fresh = checks.filter((c) => !c.carriedFrom),
     reviews = review.journal.filter(
       (e) => recent(e) && ["accepted", "rejected"].includes(e.type),
     );
@@ -531,12 +639,12 @@ export function weeklyBrief(review, now = new Date().toISOString()) {
     ``,
     `Generic Stablecoin (STABLE) remains fictional. Public product changes establish no STABLE partnership or payment adoption.`,
     ``,
-    `${checks.length} source checks; ${reviews.filter((e) => e.type === "accepted").length} accepted revisions; ${reviews.filter((e) => e.type === "rejected").length} rejected candidates; ${review.candidates.filter((c) => c.status === "pending").length} candidates pending across history.`,
+    `${fresh.length} source checks; ${reviews.filter((e) => e.type === "accepted").length} accepted revisions; ${reviews.filter((e) => e.type === "rejected").length} rejected candidates; ${review.candidates.filter((c) => c.status === "pending").length} candidates pending across history.`,
     ``,
   ];
   for (const check of checks)
     lines.push(
-      `- ${check.at}: ${check.outcome} — [official source](${check.url}), ${check.hash ? `SHA-256 ${check.hash}` : `HTTP ${check.status ?? "unresolved"}`}.`,
+      `- ${check.at}: ${check.outcome}${check.carriedFrom ? `, carried forward from review period version ${mdInline(check.carriedFrom.version)} (not a new fetch)` : ""} — [official source](${check.url}), ${check.hash ? `SHA-256 ${check.hash}` : `HTTP ${check.status ?? "unresolved"}`}.`,
     );
   for (const event of reviews) {
     const c = review.candidates.find((c) => c.id === event.candidateId);

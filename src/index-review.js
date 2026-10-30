@@ -6,6 +6,8 @@ export {
   validateReview,
   weeklyBrief,
   reviewedCandidates,
+  rolloverReview,
+  REVIEW_MAX_EVENTS,
   WATCH,
   ReviewError,
 } from "./review-model.js";

@@ -29,6 +29,24 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
   page texts with short hashes. It reads fields v4.1 already stores, so
   existing reviews and backups show their full history.
 
+- **Start new review period** in Source review. The live review stops at 60
+  operations (every check, acceptance and rejection counts), so one check a
+  day ends it in about two months, and the refusal pointed at a retention
+  feature that did not exist. The only way on was Reset, which discards the
+  snapshot: the next capture became a new baseline and any page change since
+  the last check never reached the inbox. When the 60th operation was a
+  changed check, its candidate could be neither accepted nor rejected. The new
+  action downloads the whole period first, then on a second confirmation
+  starts a period that keeps the adopted workspace, the latest snapshot and
+  any pending candidate, which stays reviewable. Carried checks name the
+  period they came from (`carriedFrom`, inside the hash chain) and are
+  labelled as carried in the history and the weekly brief, which no longer
+  counts them as source checks. A backup of the new period restores over
+  the period it continues, so another browser can follow. The footer now
+  counts operations used out of 60, and both bound refusals name the action.
+  The schema stays 4: version 4.2.0 validates and continues a rolled-over
+  state, proven against `tests/compat/v4.3-rolled-over-review.json`.
+
 ### Changed
 
 - `npm run test:clock` runs the unit suite with the wall clock moved to
