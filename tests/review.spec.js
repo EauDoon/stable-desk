@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { recordCspViolations } from "./fixtures.js";
+import { recordCspViolations, freezeClock } from "./fixtures.js";
 import { crossSiteRefusal } from "../server/api.mjs";
 import { readFile } from "node:fs/promises";
 const pkg = JSON.parse(
@@ -20,6 +20,7 @@ test.beforeEach(async ({ browser }, info) => {
   // context across parallel workers would leak review state between tests.
   context = await browser.newContext(info.project.use);
   violations = await recordCspViolations(context);
+  await freezeClock(context);
   page = await context.newPage();
   // A deterministic capture keeps the test offline and repeatable.
   let n = 0;
@@ -380,6 +381,7 @@ test('review cycles restore in a fresh browser and hand adopted evidence back to
   const backup = await (await exported).path();
   const fresh = await browser.newContext(info.project.use);
   const freshViolations = await recordCspViolations(fresh);
+  await freezeClock(fresh);
   try {
     const restored = await fresh.newPage();
     await restored.goto('/review.html');

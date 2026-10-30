@@ -28,6 +28,15 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
   document or screen linked to it. The three historical mentions in
   `docs/VERIFICATION.md` are corrected to describe the orphan accurately.
 
+### Fixed
+
+- The test suite no longer fails once the seeded review deadlines pass. The
+  unit tests, the browser tests and the build smoke read the wall clock, so
+  from 2026-10-31 (UTC) a review that kept a seeded `2026-10-30` deadline was
+  refused and 3 unit tests, 24 browser tests and the build smoke failed. They
+  now run on one fixed date inside the baseline window (`tests/clock.js`).
+  The app and the dataset are unchanged.
+
 ## [4.2.0] - 2026-10-09
 
 A hardening release. Every persisted format is unchanged: storage keys,

@@ -26,6 +26,7 @@ import {
   serializeWorkspace,
 } from "../src/workspace.js";
 import { blankWorkspace } from "../src/model.js";
+import { TEST_NOW } from "./clock.js";
 const seed = prepareDataset(
   JSON.parse(
     await readFile(new URL("../data/baseline.json", import.meta.url), "utf8"),
@@ -54,6 +55,8 @@ function command(ws, type, id, after, extra = {}) {
     opId: uid("OP"),
     actor: "Researcher",
     rationale: "Public context reviewed; no automatic acceptance inferred.",
+    // Event dates come from TEST_NOW, not the wall clock (see tests/clock.js).
+    at: TEST_NOW,
     ...extra,
   };
 }

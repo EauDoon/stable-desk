@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { writeFile, mkdir } from "node:fs/promises";
 import assert from "node:assert/strict";
 import { chromium } from "@playwright/test";
+import { TEST_NOW } from "../tests/clock.js";
 const preview = spawn(
   process.execPath,
   ["scripts/server.mjs", "--dist", "--port", "4176"],
@@ -38,6 +39,9 @@ try {
     ["mobile", { width: 390, height: 844 }],
   ]) {
     const context = await browser.newContext({ viewport });
+    // Read "today" from the shared test date: the status labels checked
+    // below depend on it once the seeded review deadlines pass.
+    await context.clock.setFixedTime(new Date(TEST_NOW));
     // The preview serves vercel.json's Content-Security-Policy; any violation
     // in the built app is a failure.
     await context.exposeFunction("__reportCspViolation", (violation) =>

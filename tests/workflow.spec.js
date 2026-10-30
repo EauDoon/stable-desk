@@ -11,6 +11,7 @@ import {
   IMPORT_LIMIT_BYTES,
 } from "../src/workspace.js";
 import { blankWorkspace } from "../src/model.js";
+import { TEST_NOW } from "./clock.js";
 const seed = prepareDataset(
   JSON.parse(
     await readFile(new URL("../data/baseline.json", import.meta.url), "utf8"),
@@ -649,6 +650,7 @@ test("validated import rejects tampered and divergent histories without replacin
     opId: uid("OP"),
     actor: "Researcher",
     rationale: "Divergent local evidence branch.",
+    at: TEST_NOW,
   }).workspace;
   await importText(page, exportV2(payload.dataset, divergent));
   await expect(page.locator("#import-error")).toContainText(
@@ -1097,6 +1099,7 @@ test("a save that would exceed the reload limit is refused and nothing is writte
       rationale: notes,
       after: { status: base.status, owner: base.owner, reviewBy: base.reviewBy, notes },
       assumptionIds: [],
+      at: TEST_NOW,
     }).workspace;
   };
   const size = (value) => JSON.stringify(exportV2(seed, value)).length;
