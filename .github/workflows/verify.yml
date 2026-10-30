@@ -40,6 +40,10 @@ jobs:
       # reads today's date instead of tests/clock.js fails here first.
       - run: npm run test:clock
       - run: npm run check:version
+      # Packaging resolves Python 3 itself (scripts/python.mjs), so it must
+      # also work on Windows, which has no python3 command.
+      - run: npm run build
+      - run: npm run package
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 15

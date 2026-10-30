@@ -29,6 +29,7 @@ The default local desk retains v2's static ES-module architecture: semantic HTML
 | `scripts/build.mjs` | Validates the seed and replay, then copies the app, data, docs, `CHANGELOG.md` and `LICENSE` into `dist/` |
 | `scripts/validate.mjs` | Seed validation and workspace replay (`npm run validate`) |
 | `scripts/package.py` | Byte-compared ZIP of `dist/` |
+| `scripts/python.mjs` | Runs the Python scripts with the first working Python 3 (`PYTHON`, `python3`, `python`, then `py -3` on Windows) and passes their exit code through |
 | `scripts/audit-content.py` | Content audit of current files, the build and the ZIP against guarded terms read from a local file outside the repository |
 | `scripts/check-links.mjs` | Unauthenticated public GET of each source; reports to ignored `test-results/` |
 | `scripts/check-version.mjs` | Agreement of `package.json`, the lockfile, `src/version.js`, `CHANGELOG.md` and a release tag, and no stray version literals |

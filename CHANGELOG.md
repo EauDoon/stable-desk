@@ -91,6 +91,14 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
 
 ### Fixed
 
+- `npm run package` and `npm run audit:content` work on a standard Windows
+  Python install. Both called `python3`, which Windows does not provide, so
+  the README told Windows users to run the Python scripts by hand. They now
+  run through `scripts/python.mjs`, which uses the first working Python 3
+  among `PYTHON`, `python3`, `python` and `py -3`, skips an app-alias stub or a
+  Python 2 by probing it, passes the script's exit code through and names the
+  `PYTHON` override when none is found. CI now builds and packages on Linux
+  and Windows.
 - Decision reviews work again after the seeded review dates pass. Every
   seeded review date is `2026-10-30`, the decision form pre-filled the stored
   date, and an assumption review must be dated on or after the day it is
