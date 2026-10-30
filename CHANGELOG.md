@@ -42,6 +42,10 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
   value does; a port already in use exits 1 and says to choose another
   `--port`; and `--dist` before a build exits 1 and says to run
   `npm run build` first.
+- The README status table and the deployment notes still named v4.1 as the
+  hosted release three weeks after v4.2.0 went live. They now record v4.2.0,
+  with the version and security headers checked on the live site on
+  30-10-2026.
 
 ### Security
 

@@ -29,9 +29,9 @@ The working release includes:
 
 A configured real research subject remains unverified. Intended markets, currency or networks establish no issuance, acceptance or commercial relationship. All seeded opportunity fit stays synthetic. New profiles start from shared public baseline context without inheriting another profile's notes, checks or local reviews.
 
-| Status on 09-10-2026 | Evidence |
+| Status on 30-10-2026 | Evidence |
 | --- | --- |
-| Hosted release | v4.1 (review queue, explicit adopted-workspace handoff, guarded draft and import recovery) was merged through PR #3 on 05-10-2026 and is served at [stable-desk.vercel.app](https://stable-desk.vercel.app); its static desk footer read "Stable Desk v4.1" on 08-10-2026 and 09-10-2026. A merge to `main` deploys production. Hosted interaction acceptance, every flow run on the live URL, remains unverified. See [deployment notes](docs/DEPLOYMENT.md) |
+| Hosted release | v4.2.0 (strict CSP and hardening headers, cross-site check guard, bounded recovery copies, tag-driven releases) was merged through PR #4 on 09-10-2026, published as the [v4.2.0 release](https://github.com/EauDoon/stable-desk/releases/tag/v4.2.0) and is served at [stable-desk.vercel.app](https://stable-desk.vercel.app); on 30-10-2026 its `/src/version.js` exported `4.2.0` and `curl -sI` showed the five security headers from `vercel.json`. A merge to `main` deploys production. Hosted interaction acceptance, every flow run on the live URL, remains unverified. See [deployment notes](docs/DEPLOYMENT.md) |
 | Versions and releases | `package.json` holds the app version and `npm run check:version` keeps every copy in agreement. Changes are recorded in the [changelog](CHANGELOG.md). Pushing a `vX.Y.Z` tag on `main` publishes a GitHub Release with the static ZIP; the dataset and storage formats version separately |
 | Deterministic validation | Model/store/HTTP adapter and Chromium desktop/mobile checks, under the production security headers; see [verification](docs/VERIFICATION.md) |
 | Storage | Manual exports are backups. Recovery copies are bounded (the newest is always kept, then up to ten within 2 MB) and may be evicted. No cross-device synchronization. v2/v4 storage formats are retained |
