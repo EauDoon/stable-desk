@@ -445,10 +445,6 @@ export function validateWorkspace(workspace, data) {
       errors.push("Invalid local activity.");
   return errors;
 }
-export function decisionFor(data, workspace, id) {
-  const baseline = data.decisions.find((d) => d.id === id);
-  return { ...baseline, ...workspace.decisions[id] };
-}
 export function parseImport(text) {
   if (text.length > 2_000_000) throw new Error("Import is limited to 2 MB.");
   const input = JSON.parse(text);
