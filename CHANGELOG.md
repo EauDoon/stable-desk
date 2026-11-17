@@ -17,6 +17,11 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
 
 ## [Unreleased]
 
+### Local maintenance
+
+- Change-report CLI reads at most the import byte limit plus one byte, rejects non-file inputs and invalid UTF-8, and closes its file on every exit.
+
+
 ### Added
 
 - **Reviewed candidates** in Source review's Checks & review history. Once
