@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readBoundedUtf8 } from "./read-bounded.mjs";
 import { parseArgs } from "node:util";
 import { parseV2Import, IMPORT_LIMIT_BYTES } from "../src/workspace.js";
 import { changeReport } from "../src/change-report.js";
@@ -53,9 +53,7 @@ else if (cli.error) {
   process.exitCode = 2;
 } else {
   try {
-    const text = await readFile(cli.file, "utf8");
-    if (Buffer.byteLength(text) > IMPORT_LIMIT_BYTES)
-      throw new Error("Import exceeds 4 MB.");
+    const text = await readBoundedUtf8(cli.file, IMPORT_LIMIT_BYTES);
     const { seed, workspace } = parseV2Import(text);
     process.stdout.write(
       changeReport(seed, workspace, cli.profile ? { profileId: cli.profile } : {}),
