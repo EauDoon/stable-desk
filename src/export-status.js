@@ -6,6 +6,27 @@
 export const DESK_EXPORT_KEY = "stable-desk:last-export";
 export const REVIEW_EXPORT_KEY = "stable-desk:review-export";
 
+// Resolve localStorage inside the guarded operation; even its getter may
+// throw. A completed download still counts for this tab when a write fails.
+const sessionMarkers = new Map();
+export const browserExportStorage = {
+  getItem(key) {
+    return sessionMarkers.get(key) ?? globalThis.localStorage.getItem(key);
+  },
+  setItem(key, value) {
+    try {
+      globalThis.localStorage.setItem(key, value);
+      sessionMarkers.delete(key);
+    } catch {
+      sessionMarkers.set(key, value);
+    }
+  },
+};
+globalThis.addEventListener?.("storage", ({ key }) => {
+  if (key === null) sessionMarkers.clear();
+  else sessionMarkers.delete(key);
+});
+
 // A failed or blocked write never affects the download it follows.
 export function recordExport(storage, key, marker) {
   try {
@@ -40,11 +61,14 @@ export const deskMarker = (workspace, at = new Date().toISOString()) => ({
   events: workspace.events.length,
   at,
 });
-// A new review period has a new first event, so it reads as not exported.
+// Older backups identify a period by its first event. An empty export from
+// such a backup predates that event and belongs only to the original period.
 const reviewId = (review) =>
-  `${review.desk.workspace.id}:${review.journal[0]?.eventHash ?? "empty"}`;
+  `${review.desk.workspace.id}:${review.periodId ?? review.journal[0]?.eventHash ?? "empty"}`;
 export const reviewIdentity = (review) => ({
   id: reviewId(review),
+  initialId: !review.periodId && !review.journal[0]?.carriedFrom
+    ? `${review.desk.workspace.id}:empty` : undefined,
   heads: review.journal.map((e) => e.eventHash),
 });
 export const reviewMarker = (review, at = new Date().toISOString()) => ({
@@ -65,7 +89,9 @@ export function exportStatus(marker, current) {
     typeof marker.head === "string" &&
     typeof marker.at === "string" &&
     Number.isFinite(Date.parse(marker.at));
-  if (!valid || marker.id !== current.id) return { exported: false };
+  if (!valid) return { exported: false };
+  const initialExport = marker.head === "baseline" && marker.version === 0 && marker.id === current.initialId;
+  if (marker.id !== current.id && !initialExport) return { exported: false };
   const position =
     marker.head === "baseline" ? 0 : current.heads.indexOf(marker.head) + 1;
   if (marker.head !== "baseline" && position === 0) return { exported: false };

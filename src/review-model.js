@@ -40,6 +40,7 @@ export function initialReview(seed, imported = null) {
     : { seed, workspace: createWorkspace(seed) };
   return {
     schemaVersion: 4,
+    periodId: uuid(),
     version: 0,
     desk: exportV2(record.seed, record.workspace),
     snapshots: {},
@@ -56,6 +57,9 @@ export function validateReview(value) {
     "Unsupported review backup.",
   );
   decodeDesk(value.desk);
+  requireThat(value.periodId === undefined ||
+    (typeof value.periodId === "string" && value.periodId.length > 0 && value.periodId.length <= 200),
+    "Invalid review period identifier.");
   requireThat(
     Array.isArray(value.journal) &&
       value.version === value.journal.length &&
@@ -463,6 +467,7 @@ export function rolloverReview(review, actor, now = new Date().toISOString()) {
   };
   const next = {
     schemaVersion: 4,
+    periodId: uuid(),
     version: 0,
     desk: structuredClone(review.desk),
     snapshots: {},
