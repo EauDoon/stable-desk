@@ -118,6 +118,17 @@ test("review export status counts operations since and resets for a new period",
     applyReview(p, { type: "check", opId: `C-${p.version}`, expectedVersion: p.version, capture: { outcome: "ok", text: text(n) } }, "local-reviewer", TEST_NOW).state;
   const start = initialReview(seed);
   assert.equal(reviewExportLabel(exportStatus(null, reviewIdentity(start))), "not exported from this browser");
+  const emptyMarker = reviewMarker(start, TEST_NOW);
+  const otherPeriod = initialReview(seed, start.desk);
+  assert.deepEqual(exportStatus(emptyMarker, reviewIdentity(otherPeriod)), { exported: false });
+  // Version 4 backups written before period IDs still recognize both kinds of marker.
+  const legacy = structuredClone(start);
+  delete legacy.periodId;
+  const legacyFirst = check(legacy, 1);
+  const legacyEmptyMarker = reviewMarker(legacy, TEST_NOW);
+  assert.equal(exportStatus(legacyEmptyMarker, reviewIdentity(legacyFirst)).since, 1);
+  assert.equal(exportStatus(reviewMarker(legacyFirst, TEST_NOW), reviewIdentity(check(legacyFirst, 1))).since, 1);
+  assert.deepEqual(exportStatus(legacyEmptyMarker, reviewIdentity(rolloverReview(legacyFirst, "local-reviewer", TEST_NOW))), { exported: false });
   let review = check(check(start, 1), 1);
   const marker = reviewMarker(review, TEST_NOW);
   assert.equal(marker.version, 2);

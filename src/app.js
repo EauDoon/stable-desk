@@ -51,6 +51,7 @@ import {
 import { VERSION } from "./version.js";
 import {
   DESK_EXPORT_KEY,
+  browserExportStorage,
   recordExport,
   readExport,
   exportStatus,
@@ -69,6 +70,8 @@ const VIEW_LABELS = {
 };
 const LEGACY_KEY = "stable-desk:generic-v1";
 const DRAFT_KEY = "stable-desk:drafts-v2";
+const MEMORY_WARNING =
+  "Browser storage is unavailable. Changes are in memory only; export before reload.";
 const esc = (value) =>
   String(value ?? "").replace(
     /[&<>"']/g,
@@ -151,8 +154,7 @@ function persist(next = workspace) {
   try {
     raw = localStorage.getItem(STORAGE_KEY);
   } catch {
-    storageWarning =
-      "Browser storage is unavailable. Changes are in memory only; export before reload.";
+    storageWarning = MEMORY_WARNING;
   }
   if (raw !== undefined && raw !== null) {
     try {
@@ -175,12 +177,15 @@ function persist(next = workspace) {
   // Refuse a change whose saved form could not be reopened, before anything
   // is written or the in-memory workspace moves.
   const serialized = serializeWorkspace(seed, next);
-  try {
-    localStorage.setItem(STORAGE_KEY, serialized);
-    lastDiskHead = workspaceHead(next);
-  } catch (error) {
-    storageWarning =
-      "Browser storage is unavailable. Changes are in memory only; export before reload.";
+  // A failed read cannot establish that the saved workspace is safe to replace.
+  if (raw !== undefined) {
+    try {
+      localStorage.setItem(STORAGE_KEY, serialized);
+      lastDiskHead = workspaceHead(next);
+      if (storageWarning === MEMORY_WARNING) storageWarning = "";
+    } catch {
+      storageWarning = MEMORY_WARNING;
+    }
   }
   workspace = next;
   hydrate();
@@ -521,14 +526,14 @@ function downloadChangeReport() {
 // counted because exports exclude them.
 const exportLabel = () =>
   deskExportLabel(
-    exportStatus(readExport(localStorage, DESK_EXPORT_KEY), deskIdentity(workspace)),
+    exportStatus(readExport(browserExportStorage, DESK_EXPORT_KEY), deskIdentity(workspace)),
   );
 function exportWorkspace() {
   downloadJSON(
     exportV2(seed, workspace),
     `stable-desk-workspace-${data.meta.asOf}.json`,
   );
-  recordExport(localStorage, DESK_EXPORT_KEY, deskMarker(workspace));
+  recordExport(browserExportStorage, DESK_EXPORT_KEY, deskMarker(workspace));
   for (const node of document.querySelectorAll("[data-export-status]"))
     node.textContent = exportLabel();
   notify(
@@ -553,11 +558,7 @@ function draftKey(form) {
   return `${workspace.id}:${workspace.activeProfileId}:${form.id}:${form.dataset.new === "true" || form.id === "source-add-form" ? "new" : form.dataset.record}`;
 }
 function readDrafts() {
-  try {
-    return JSON.parse(localStorage.getItem(DRAFT_KEY)) ?? {};
-  } catch {
-    return {};
-  }
+  return JSON.parse(localStorage.getItem(DRAFT_KEY)) ?? {};
 }
 function formValues(form) {
   const values = {};
@@ -604,7 +605,12 @@ function prepareForm() {
   form.dataset.op = uid("OP");
   form.dataset.draftKey = draftKey(form);
   previewCommand = null;
-  const draft = readDrafts()[form.dataset.draftKey];
+  let draft;
+  try {
+    draft = readDrafts()[form.dataset.draftKey];
+  } catch {
+    return;
+  }
   if (!draft) return;
   form.dataset.record = draft.record;
   form.dataset.expected = draft.expected;
@@ -1302,8 +1308,7 @@ try {
       }
     }
   } catch {
-    storageWarning =
-      "Browser storage could not be loaded. The baseline is open; export in-memory edits before reload.";
+    storageWarning = MEMORY_WARNING;
   }
   hydrate();
   render();
