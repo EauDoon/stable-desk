@@ -89,6 +89,11 @@ export function changeReport(
   if (!state) throw new Error(`Unknown profile ${profileId}.`);
   const events = ws.events.filter((e) => e.profileId === profileId);
   const diff = differences(seed, state);
+  const baselineDecisions = projectWorkspace(seed, createWorkspace(seed)).profiles[seed.profile.id].decisions;
+  const assessments = Object.entries(state.decisions)
+    .filter(([id, decision]) => !same(decision.value, baselineDecisions[id]?.value))
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([id, decision]) => `- Decision ${mdInline(id)}: ${mdInline(decision.value.status)}; changed fields: ${changedFields(baselineDecisions[id]?.value, decision.value).map(mdInline).join(", ")}.`);
   const p = state.profile;
   return [
     "# Stable Desk change report",
@@ -109,9 +114,12 @@ export function changeReport(
     "",
     `## Differences from the repository baseline (${diff.length})`,
     "",
-    "Records whose current value differs from data/baseline.json. Review each one before promoting it; docs/UPDATING.md describes the steps.",
+    "Profile, source, evidence and assumption fields that differ from data/baseline.json. See docs/UPDATING.md before promoting public context.",
     "",
-    ...(diff.length ? diff : ["- None. This profile matches the repository baseline."]),
+    ...(diff.length ? diff : ["- No public-context fields differ from the repository baseline."]),
+    "",
+    `Local decision differences (${assessments.length}); these assessments are not public-context promotion candidates:`,
+    ...(assessments.length ? assessments : ["- No local decision differences."]),
     "",
   ].join("\n");
 }
