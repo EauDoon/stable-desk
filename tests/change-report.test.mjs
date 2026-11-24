@@ -64,7 +64,8 @@ test("an unchanged workspace reports no committed changes and no differences", (
   const report = changeReport(seed, createWorkspace(seed, "WS-empty"), { generatedAt: TEST_NOW });
   assert.match(report, /^## Committed changes \(0\)\n\n- No committed changes for this profile\.$/m);
   assert.match(report, /^## Differences from the repository baseline \(0\)$/m);
-  assert.match(report, /^- None\. This profile matches the repository baseline\.$/m);
+  assert.match(report, /^- No public-context fields differ from the repository baseline\.$/m);
+  assert.match(report, /^- No local decision differences\.$/m);
 });
 
 test("reviewer text and values stay inert Markdown on their own list line", () => {
@@ -123,6 +124,8 @@ test("the v4.1 compatibility workspace produces a full report", () => {
   const { seed: s, workspace } = parseV2Import(deskRaw);
   const report = changeReport(s, workspace, { generatedAt: TEST_NOW });
   assert.match(report, /decision saved of D-G01 by Researcher/);
+  assert.match(report, /Local decision differences \(1\); these assessments are not public-context promotion candidates:/);
+  assert.match(report, /^- Decision D-G01: Investigating; changed fields: .*status\.$/m);
   assert.match(report, /^ {2}- Field basis: recorded for assumptions A-P-G01-1, A-P-G01-2\.$/m);
   assert.match(report, /^ {2}- Field status: "Proposed" -> "Investigating"$/m);
   assert.match(report, /source check of S-G09/);
