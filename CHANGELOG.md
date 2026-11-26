@@ -17,6 +17,8 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
 
 ## [Unreleased]
 
+- An evidence atlas with a 3D architecture map, case-specific public source lineage, pairwise coverage comparisons, a cited Markdown brief with assumptions and disproof criteria, record search, shareable selections and local JSON downloads. With scripts disabled, the desk and source review now offer working skip links and a readable atlas.
+
 ### Local maintenance
 
 - Change-report CLI reads at most the import byte limit plus one byte, rejects non-file inputs and invalid UTF-8, and closes its file on every exit.

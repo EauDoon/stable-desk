@@ -22,6 +22,7 @@ await mkdir(resolve(root, "dist"), { recursive: true });
 for (const file of [
   "index.html",
   "review.html",
+  "atlas.html",
   "favicon.svg",
   "README.md",
   "CHANGELOG.md",

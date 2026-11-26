@@ -20,6 +20,12 @@ npm run dev
 
 Open **http://localhost:4173** for the research desk, or **http://localhost:4173/review.html** for source review. The default binds to `127.0.0.1` and accepts only local hosts on the listening port. `--host 0.0.0.0` explicitly opens a public cloud preview and accepts its public host; use the built `preview` surface when exposing it. Both modes refuse hidden paths, links outside the serving root and cross-origin source checks. Choose another port with `--port 4174`. `node scripts/server.mjs --help` lists the options and `--version` prints the app version; a missing or invalid value or an unknown flag exits 2 with the usage instead of starting. Serve over HTTP; `file://` cannot load the JSON dataset. System fonts keep the build self-contained.
 
+### Evidence atlas
+
+Open **Evidence atlas** from the research desk footer, or visit [the atlas page](atlas.html) in the static build. Select Desk architecture to trace modules, or pick one of the three synthetic investigations to follow its dated public sources, recorded claims and proposed decision. Search by record ID, publisher or claim text. Select a connection to read its scope or open its source. The link to selection restores the same record on another device. Download map JSON exports the displayed public map as `data.evidenceAtlas`. Compare any two investigations to identify shared sources, publishers unique to each case and claim counts. The case brief pairs the next research action with the baseline assumptions and disproof criteria. Its Markdown download includes the dated baseline identifier, exact claim text, source roles and original source links. The atlas reads the versioned baseline and never opens a saved workspace.
+
+Rotate the map with a horizontal drag or the two rotation buttons. Keyboard users can follow every connection in the record index. Without JavaScript the six-component reference, dataset and research brief remain available.
+
 The working release includes:
 
 - **Opportunities:** synthetic investigation cards, source-to-recommendation lineage, real organization context, search/filters, details and comparisons of two or three organizations.
