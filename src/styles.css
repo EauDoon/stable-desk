@@ -2645,3 +2645,7 @@ h2[tabindex="-1"]:focus,
 h3[tabindex="-1"]:focus {
   outline: none;
 }
+
+@media (scripting: none) {
+  .loading { display: none; }
+}
