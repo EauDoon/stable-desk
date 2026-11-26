@@ -46,18 +46,27 @@
               <span id="map-title">Desk architecture</span
               ><span id="count"></span>
             </div>
+            <ul id="legend" aria-label="Record types"></ul>
             <canvas aria-hidden="true"></canvas>
-            <div class="controls">
+            <div class="controls" role="group" aria-label="Map camera">
               <button type="button" id="left" aria-label="Rotate left">↶</button
               ><button type="button" id="right" aria-label="Rotate right">
                 ↷</button
-              ><button type="button" id="reset">Reset view</button>
+              ><button type="button" id="up" aria-label="Tilt up">↑</button>
+              <button type="button" id="down" aria-label="Tilt down">↓</button>
+              <button type="button" id="reset">Reset view</button>
             </div>
           </div>
           <aside aria-label="Selected record">
             <span id="kind" class="kind"></span>
             <h2 id="title"></h2>
             <p id="description"></p>
+            <dl id="evidence-notes" hidden>
+              <dt>Scope</dt>
+              <dd id="scope"></dd>
+              <dt>Independent check</dt>
+              <dd id="check"></dd>
+            </dl>
             <a id="source">Open source</a>
             <h3>Connected records</h3>
             <ul id="connections"></ul>
