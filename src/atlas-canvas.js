@@ -191,6 +191,33 @@ export function graphCanvas(canvas, select) {
     draw();
   };
   new ResizeObserver(draw).observe(canvas);
+  // Prevent a horizontal orbit from starting browser momentum that consumes
+  // the next control tap. Vertical scrolling and pinch gestures stay native.
+  let touchOrigin;
+  canvas.addEventListener(
+    "touchstart",
+    (event) => {
+      const touch = event.touches.length === 1 ? event.touches[0] : null;
+      touchOrigin = touch && { x: touch.clientX, y: touch.clientY };
+    },
+    { passive: true },
+  );
+  canvas.addEventListener(
+    "touchmove",
+    (event) => {
+      if (!touchOrigin || event.touches.length !== 1 || !event.cancelable)
+        return;
+      const touch = event.touches[0];
+      const horizontal = Math.abs(touch.clientX - touchOrigin.x);
+      if (
+        horizontal > 5 &&
+        horizontal > Math.abs(touch.clientY - touchOrigin.y)
+      )
+        event.preventDefault();
+    },
+    { passive: false },
+  );
+
   canvas.addEventListener("pointerdown", (event) => {
     if (!event.isPrimary || event.button !== 0) return;
     pointer = {

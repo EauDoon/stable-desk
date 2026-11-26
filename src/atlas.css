@@ -158,7 +158,7 @@ canvas {
   width: 100%;
   height: clamp(240px, 34vw, 360px);
   display: block;
-  touch-action: pan-y;
+  touch-action: pan-y pinch-zoom;
 }
 .controls {
   padding: 0.4rem 1rem 1rem;
