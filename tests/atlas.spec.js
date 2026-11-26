@@ -20,6 +20,9 @@ test("atlas traces a published case from the research desk and downloads the sel
   await page.keyboard.press("Enter");
   await expect(record).toBeFocused();
   await expect(page.locator("#description")).toContainText("Stripe");
+  await expect(page.locator("#scope")).toContainText("Verified documentation contents");
+  await expect(page.locator("#check")).toContainText("no merchant account");
+  await expect(page.locator("#legend li")).toHaveText(["Source", "Evidence", "Investigation", "Decision"]);
   await page
     .locator("#connections button")
     .filter({ hasText: "Stripe" })
@@ -64,6 +67,12 @@ test("the atlas camera rotates on demand and resets under reduced motion", async
   await expect(canvas).toBeVisible();
   await expect(page.locator("#lens option")).toHaveCount(4);
   const initial = await pixels();
+  const up = page.getByRole("button", {name: "Tilt up"});
+  await up.focus();
+  await page.keyboard.press("Enter");
+  expect(await pixels()).not.toBe(initial);
+  await page.getByRole("button", {name: "Reset view"}).click();
+  expect(await pixels()).toBe(initial);
   await page.getByRole("button", { name: "Rotate right" }).click();
   expect(await pixels()).not.toBe(initial);
   await page.getByRole("button", { name: "Reset view" }).click();

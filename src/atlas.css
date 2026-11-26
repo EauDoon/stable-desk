@@ -320,3 +320,104 @@ tr:target {
     margin: 0.1rem 0 0.65rem;
   }
 }
+
+.chart {
+  --tone-0: #ccedb4;
+  --tone-1: #f2bd70;
+  --tone-2: #83d2c0;
+  --tone-3: #bfbbf4;
+}
+.chart-head {
+  gap: 0.6rem;
+  align-items: baseline;
+  padding-bottom: 0.35rem;
+  letter-spacing: 0;
+}
+#map-title {
+  font-weight: 650;
+  font-size: 1.04rem;
+}
+#count {
+  white-space: nowrap;
+  color: #bcd3c3;
+}
+#legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.85rem;
+  padding: 0.25rem 1rem 0.5rem;
+}
+#legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 0.76rem;
+  color: #d6e7da;
+}
+#legend li::before {
+  content: "";
+  display: inline-block;
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 50%;
+  background: var(--tone-0);
+}
+#legend [data-tone="1"]::before {
+  background: var(--tone-1);
+}
+#legend [data-tone="2"]::before {
+  background: var(--tone-2);
+}
+#legend [data-tone="3"]::before {
+  background: var(--tone-3);
+}
+.controls button {
+  min-height: 44px;
+  min-width: 44px;
+}
+.controls {
+  margin-top: auto;
+}
+#evidence-notes {
+  border-left: 2px solid #afc4ab;
+  padding-left: 0.8rem;
+  margin: 1rem 0;
+}
+#evidence-notes dt {
+  font-weight: 680;
+  font-size: 0.8rem;
+}
+#evidence-notes dd {
+  margin: 0 0 0.6rem;
+  font-size: 0.94rem;
+}
+#connections li {
+  margin: 0.2rem 0;
+}
+#connections button {
+  display: block;
+  width: 100%;
+  border-top: 1px solid #d3ddcf;
+  border-radius: 0;
+  padding: 0.5rem 0.1rem;
+  text-decoration: none;
+  font-weight: 650;
+}
+#connections button span {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 460;
+  color: #52675c;
+}
+#connections button:hover {
+  background: #eaf0e4;
+}
+@media (max-width: 720px) {
+  canvas {
+    height: 280px;
+  }
+  #legend {
+    gap: 0.3rem 0.65rem;
+  }
+}

@@ -25,6 +25,7 @@ for (const row of document.querySelectorAll("#reference tbody tr")) {
   }
 }
 const maps = new Map([[architecture.id, architecture]]);
+const evidence = new Map();
 let graph = architecture,
   selected = architecture.nodes[0];
 const canvas = graphCanvas(document.querySelector("canvas"), choose);
@@ -76,8 +77,25 @@ function render() {
   el("map-title").textContent = graph.name;
   el("count").textContent = graph.nodes.length + " records";
   el("kind").textContent = selected.kind + " / " + selected.id;
-  el("title").textContent = selected.name;
-  el("description").textContent = selected.description;
+  const claim = evidence.get(selected.id);
+  el("title").textContent = claim ? "Recorded claim" : selected.name;
+  el("description").textContent = claim
+    ? claim.statement
+    : selected.description;
+  el("evidence-notes").hidden = !claim;
+  if (claim) {
+    el("scope").textContent = claim.scope;
+    el("check").textContent = claim.independentCheck;
+  }
+  const kinds = [...new Set(graph.nodes.map((node) => node.kind))];
+  el("legend").replaceChildren(
+    ...kinds.map((kind, i) => {
+      const item = document.createElement("li");
+      item.dataset.tone = i;
+      item.textContent = kind;
+      return item;
+    }),
+  );
   const source = el("source");
   source.hidden = !selected.url;
   if (selected.url) {
@@ -92,9 +110,18 @@ function render() {
     const to = graph.nodes.find((item) => item.id === edge.to);
     const other = from.id === selected.id ? to : from;
     const li = document.createElement("li");
-    li.append(
-      makeButton(from.name + " → " + edge.relation + " → " + to.name, other.id),
+    const button = makeButton(other.name, other.id);
+    const role = document.createElement("span");
+    role.textContent =
+      from.id === selected.id
+        ? "Outgoing · " + edge.relation
+        : "Incoming · " + edge.relation;
+    button.append(role);
+    button.setAttribute(
+      "aria-label",
+      from.name + " → " + edge.relation + " → " + to.name,
     );
+    li.append(button);
     neighbors.push(li);
   }
   el("connections").replaceChildren(...neighbors);
@@ -165,6 +192,8 @@ lens.addEventListener("change", () => {
 find.addEventListener("input", renderIndex);
 el("left").addEventListener("click", () => canvas.rotate(-0.22));
 el("right").addEventListener("click", () => canvas.rotate(0.22));
+el("up").addEventListener("click", () => canvas.rotate(0, 0.15));
+el("down").addEventListener("click", () => canvas.rotate(0, -0.15));
 el("reset").addEventListener("click", canvas.reset);
 el("export").addEventListener("click", () => {
   const response = {
@@ -193,6 +222,7 @@ try {
   const response = await fetch("./data/baseline.json");
   if (!response.ok) throw new Error("Unavailable baseline");
   const data = await response.json();
+  for (const claim of data.evidence) evidence.set(claim.id, claim);
   for (const priority of data.priorities) {
     const map = caseGraph(data, priority);
     maps.set(map.id, map);
