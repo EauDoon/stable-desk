@@ -68,6 +68,24 @@
           <p id="matches" role="status"></p>
           <div id="records"></div>
         </section>
+        <section id="case-work" class="records" hidden>
+          <h2>Compare case coverage</h2>
+          <div class="tools">
+            <label for="compare">Second investigation</label>
+            <select id="compare"></select>
+          </div>
+          <dl id="coverage"></dl>
+          <h2>Review brief</h2>
+          <p id="next-action"></p>
+          <details>
+            <summary>Assumptions and disproof criteria</summary>
+            <h3>Assumptions to check</h3>
+            <ol id="assumptions"></ol>
+            <h3>What would disprove the case</h3>
+            <ol id="disproves"></ol>
+          </details>
+          <button type="button" id="brief">Download cited case brief</button>
+        </section>
         <div class="actions">
           <a id="permalink">Link to selection</a
           ><button id="export">Download map JSON</button>

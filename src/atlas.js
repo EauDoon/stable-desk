@@ -1,4 +1,4 @@
-import { caseGraph } from "./atlas-model.js";
+import { caseGraph, caseBrief, compareCoverage } from "./atlas-model.js";
 import { graphCanvas } from "./atlas-canvas.js";
 
 const el = (id) => document.getElementById(id);
@@ -100,8 +100,49 @@ function render() {
   el("connections").replaceChildren(...neighbors);
   el("permalink").href = linkFor(selected.id);
   renderIndex();
+  renderCase();
   canvas.render(graph, selected.id);
 }
+function renderCase() {
+  const panel = el("case-work"),
+    compare = el("compare");
+  panel.hidden = graph.id === "architecture";
+  if (panel.hidden) return;
+  if (panel.dataset.case !== graph.id) {
+    panel.dataset.case = graph.id;
+    compare.replaceChildren(
+      ...[...maps.values()]
+        .filter((map) => map.nextAction && map.id !== graph.id)
+        .map((map) => new Option(map.name, map.id)),
+    );
+    el("next-action").textContent = graph.nextAction;
+    for (const key of ["assumptions", "disproves"]) {
+      el(key).replaceChildren(
+        ...graph[key].map((text) => {
+          const item = document.createElement("li");
+          item.textContent = text;
+          return item;
+        }),
+      );
+    }
+  }
+  const other = maps.get(compare.value);
+  if (!other) return;
+  const rows = compareCoverage(graph, other);
+  el("coverage").replaceChildren(
+    ...rows.flatMap(([label, value]) => {
+      const dt = document.createElement("dt"),
+        dd = document.createElement("dd");
+      dt.textContent = label;
+      dd.textContent = value;
+      return [dt, dd];
+    }),
+  );
+}
+el("compare").addEventListener("change", renderCase);
+el("brief").addEventListener("click", () =>
+  download(caseBrief(graph), "text/markdown", graph.id + "-brief.md"),
+);
 function readLocation() {
   const params = new URLSearchParams(location.hash.slice(1));
   const next = maps.get(params.get("map")) || architecture;
@@ -129,16 +170,21 @@ el("export").addEventListener("click", () => {
   const response = {
     data: { evidenceAtlas: { ...graph, selectedRecord: selected.id } },
   };
-  const blob = new Blob([JSON.stringify(response, null, 2) + "\n"], {
-    type: "application/json",
-  });
+  download(
+    JSON.stringify(response, null, 2) + "\n",
+    "application/json",
+    graph.id + ".json",
+  );
+});
+function download(text, type, filename) {
+  const blob = new Blob([text], { type });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = "stable-desk-" + graph.id + ".json";
+  link.download = "stable-desk-" + filename;
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
-});
+}
 window.addEventListener("hashchange", readLocation);
 el("explorer").hidden = false;
 el("title").tabIndex = -1;

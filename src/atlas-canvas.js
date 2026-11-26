@@ -75,20 +75,47 @@ export function graphCanvas(canvas, select) {
         ctx.lineWidth = 1.5;
         ctx.stroke();
       }
-      ctx.font = "12px system-ui";
-      ctx.textAlign = "center";
+    }
+    // Keep the selected label first when a rotation puts several records in
+    // the same part of the drawing. The index always retains every name.
+    ctx.font = "12px system-ui";
+    ctx.textAlign = "center";
+    const occupied = [];
+    const labels = [
+      points.get(selected),
+      ...projected.filter((p) => p.node.id !== selected),
+    ];
+    for (const point of labels) {
+      const compact = w < 510;
       const label =
-        graph.id === "architecture" ? point.node.name : point.node.id;
+        graph.id !== "architecture"
+          ? point.node.id
+          : compact
+            ? point.node.id[0].toUpperCase() + point.node.id.slice(1)
+            : point.node.name;
       const width = ctx.measureText(label).width;
-      const labelX = Math.min(
-        w - width / 2 - 2,
-        Math.max(width / 2 + 2, point.x),
-      );
-      ctx.lineWidth = 4;
-      ctx.strokeStyle = "#183e33";
-      ctx.strokeText(label, labelX, point.y + 22);
-      ctx.fillStyle = "#ecf5eb";
-      ctx.fillText(label, labelX, point.y + 22);
+      const x = Math.min(w - width / 2 - 3, Math.max(width / 2 + 3, point.x));
+      const left = x - width / 2,
+        right = x + width / 2;
+      for (const y of [point.y + 22, point.y - 15]) {
+        if (y < 13 || y > h - 2) continue;
+        if (
+          occupied.some(
+            (box) =>
+              Math.abs(box.y - y) < 15 &&
+              left < box.right + 4 &&
+              right > box.left - 4,
+          )
+        )
+          continue;
+        occupied.push({ left, right, y });
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = "#183e33";
+        ctx.strokeText(label, x, y);
+        ctx.fillStyle = "#ecf5eb";
+        ctx.fillText(label, x, y);
+        break;
+      }
     }
   }
   function rotate(yaw, pitch = 0) {

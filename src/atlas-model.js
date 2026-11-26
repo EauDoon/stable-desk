@@ -64,7 +64,90 @@ export function caseGraph(dataset, priority) {
     id: priority.id,
     name: priority.title,
     version: dataset.meta.version,
+    reviewedAt: priority.evidenceReviewedAt,
+    nextAction: priority.nextAction,
+    assumptions: priority.assumptions,
+    disproves: priority.disproves,
     nodes,
     edges,
   };
+}
+
+export function compareCoverage(first, second) {
+  const sources = (graph) =>
+    graph.nodes.filter((node) => node.kind === "Source");
+  const left = sources(first),
+    right = sources(second);
+  const contains = (records, id) => records.some((node) => node.id === id);
+  const names = (records) =>
+    records.map((node) => node.name + " (" + node.id + ")").join(", ") ||
+    "None";
+  const claims = (graph) =>
+    graph.nodes.filter((node) => node.kind === "Evidence").length;
+  return [
+    [
+      "Shared public sources",
+      names(left.filter((node) => contains(right, node.id))),
+    ],
+    [
+      first.name + " only",
+      names(left.filter((node) => !contains(right, node.id))),
+    ],
+    [
+      second.name + " only",
+      names(right.filter((node) => !contains(left, node.id))),
+    ],
+    [
+      "Claims cited",
+      first.name +
+        ": " +
+        claims(first) +
+        ". " +
+        second.name +
+        ": " +
+        claims(second) +
+        ".",
+    ],
+  ];
+}
+
+export function caseBrief(graph) {
+  const lines = [
+    "# " + graph.name,
+    "",
+    "Synthetic investigation " +
+      graph.id +
+      " · public baseline " +
+      graph.version +
+      " · evidence reviewed " +
+      graph.reviewedAt,
+    "",
+    "## Next research action",
+    graph.nextAction,
+    "",
+    "## Assumptions",
+    ...graph.assumptions.map((a) => "- " + a),
+    "",
+    "## Disproof criteria",
+    ...graph.disproves.map((a) => "- " + a),
+    "",
+    "## Evidence and citations",
+  ];
+  for (const claim of graph.nodes.filter((node) => node.kind === "Evidence")) {
+    lines.push("", "### " + claim.id, claim.description);
+    for (const edge of graph.edges.filter((edge) => edge.to === claim.id)) {
+      const source = graph.nodes.find((node) => node.id === edge.from);
+      lines.push(
+        "- " +
+          edge.relation +
+          ": " +
+          source.name +
+          " (" +
+          source.id +
+          ") " +
+          source.url,
+      );
+    }
+  }
+  return lines.join("\n") + "\n";
 }

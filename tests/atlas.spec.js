@@ -10,7 +10,9 @@ test("atlas traces a published case from the research desk and downloads the sel
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
     "Evidence atlas",
   );
-  await page.getByRole("combobox", { name: "Explore", exact: true }).selectOption("P-G01");
+  await page
+    .getByRole("combobox", { name: "Explore", exact: true })
+    .selectOption("P-G01");
   await page.getByLabel("Find a record").fill("E-G02");
   const record = page.locator("#records button");
   await expect(record).toHaveCount(1);
@@ -85,9 +87,43 @@ test("atlas keeps an architecture reference with scripting disabled", async ({
     page.getByRole("heading", { name: "Architecture reference" }),
   ).toBeVisible();
   await expect(page.locator("tbody tr")).toHaveCount(6);
-  await expect(page.getByRole("combobox", { name: "Explore", exact: true })).toBeHidden();
+  await expect(
+    page.getByRole("combobox", { name: "Explore", exact: true }),
+  ).toBeHidden();
   await expect(
     page.getByRole("link", { name: "public dataset", exact: true }),
   ).toHaveAttribute("href", "./data/baseline.json");
   await context.close();
+});
+
+test("readers compare public citations and export the synthetic case brief", async ({
+  page,
+}) => {
+  await page.goto("/atlas.html#map=P-G01&record=E-G02");
+  await page
+    .getByRole("combobox", { name: "Second investigation" })
+    .selectOption("P-G03");
+  await expect(page.locator("#coverage")).toContainText(
+    "Shared public sourcesNone",
+  );
+  await expect(page.locator("#coverage")).toContainText("Stripe (S-G02)");
+  await expect(page.locator("#coverage")).toContainText("Coinbase (S-G07)");
+  await page
+    .getByText("Assumptions and disproof criteria", { exact: true })
+    .click();
+  await expect(page.locator("#disproves")).toContainText("No specific buyer");
+  const pending = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download cited case brief" }).click();
+  const file = await pending;
+  expect(file.suggestedFilename()).toBe("stable-desk-P-G01-brief.md");
+  const chunks = [];
+  for await (const chunk of await file.createReadStream()) chunks.push(chunk);
+  const brief = Buffer.concat(chunks).toString("utf8");
+  expect(brief).toContain("2026-09-30.generic.2");
+  expect(brief).toContain("## Disproof criteria");
+  expect(brief).toContain("supports statement: Stripe");
+  expect(brief).toContain(
+    "https://docs.stripe.com/payments/stablecoin-payments",
+  );
+  expect(brief).toContain("context only");
 });

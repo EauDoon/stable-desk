@@ -284,3 +284,39 @@ tr:target {
     scroll-behavior: auto;
   }
 }
+
+#case-work {
+  margin-top: 1.75rem;
+  padding: 1.25rem;
+  background: #eaf0e4;
+  border-radius: 8px;
+}
+#case-work .tools {
+  align-items: center;
+  margin: 0.75rem 0;
+}
+#coverage {
+  display: grid;
+  grid-template-columns: minmax(9rem, 1fr) minmax(0, 2fr);
+  gap: 0.4rem 1rem;
+}
+#coverage dt {
+  font-weight: 650;
+}
+#coverage dd {
+  margin: 0;
+}
+#case-work details {
+  margin: 0.7rem 0;
+}
+#case-work summary {
+  cursor: pointer;
+}
+@media (max-width: 600px) {
+  #coverage {
+    display: block;
+  }
+  #coverage dd {
+    margin: 0.1rem 0 0.65rem;
+  }
+}
