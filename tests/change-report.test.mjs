@@ -194,3 +194,21 @@ test("the change report CLI exits 1 for a missing or invalid file and prints the
     await rm(dir, { recursive: true, force: true });
   }
 });
+
+test("the change report CLI reads an export saved with a UTF-8 byte order mark, as the browser import does", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "stable-desk-report-bom-"));
+  try {
+    const marked = join(dir, "marked.json");
+    await writeFile(marked, `﻿${deskRaw}`);
+    const result = cli(marked);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /^# Stable Desk change report$/m);
+    // Only one leading mark is an encoding signature; anything else is not JSON.
+    await writeFile(marked, `﻿﻿${deskRaw}`);
+    const doubled = cli(marked);
+    assert.equal(doubled.status, 1);
+    assert.match(doubled.stderr, /Import is not valid JSON\./);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});

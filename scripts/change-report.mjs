@@ -53,7 +53,11 @@ else if (cli.error) {
   process.exitCode = 2;
 } else {
   try {
-    const text = await readBoundedUtf8(cli.file, IMPORT_LIMIT_BYTES);
+    const raw = await readBoundedUtf8(cli.file, IMPORT_LIMIT_BYTES);
+    // An editor may save the export with a UTF-8 byte order mark. The browser
+    // import drops one leading mark when it decodes the file, so drop it here
+    // too: the same file must be readable by both.
+    const text = raw.charCodeAt(0) === 0xfeff ? raw.slice(1) : raw;
     const { seed, workspace } = parseV2Import(text);
     process.stdout.write(
       changeReport(seed, workspace, cli.profile ? { profileId: cli.profile } : {}),

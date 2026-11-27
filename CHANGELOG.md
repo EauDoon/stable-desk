@@ -79,6 +79,10 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
 
 ### Changed
 
+- The README opens with what Stable Desk is, who it is for and a quick start,
+  under section headings. The per-release summary that used to open it lives
+  in this file only.
+
 - `npm run test:clock` runs the unit suite with the wall clock moved to
   `SHIFT_NOW` (default 2030-01-01) through the `tests/shift-clock.mjs`
   preload, and CI runs it on every unit job. A test that reads today's date
@@ -97,6 +101,10 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
   `docs/VERIFICATION.md` are corrected to describe the orphan accurately.
 
 ### Fixed
+
+- `npm run report:changes` reads an export that an editor saved with a UTF-8
+  byte order mark. The browser import already dropped the mark, so the same
+  file opened in the desk but the CLI rejected it as invalid JSON.
 
 - `npm run package` and `npm run audit:content` work on a standard Windows
   Python install. Both called `python3`, which Windows does not provide, so
