@@ -1,3 +1,5 @@
+<p align="center"><img src=".github/assets/banner.svg" alt="Stable Desk. A public, self-contained stablecoin research desk that runs in the browser with a fictional baseline asset, public sources and human-written decisions. It needs no account, no database and no credentials. Shown as a ball that keeps settling back to the centre ring of a dish." width="100%"></p>
+
 # Stable Desk
 
 Next release: keep local assessments out of the public-context promotion checklist. The downloaded change report now lists decisions that differ from the baseline, their current status and changed fields in a separate section. Review that section before handing off a workspace; a clean public-context checklist does not mean decisions are unchanged.
