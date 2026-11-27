@@ -473,3 +473,31 @@ export function exportPayload(data, workspace) {
     workspace,
   };
 }
+// How a workspace's own dataset relates to the repository baseline the page
+// loaded, for a dataset that differs from it. Every saved workspace carries
+// its dataset, so a refreshed baseline never rewrites saved work. "earlier"
+// means the repository's change log lists the workspace's dataset version as
+// an earlier step of the same dataset; anything else is a separately imported
+// baseline.
+export function baselineRelation(workspaceData, repository) {
+  const own = workspaceData?.meta ?? {},
+    repo = repository?.meta ?? {};
+  const changes = Array.isArray(repository?.changes) ? repository.changes : [];
+  const step = changes.findIndex((c) => c?.after === own.version);
+  if (
+    own.datasetId !== repo.datasetId ||
+    own.version === repo.version ||
+    step < 0 ||
+    step === changes.length - 1
+  )
+    return { kind: "imported" };
+  const known = new Set((workspaceData.sources ?? []).map((s) => s.id));
+  return {
+    kind: "earlier",
+    from: { version: own.version, asOf: own.asOf },
+    to: { version: repo.version, asOf: repo.asOf },
+    newSources: (repository.sources ?? []).filter((s) => !known.has(s.id))
+      .length,
+    updates: changes.slice(step + 1).map((c) => c.title),
+  };
+}

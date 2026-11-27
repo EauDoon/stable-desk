@@ -5,6 +5,7 @@ import {
   DECISION_STATUSES,
   validateDataset,
   filterOrganizations,
+  baselineRelation,
 } from "./model.js";
 
 import {
@@ -106,7 +107,7 @@ let data,
   blockedCache = false,
   lastDiskHead = null,
   previewCommand = null,
-  imported = false,
+  relation = { kind: "current" },
   selected = new Set(),
   pendingImport = null,
   importRead = 0,
@@ -441,10 +442,16 @@ function render() {
     )
     .join(
       "",
-    )}</nav><div class="sidebar-context"><div class="eyebrow">Research focus</div><span class="focus-token">◇</span><h3>${esc(data.profile.name)}</h3><p>${esc(data.profile.ticker)} · ${data.profile.mode === "fictional_demo" ? "Fictional placeholder" : "Research subject · unverified"}</p></div><div class="sidebar-bottom"><span class="manual-dot"></span><strong>Manual research desk</strong><p>No recurring collection or live refresh.</p><button data-utility="method" class="sidebar-help">How to update the desk ${icon("arrow", 14)}</button><div class="profile"><span>SD</span><div>Demo workspace<small>Public market context</small></div></div></div></aside><div class="main-shell"><header class="topbar"><span>Research desk <span class="breadcrumb">/ ${view[0].toUpperCase() + view.slice(1)}</span></span><div class="topbar-right"><button class="button profile-switch" data-profiles>${esc(state.profile.name)}</button><span class="baseline-chip"><span></span>${imported ? "Imported" : "Versioned"} baseline</span><button class="icon-button" data-utility="workspace" aria-label="Workspace backup and import">${icon("download")}</button></div></header><main id="main"><div class="page-heading"><div><div class="eyebrow">${esc(data.profile.ticker)} · ${data.profile.mode === "fictional_demo" ? "FICTIONAL DEMO" : "RESEARCH SUBJECT · UNVERIFIED"}</div><h1>${titles[view][0]}</h1><p>${titles[view][1]}</p></div><div class="export-box"><button class="button" data-export>${icon("download", 16)} Export workspace</button><p class="export-status" data-export-status>${esc(exportLabel())}</p></div></div><div class="baseline-line"><span>AS OF <strong>${formatDate(data.meta.asOf)}</strong></span><span class="line-divider"></span><span>${esc(data.meta.version)}</span><span class="baseline-caption">${overdue ? `${overdue} proposal${overdue > 1 ? "s" : ""} need review` : "Baseline market context · manual revisions"}</span></div>${overdue ? `<div class="stale-banner" role="status">${overdue} proposal${overdue > 1 ? "s" : ""} require assumption review. Inspect their status in Decisions.</div>` : ""}<aside class="demo-banner" data-demo-notice><strong>${esc(data.profile.name)} (${esc(data.profile.ticker)}) ${data.profile.mode === "fictional_demo" ? "is fictional." : "is an unverified research subject."}</strong><span>${data.profile.mode === "fictional_demo" ? "No real issuer, deployed token, reserves or partners." : "Intended settings establish no issuance, eligibility, deployment or partnerships."} Public sources describe real market products; example fit remains synthetic.</span></aside>${storageWarning || blockedCache ? `<div class="storage-banner" role="alert">${esc(blockedCache ? "Saved data is invalid and preserved. Recover it in Workspace & data before saving." : storageWarning)}<button class="text-button" data-reload-latest>Load latest saved workspace</button></div>` : ""}<div class="stats-strip"><div><strong>${data.organizations.length.toString().padStart(2, "0")}</strong><span>Organizations mapped</span></div><div><strong>${data.sources.length.toString().padStart(2, "0")}</strong><span>Primary sources</span></div><div><strong>${data.priorities.length.toString().padStart(2, "0")}</strong><span>Synthetic research examples</span></div><div><strong>${data.changes.length.toString().padStart(2, "0")}</strong><span>Baseline versions logged</span></div></div>${view === "opportunities" ? opportunities() : view === "evidence" ? evidenceView() : view === "changes" ? changes() : decisions()}<footer class="footer"><span>Stable Desk v${VERSION} · Deliberate ecosystem research</span><span class="footer-links"><a class="text-button" href="./atlas.html">Evidence atlas</a><a class="text-button" href="./review.html">Source review →</a><button class="text-button" data-utility="workspace">Workspace & data ${icon("arrow", 14)}</button></span></footer></main></div></div>`;
+    )}</nav><div class="sidebar-context"><div class="eyebrow">Research focus</div><span class="focus-token">◇</span><h3>${esc(data.profile.name)}</h3><p>${esc(data.profile.ticker)} · ${data.profile.mode === "fictional_demo" ? "Fictional placeholder" : "Research subject · unverified"}</p></div><div class="sidebar-bottom"><span class="manual-dot"></span><strong>Manual research desk</strong><p>No recurring collection or live refresh.</p><button data-utility="method" class="sidebar-help">How to update the desk ${icon("arrow", 14)}</button><div class="profile"><span>SD</span><div>Demo workspace<small>Public market context</small></div></div></div></aside><div class="main-shell"><header class="topbar"><span>Research desk <span class="breadcrumb">/ ${view[0].toUpperCase() + view.slice(1)}</span></span><div class="topbar-right"><button class="button profile-switch" data-profiles>${esc(state.profile.name)}</button><span class="baseline-chip"><span></span>${relation.kind === "earlier" ? "Earlier" : relation.kind === "imported" ? "Imported" : "Versioned"} baseline</span><button class="icon-button" data-utility="workspace" aria-label="Workspace backup and import">${icon("download")}</button></div></header><main id="main"><div class="page-heading"><div><div class="eyebrow">${esc(data.profile.ticker)} · ${data.profile.mode === "fictional_demo" ? "FICTIONAL DEMO" : "RESEARCH SUBJECT · UNVERIFIED"}</div><h1>${titles[view][0]}</h1><p>${titles[view][1]}</p></div><div class="export-box"><button class="button" data-export>${icon("download", 16)} Export workspace</button><p class="export-status" data-export-status>${esc(exportLabel())}</p></div></div><div class="baseline-line"><span>AS OF <strong>${formatDate(data.meta.asOf)}</strong></span><span class="line-divider"></span><span>${esc(data.meta.version)}</span><span class="baseline-caption">${overdue ? `${overdue} proposal${overdue > 1 ? "s" : ""} need review` : "Baseline market context · manual revisions"}</span></div>${overdue ? `<div class="stale-banner" role="status">${overdue} proposal${overdue > 1 ? "s" : ""} require assumption review. Inspect their status in Decisions.</div>` : ""}${relation.kind === "earlier" ? `<aside class="baseline-banner" role="status" data-baseline-notice><strong>This workspace uses an earlier repository baseline.</strong><span>It was saved on ${esc(relation.from.version)} (as of ${formatDate(relation.from.asOf)}). The repository baseline is now ${esc(relation.to.version)} (as of ${formatDate(relation.to.asOf)}), with ${relation.newSources} more source${relation.newSources === 1 ? "" : "s"}. Changes since: ${esc(relation.updates.join("; "))}. Your work stays on its own baseline. To use the new one, export this workspace, then choose Reset local workspace.</span><button class="text-button" data-utility="workspace">Workspace & data ${icon("arrow", 14)}</button></aside>` : ""}<aside class="demo-banner" data-demo-notice><strong>${esc(data.profile.name)} (${esc(data.profile.ticker)}) ${data.profile.mode === "fictional_demo" ? "is fictional." : "is an unverified research subject."}</strong><span>${data.profile.mode === "fictional_demo" ? "No real issuer, deployed token, reserves or partners." : "Intended settings establish no issuance, eligibility, deployment or partnerships."} Public sources describe real market products; example fit remains synthetic.</span></aside>${storageWarning || blockedCache ? `<div class="storage-banner" role="alert">${esc(blockedCache ? "Saved data is invalid and preserved. Recover it in Workspace & data before saving." : storageWarning)}<button class="text-button" data-reload-latest>Load latest saved workspace</button></div>` : ""}<div class="stats-strip"><div><strong>${data.organizations.length.toString().padStart(2, "0")}</strong><span>Organizations mapped</span></div><div><strong>${data.sources.length.toString().padStart(2, "0")}</strong><span>Primary sources</span></div><div><strong>${data.priorities.length.toString().padStart(2, "0")}</strong><span>Synthetic research examples</span></div><div><strong>${data.changes.length.toString().padStart(2, "0")}</strong><span>Baseline versions logged</span></div></div>${view === "opportunities" ? opportunities() : view === "evidence" ? evidenceView() : view === "changes" ? changes() : decisions()}<footer class="footer"><span>Stable Desk v${VERSION} · Deliberate ecosystem research</span><span class="footer-links"><a class="text-button" href="./atlas.html">Evidence atlas</a><a class="text-button" href="./review.html">Source review →</a><button class="text-button" data-utility="workspace">Workspace & data ${icon("arrow", 14)}</button></span></footer></main></div></div>`;
   renderResults();
   renderQueueResults();
 }
+// The open workspace's dataset against the repository baseline: the same
+// bytes, an earlier step of the same dataset, or another imported baseline.
+const relationTo = (repository) =>
+  canonical(seed) === canonical(repository)
+    ? { kind: "current" }
+    : baselineRelation(seed, repository);
 function openUtility(mode) {
   const coverage = `<p class="detail-lead">${esc(data.meta.coverage)}</p><div class="legend">${Object.values(
     EVIDENCE_TYPES,
@@ -862,7 +869,7 @@ async function replaceWorkspace(candidate) {
     lastDiskHead = workspaceHead(workspace);
     blockedCache = false;
     storageWarning = "";
-    imported = canonical(seed) !== canonical(baseline);
+    relation = relationTo(baseline);
     hydrate();
     selected.clear();
     filters = { query: "", lane: "", relationship: "", market: "" };
@@ -892,6 +899,7 @@ function reloadLatest(preserveProfile = false) {
   lastDiskHead = workspaceHead(workspace);
   blockedCache = false;
   storageWarning = "";
+  relation = relationTo(baseline);
   hydrate();
   render();
 }
@@ -1285,7 +1293,7 @@ try {
         workspace = candidate.workspace;
         lastDiskHead = workspaceHead(workspace);
         restored = true;
-        imported = canonical(seed) !== canonical(baseline);
+        relation = relationTo(baseline);
       } catch {
         blockedCache = true;
         storageWarning =
@@ -1297,6 +1305,7 @@ try {
         const saved = JSON.parse(legacy);
         seed = prepareDataset(saved.data ?? baseline);
         workspace = migrateLegacy(seed, saved.workspace);
+        relation = relationTo(baseline);
         localStorage.setItem(STORAGE_KEY, serializeWorkspace(seed, workspace));
         lastDiskHead = workspaceHead(workspace);
         restored = true;

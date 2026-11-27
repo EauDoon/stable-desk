@@ -2649,3 +2649,19 @@ h3[tabindex="-1"]:focus {
 @media (scripting: none) {
   .loading { display: none; }
 }
+/* A saved workspace on an earlier step of the repository dataset. */
+.baseline-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  border: 1px solid #e7cb96;
+  border-left: 3px solid #b8862b;
+  border-radius: 7px;
+  background: #fff8ea;
+  padding: 14px 17px;
+  margin: 18px 0 0;
+  color: #5a4520;
+  font-size: 13px;
+  line-height: 1.6;
+}

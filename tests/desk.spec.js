@@ -428,3 +428,30 @@ test("keyboard view changes move focus to the new heading and name the view", as
   await expect(page.locator("main h1")).toHaveText("Where could STABLE fit?");
   await expect(page).toHaveTitle("Stable Desk · Generic stablecoin research");
 });
+test("a workspace saved on the earlier baseline says so and points to the new one", async ({
+  page,
+}) => {
+  const saved = await readFile(
+    new URL("./compat/v4.1-desk-workspace.json", import.meta.url),
+    "utf8",
+  );
+  await page.evaluate((raw) => localStorage.setItem("stable-desk:v2", raw), saved);
+  await page.reload();
+  const notice = page.locator("[data-baseline-notice]");
+  await expect(page.locator(".baseline-chip")).toHaveText("Earlier baseline");
+  await expect(notice).toContainText("2026-09-30.generic.2");
+  await expect(notice).toContainText(baseline.meta.version);
+  await expect(notice).toContainText(baseline.changes.at(-1).title);
+  // The saved work still opens on its own baseline.
+  await expect(page.locator(".org-table tbody tr")).toHaveCount(
+    JSON.parse(saved).dataset.organizations.length,
+  );
+  await noOverflow(page);
+  await notice.getByRole("button", { name: /Workspace & data/ }).click();
+  await page.getByRole("button", { name: "Reset local workspace", exact: true }).click();
+  await expect(notice).toHaveCount(0);
+  await expect(page.locator(".baseline-chip")).toHaveText("Versioned baseline");
+  await expect(page.locator(".org-table tbody tr")).toHaveCount(
+    baseline.organizations.length,
+  );
+});
