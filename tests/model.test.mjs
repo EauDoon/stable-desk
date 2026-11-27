@@ -17,12 +17,17 @@ const baseline = JSON.parse(
 );
 test("baseline coverage and lineage are valid, with a genuine first snapshot", () => {
   assert.deepEqual(validateDataset(baseline), []);
-  assert.equal(baseline.organizations.length, 10);
+  assert.equal(baseline.organizations.length, 13);
   assert.equal(baseline.priorities.length, 3);
-  assert.equal(baseline.changes.length, 2);
+  assert.equal(baseline.changes.length, 3);
   assert.equal(baseline.changes[0].kind, "baseline");
   assert.equal(baseline.changes[0].before, null);
-  assert.ok(baseline.sources.every((s) => s.accessedAt === "2026-09-30"));
+  // Every source was read on the baseline date except PayPal's PYUSD page,
+  // which returned a security challenge and keeps its earlier access date.
+  assert.deepEqual(
+    baseline.sources.filter((s) => s.accessedAt !== baseline.meta.asOf).map((s) => [s.id, s.accessedAt]),
+    [["S-G03", "2026-09-30"]],
+  );
   assert.ok(
     baseline.priorities.every(
       (p) => p.evidenceSnapshot === evidenceFingerprint(baseline, p),
@@ -36,7 +41,7 @@ test("filters combine evidence search, opportunity, relationship and market", ()
       lane: "Distribution",
       relationship: "demo",
     }).map((o) => o.id),
-    ["stripe", "worldpay"],
+    ["stripe", "worldpay", "tempo"],
   );
   assert.deepEqual(
     filterOrganizations(baseline, { market: "United Kingdom page" }).map(
@@ -101,25 +106,25 @@ test("changed source, organization or added evidence flags affected proposals", 
 test("stale date and explicit local review use the current evidence snapshot", () => {
   const p = baseline.priorities[0];
   assert.equal(
-    reviewState(baseline, p, {}, "2026-10-31").label,
+    reviewState(baseline, p, {}, "2026-12-28").label,
     "Review overdue",
   );
   const review = {
     [p.id]: {
       fingerprint: evidenceFingerprint(baseline, p),
-      reviewedAt: "2026-10-31T10:00:00Z",
-      reviewBy: "2026-11-30",
+      reviewedAt: "2026-12-28T10:00:00Z",
+      reviewBy: "2027-01-27",
       note: "Assumptions reviewed.",
     },
   };
   assert.equal(
-    reviewState(baseline, p, review, "2026-10-31").label,
+    reviewState(baseline, p, review, "2026-12-28").label,
     "Reviewed locally",
   );
   const d = structuredClone(baseline);
   d.evidence[1].scope += " Changed scope.";
   assert.equal(
-    reviewState(d, d.priorities[0], review, "2026-10-31").label,
+    reviewState(d, d.priorities[0], review, "2026-12-28").label,
     "Evidence changed",
   );
 });

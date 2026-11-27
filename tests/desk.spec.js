@@ -30,7 +30,7 @@ test("desktop/mobile layout, all views, genuine baseline, no JS errors", async (
 }, testInfo) => {
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await expect(page.locator(".org-table tbody tr")).toHaveCount(10);
+  await expect(page.locator(".org-table tbody tr")).toHaveCount(13);
   await noOverflow(page);
   await page.screenshot({
     path: `test-results/artifacts/${testInfo.project.name}-opportunities.png`,
@@ -58,7 +58,7 @@ test("desktop/mobile layout, all views, genuine baseline, no JS errors", async (
   await page.getByRole("link", { name: "Evidence", exact: true }).click();
   await expect(
     page.locator("#evidence-results > .evidence-ledger > .evidence-record"),
-  ).toHaveCount(13);
+  ).toHaveCount(19);
   await noOverflow(page);
   await page.screenshot({
     path: `test-results/artifacts/${testInfo.project.name}-evidence.png`,
@@ -74,8 +74,9 @@ test("search, compound filters, clear and empty states", async ({ page }) => {
   await page
     .getByRole("combobox", { name: "Filter by relationship" })
     .selectOption("demo");
-  await expect(page.locator(".org-table tbody tr")).toHaveCount(2);
+  await expect(page.locator(".org-table tbody tr")).toHaveCount(3);
   await expect(page.locator(".org-table")).toContainText("Stripe");
+  await expect(page.locator(".org-table")).toContainText("Tempo");
   await page
     .getByRole("button", { name: "Clear filters", exact: true })
     .click();
@@ -92,7 +93,7 @@ test("search, compound filters, clear and empty states", async ({ page }) => {
     .getByRole("button", { name: "Clear filters", exact: true })
     .last()
     .click();
-  await expect(page.locator(".org-table tbody tr")).toHaveCount(10);
+  await expect(page.locator(".org-table tbody tr")).toHaveCount(13);
 });
 test("organization detail, source lineage, priority and keyboard dismissal", async ({
   page,
@@ -334,7 +335,7 @@ test("fictional identity, provenance labels and legacy workspace isolation", asy
   await expect(page.locator("[data-demo-notice]")).toContainText(
     "Generic Stablecoin (STABLE) is fictional",
   );
-  await expect(page.locator(".org-table .relationship-hint")).toHaveCount(10);
+  await expect(page.locator(".org-table .relationship-hint")).toHaveCount(13);
   await page
     .getByRole("button", {
       name: "Open investigation Define one merchant acceptance problem",

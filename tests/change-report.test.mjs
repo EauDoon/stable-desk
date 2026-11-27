@@ -46,12 +46,12 @@ test("the report lists each committed change with reviewer, rationale and before
   assert.match(report, /^# Stable Desk change report\n/);
   assert.match(report, /^- Workspace: WS-report$/m);
   assert.match(report, new RegExp(`^- Workspace head: ${workspaceHead(ws)}$`, "m"));
-  assert.match(report, /^- Dataset: 2026-09-30\.generic\.2, public baseline as of 2026-09-30$/m);
-  assert.match(report, /^- Generated: 2026-10-15T12:00:00\.000Z$/m);
+  assert.match(report, /^- Dataset: 2026-11-27\.generic\.3, public baseline as of 2026-11-27$/m);
+  assert.match(report, /^- Generated: 2026-11-27T12:00:00\.000Z$/m);
   assert.match(report, /^## Committed changes \(1\)$/m);
   assert.match(
     report,
-    /^- #1 2026-10-15T12:00:00\.000Z: evidence revision of E-G02 by Researcher\. Rationale: Scope checked against the original page\.$/m,
+    /^- #1 2026-11-27T12:00:00\.000Z: evidence revision of E-G02 by Researcher\. Rationale: Scope checked against the original page\.$/m,
   );
   assert.match(report, /^ {2}- Field scope: ".+" -> "Revised scope after manual source review\."$/m);
   assert.match(report, /^## Differences from the repository baseline \(1\)$/m);

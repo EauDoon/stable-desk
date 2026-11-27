@@ -8,7 +8,7 @@ Next release: keep local assessments out of the public-context promotion checkli
 
 Stable Desk is a stablecoin research desk that runs in your browser. It keeps public sources, the claims taken from them, the assumptions that depend on those claims and the decisions that depend on those assumptions, and it shows which of them need review when something changes. It is a static web app: no account, no database and no credentials to deploy or use. Research is stored in the browser and leaves it only when you export a file.
 
-It starts with **Generic Stablecoin (STABLE)**, a fictional placeholder with no real issuer, deployed token, reserves, listings or partners. Ten organizations and ten primary public sources provide market context; three synthetic investigations demonstrate the workflow. They are not commercial leads for a real asset.
+It starts with **Generic Stablecoin (STABLE)**, a fictional placeholder with no real issuer, deployed token, reserves, listings or partners. Thirteen organizations and sixteen primary public sources provide market context, including US and Singapore issuer rules; three synthetic investigations demonstrate the workflow. They are not commercial leads for a real asset.
 
 ## Who it is for
 
@@ -46,7 +46,7 @@ In **Evidence**, filter the review queue by sources, assumptions or decisions. B
 
 After adopting evidence in **Source review**, open **Research desk > Workspace & data (the Workspace backup and import button) > Preview adopted source review**. Inspect the snapshot, then choose **Use in this browser**. Pending candidates stay in Source review. Both stores remain separate, later changes require another import, and exports remain the backup and cross-device path. Stale previews and cross-profile draft rebases cannot silently replace newer work.
 
-The public baseline is dated **September 30, 2026**. Real product names, source titles, URLs and historical dates remain original. Sources about USDC, PYUSD or Open USD never prove STABLE acceptance. Token supply and aggregate transfers do not establish payment adoption.
+The public baseline is dated **November 27, 2026** (`2026-11-27.generic.3`). It adds a Regulation lane (the OCC final rule implementing the GENIUS Act, effective January 18, 2027, and MAS's stablecoin consultation) and dated releases on Tempo, Visa settlement, Mastercard and BVNK, and Circle Arc. PayPal's PYUSD page could not be reread on that date, so its source check shows as overdue in the review queue. A workspace saved on the earlier `2026-09-30.generic.2` baseline keeps that baseline, because every saved workspace carries its own copy; export it, then use **Reset local workspace** to start on the new one. Real product names, source titles, URLs and historical dates remain original. Sources about USDC, PYUSD or Open USD never prove STABLE acceptance. Token supply and aggregate transfers do not establish payment adoption.
 
 ## Run options
 

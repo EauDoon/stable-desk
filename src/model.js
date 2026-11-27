@@ -14,7 +14,12 @@ export const DECISION_STATUSES = [
   "Parked",
   "Declined",
 ];
-export const LANES = ["Distribution", "Issuer partnership", "Liquidity"];
+export const LANES = [
+  "Distribution",
+  "Issuer partnership",
+  "Liquidity",
+  "Regulation",
+];
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 export function validDate(value) {
   return (

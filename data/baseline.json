@@ -2,13 +2,13 @@
   "meta": {
     "schemaVersion": 2,
     "datasetId": "generic-stable-demo",
-    "version": "2026-09-30.generic.2",
-    "asOf": "2026-09-30",
+    "version": "2026-11-27.generic.3",
+    "asOf": "2026-11-27",
     "title": "Generic stablecoin ecosystem research",
     "collectionMode": "manual",
     "reviewDays": 30,
     "scope": "Public primary market context plus explicitly synthetic demo examples. No recurring collection.",
-    "coverage": "Ten primary sources and ten named organizations. Market facts concern the original real assets and products; the fictional profile has no issuer, contracts, reserves, listings, partners or adoption."
+    "coverage": "Sixteen primary sources and thirteen named organizations. Market facts concern the original real assets, products and rules; the fictional profile has no issuer, contracts, reserves, listings, partners or adoption."
   },
   "profile": {
     "id": "generic-stable",
@@ -33,7 +33,7 @@
       "url": "https://www.circle.com/circle-mint",
       "publishedAt": null,
       "eventDate": null,
-      "accessedAt": "2026-09-30",
+      "accessedAt": "2026-11-27",
       "kind": "primary",
       "dateNote": "Undated product page. Access and operating benefits are company descriptions; institutional and regional eligibility applies.",
       "locator": "Is Circle Mint right for your business?; mint and redemption sections"
@@ -45,7 +45,7 @@
       "url": "https://docs.stripe.com/payments/stablecoin-payments",
       "publishedAt": null,
       "eventDate": null,
-      "accessedAt": "2026-09-30",
+      "accessedAt": "2026-11-27",
       "kind": "primary",
       "dateNote": "Undated, changeable documentation. Token, network, merchant-location and preview restrictions must be rechecked before real use.",
       "locator": "Payment method properties; Business locations; Limitations"
@@ -69,7 +69,7 @@
       "url": "https://www.visa.com/en-us/products/visa-stablecoin-platform",
       "publishedAt": null,
       "eventDate": null,
-      "accessedAt": "2026-09-30",
+      "accessedAt": "2026-11-27",
       "kind": "primary",
       "dateNote": "Undated product page. Limited availability and beta access apply; API access is described as coming soon. This is not an open-token acceptance guarantee.",
       "locator": "Sources/Footnotes/Disclaimer; Open USD and API availability FAQ"
@@ -81,7 +81,7 @@
       "url": "https://www.mastercard.com/global/en/news-and-trends/press/2025/april/mastercard-unveils-end-to-end-capabilities-to-power-stablecoin-transactions-from-wallets-to-checkouts.html",
       "publishedAt": "2025-04-28",
       "eventDate": "2025-04-28",
-      "accessedAt": "2026-09-30",
+      "accessedAt": "2026-11-27",
       "kind": "primary",
       "dateNote": "Historical announcement, not a fresh launch or independently verified production inventory. Merchant settlement scope differs from consumer token spending.",
       "locator": "Merchant settlement bullet"
@@ -93,7 +93,7 @@
       "url": "https://www.paxos.com/pyusd",
       "publishedAt": null,
       "eventDate": null,
-      "accessedAt": "2026-09-30",
+      "accessedAt": "2026-11-27",
       "kind": "primary",
       "dateNote": "Undated issuer page. Real PYUSD/PayPal context only. Eligibility, redemption execution and reserves were not independently checked.",
       "locator": "Issued by Paxos heading; How to access PayPal USD; redemption section"
@@ -105,7 +105,7 @@
       "url": "https://www.coinbase.com/en-gb/usdc",
       "publishedAt": null,
       "eventDate": null,
-      "accessedAt": "2026-09-30",
+      "accessedAt": "2026-11-27",
       "kind": "primary",
       "dateNote": "Undated UK-localized page. Network counts differ between sections; no network count or account eligibility is inferred. No live quotes were taken.",
       "locator": "What is USDC?; product and regional availability notes"
@@ -117,7 +117,7 @@
       "url": "https://docs.solanapay.com/",
       "publishedAt": null,
       "eventDate": null,
-      "accessedAt": "2026-09-30",
+      "accessedAt": "2026-11-27",
       "kind": "primary",
       "dateNote": "Undated protocol documentation with older ecosystem examples. Protocol mechanics do not prove current merchant adoption or a Foundation commercial relationship.",
       "locator": "Introduction; How to use Solana Pay; open standard description"
@@ -129,7 +129,7 @@
       "url": "https://developers.uniswap.org/docs/get-started/concepts/liquidity-providers/concentrated-liquidity",
       "publishedAt": null,
       "eventDate": null,
-      "accessedAt": "2026-09-30",
+      "accessedAt": "2026-11-27",
       "kind": "primary",
       "dateNote": "Undated protocol documentation. Described mechanics do not establish executable pool depth or a bilateral relationship with Uniswap Labs.",
       "locator": "How Concentrated Liquidity Works; What Active Liquidity Means"
@@ -141,10 +141,82 @@
       "url": "https://usa.visa.com/about-visa/newsroom/press-releases.releaseId.19881.html",
       "publishedAt": "2023-09-05",
       "eventDate": "2023-09-05",
-      "accessedAt": "2026-09-30",
+      "accessedAt": "2026-11-27",
       "kind": "primary",
       "dateNote": "Historical USDC pilot announcement involving Worldpay and Nuvei. Current availability and private terms remain unverified; this is not a newly detected event.",
       "locator": "Moving from Issuers to Acquirers"
+    },
+    {
+      "id": "S-G11",
+      "title": "Implementing the Guiding and Establishing National Innovation for U.S. Stablecoins Act for the Issuance of Stablecoins by Entities Subject to the Jurisdiction of the Office of the Comptroller of the Currency",
+      "publisher": "Office of the Comptroller of the Currency (Federal Register)",
+      "url": "https://www.federalregister.gov/documents/2026/10/23/2026-21706/implementing-the-guiding-and-establishing-national-innovation-for-us-stablecoins-act-for-the",
+      "publishedAt": "2026-10-23",
+      "eventDate": "2026-10-23",
+      "accessedAt": "2026-11-27",
+      "kind": "primary",
+      "dateNote": "Final rule, 91 FR 67000, published 23 October 2026 and effective 18 January 2027. Read through the Federal Register document API on the access date; the HTML page refuses automated readers. Applies only to entities under OCC jurisdiction; other agencies' GENIUS Act rules are separate.",
+      "locator": "DATES; SUMMARY; 12 CFR part 15"
+    },
+    {
+      "id": "S-G12",
+      "title": "MAS Consults on Legislative Amendments to Implement Stablecoin Regulatory Framework",
+      "publisher": "Monetary Authority of Singapore",
+      "url": "https://www.mas.gov.sg/news/media-releases/2026/mas-consults-on-legislative-amendments-to-implement-stablecoin-regulatory-framework",
+      "publishedAt": "2026-09-01",
+      "eventDate": "2026-09-01",
+      "accessedAt": "2026-11-27",
+      "kind": "primary",
+      "dateNote": "Consultation, not enacted law. Comments closed on 16 October 2026; the release gives no date for legislation.",
+      "locator": "Media release body"
+    },
+    {
+      "id": "S-G13",
+      "title": "Mastercard completes acquisition of BVNK to advance global stablecoin capabilities",
+      "publisher": "Mastercard",
+      "url": "https://investor.mastercard.com/investor-news/investor-news-details/2026/Mastercard-completes-acquisition-of-BVNK-to-advance-global-stablecoin-capabilities/default.aspx",
+      "publishedAt": "2026-08-03",
+      "eventDate": "2026-08-03",
+      "accessedAt": "2026-11-27",
+      "kind": "primary",
+      "dateNote": "Company release on completion. It does not state the price or current production scope.",
+      "locator": "Release body"
+    },
+    {
+      "id": "S-G14",
+      "title": "Circle Launches Arc Mainnet, an Economic Operating System for the Internet",
+      "publisher": "Circle",
+      "url": "https://www.circle.com/pressroom/circle-launches-arc-mainnet-an-economic-operating-system-for-the-internet",
+      "publishedAt": "2026-09-16",
+      "eventDate": "2026-09-16",
+      "accessedAt": "2026-11-27",
+      "kind": "primary",
+      "dateNote": "Company launch release. Circulation and roadmap figures are the company's own statements on that date.",
+      "locator": "Release body"
+    },
+    {
+      "id": "S-G15",
+      "title": "Tempo Mainnet is live",
+      "publisher": "Tempo",
+      "url": "https://tempo.com/blog/mainnet/",
+      "publishedAt": null,
+      "eventDate": "2026-03-18",
+      "accessedAt": "2026-11-27",
+      "kind": "primary",
+      "dateNote": "The page displays no date; its metadata dates it 18 March 2026, which matches contemporaneous reporting. The former tempo.xyz address redirects here.",
+      "locator": "Post body; partner list"
+    },
+    {
+      "id": "S-G16",
+      "title": "Visa Accelerates Stablecoin Momentum: Adding Five Blockchains for Settlement",
+      "publisher": "Visa",
+      "url": "https://investor.visa.com/news/news-details/2026/Visa-Accelerates-Stablecoin-Momentum-Adding-Five-Blockchains-for-Settlement/default.aspx",
+      "publishedAt": "2026-04-29",
+      "eventDate": "2026-04-29",
+      "accessedAt": "2026-11-27",
+      "kind": "primary",
+      "dateNote": "Dated company release. Its run rate is a point-in-time company figure, not current volume, and settlement volume is not consumer adoption.",
+      "locator": "Release body; supported blockchains"
     }
   ],
   "evidence": [
@@ -374,6 +446,104 @@
       "asOf": "2026-09-30",
       "scope": "Illustrative research sequence. No demo token, pools, quotes, reserves or redemption route exist.",
       "independentCheck": "Constructed demo example; no balances, trades, authenticated quotes or chain state collected."
+    },
+    {
+      "id": "E-G14",
+      "statement": "The OCC's final rule implementing the GENIUS Act sets requirements for payment stablecoin issuance by entities under OCC jurisdiction and takes effect on 18 January 2027.",
+      "type": "verified_fact",
+      "subject": "public_market",
+      "sourceRole": "supports_statement",
+      "organizationIds": [
+        "occ"
+      ],
+      "sourceIds": [
+        "S-G11"
+      ],
+      "asOf": "2026-11-27",
+      "scope": "One federal regulator's rule for its own supervised entities. It does not license any issuer, and other agencies' rules remained proposals on the access date.",
+      "independentCheck": "Federal Register document metadata and dates read; the 194-page rule text was not reviewed clause by clause."
+    },
+    {
+      "id": "E-G15",
+      "statement": "MAS consulted until 16 October 2026 on Payment Services Act amendments for single-currency stablecoins pegged to the Singapore dollar or a G10 currency, covering capital, redemption at par, disclosure and a ban on paying interest.",
+      "type": "verified_fact",
+      "subject": "public_market",
+      "sourceRole": "supports_statement",
+      "organizationIds": [
+        "mas"
+      ],
+      "sourceIds": [
+        "S-G12"
+      ],
+      "asOf": "2026-11-27",
+      "scope": "A consultation on proposed law, not enacted requirements. Final terms and timing are unknown.",
+      "independentCheck": "Primary release read; the consultation paper and any response were not reviewed."
+    },
+    {
+      "id": "E-G16",
+      "statement": "Tempo announced its mainnet and the Machine Payments Protocol, co-authored by Stripe and Tempo, in March 2026, and Stripe's stablecoin documentation now lists USDC on the Tempo network.",
+      "type": "company_claim",
+      "subject": "public_market",
+      "sourceRole": "supports_statement",
+      "organizationIds": [
+        "tempo",
+        "stripe"
+      ],
+      "sourceIds": [
+        "S-G15",
+        "S-G02"
+      ],
+      "asOf": "2026-11-27",
+      "scope": "Network launch and documentation listing for real products. It establishes no support for an additional token.",
+      "independentCheck": "Primary post and Stripe documentation read; no transaction, account or eligibility tested."
+    },
+    {
+      "id": "E-G17",
+      "statement": "Visa reported a 7 billion US dollar annualized stablecoin settlement run rate in April 2026 and added Arc, Base, Canton, Polygon and Tempo, for nine supported blockchains.",
+      "type": "company_claim",
+      "subject": "public_market",
+      "sourceRole": "supports_statement",
+      "organizationIds": [
+        "visa"
+      ],
+      "sourceIds": [
+        "S-G16"
+      ],
+      "asOf": "2026-11-27",
+      "scope": "Company figure for settlement in existing supported stablecoins at that date. It is not current volume and says nothing about additional tokens.",
+      "independentCheck": "Dated primary release read; volume and production scope not independently verified."
+    },
+    {
+      "id": "E-G18",
+      "statement": "Mastercard completed its acquisition of BVNK, a fiat and onchain payments infrastructure provider, on 3 August 2026.",
+      "type": "company_claim",
+      "subject": "public_market",
+      "sourceRole": "supports_statement",
+      "organizationIds": [
+        "mastercard"
+      ],
+      "sourceIds": [
+        "S-G13"
+      ],
+      "asOf": "2026-11-27",
+      "scope": "Corporate transaction for a real network. It is not evidence of support for a different issuer.",
+      "independentCheck": "Dated primary release read; integration scope and terms not stated or verified."
+    },
+    {
+      "id": "E-G19",
+      "statement": "Circle launched the Arc mainnet on 16 September 2026 with USDC as the network fee token, and stated USDC circulation above 74 billion US dollars on that date.",
+      "type": "company_claim",
+      "subject": "public_market",
+      "sourceRole": "supports_statement",
+      "organizationIds": [
+        "circle"
+      ],
+      "sourceIds": [
+        "S-G14"
+      ],
+      "asOf": "2026-11-27",
+      "scope": "Company launch statement for its own assets and network. Supply is not payment adoption, and no other token is supported by it.",
+      "independentCheck": "Dated primary release read; circulation figure not reconciled against onchain data."
     }
   ],
   "organizations": [
@@ -402,12 +572,13 @@
       ],
       "evidenceIds": [
         "E-G02",
-        "E-G11"
+        "E-G11",
+        "E-G16"
       ],
       "priorityIds": [
         "P-G01"
       ],
-      "asOf": "2026-09-30"
+      "asOf": "2026-11-27"
     },
     {
       "id": "paypal",
@@ -490,7 +661,7 @@
       "relationship": "demo",
       "relationshipSummary": "No issuer relationship exists in this demo. The profile is fictional; public sources do not establish STABLE acceptance, listing or partnership.",
       "relationshipEvidenceIds": [],
-      "publicContext": "Circle describes access to its own stablecoins; Mastercard names Circle in a real merchant-settlement initiative.",
+      "publicContext": "Circle describes access to its own stablecoins; Mastercard names Circle in a real merchant-settlement initiative. Circle launched the Arc mainnet in September 2026.",
       "relevance": "Synthetic fit question: What eligibility and redemption constraints should a future issuer understand?",
       "uncertainty": "No generic-token conversion route or joint initiative is evidenced. Live fees, access, capacity and requirements need review.",
       "nextQuestions": [
@@ -500,12 +671,13 @@
       "evidenceIds": [
         "E-G01",
         "E-G05",
-        "E-G12"
+        "E-G12",
+        "E-G19"
       ],
       "priorityIds": [
         "P-G02"
       ],
-      "asOf": "2026-09-30"
+      "asOf": "2026-11-27"
     },
     {
       "id": "paxos",
@@ -557,7 +729,7 @@
       "relationship": "demo",
       "relationshipSummary": "No issuer relationship exists in this demo. The profile is fictional; public sources do not establish STABLE acceptance, listing or partnership.",
       "relationshipEvidenceIds": [],
-      "publicContext": "VSP is described with Open USD beta restrictions. An older Visa release names real USDC acquirer pilots.",
+      "publicContext": "VSP is described with Open USD beta restrictions. An older Visa release names real USDC acquirer pilots. In April 2026 Visa reported a 7 billion US dollar annualized settlement run rate across nine blockchains.",
       "relevance": "Synthetic fit question: Would the published settlement model admit an additional asset in a real scenario?",
       "uncertainty": "API access is described as coming soon. A public platform description does not establish open-token eligibility or a commercial arrangement.",
       "nextQuestions": [
@@ -567,12 +739,13 @@
       "evidenceIds": [
         "E-G04",
         "E-G10",
-        "E-G12"
+        "E-G12",
+        "E-G17"
       ],
       "priorityIds": [
         "P-G02"
       ],
-      "asOf": "2026-09-30"
+      "asOf": "2026-11-27"
     },
     {
       "id": "mastercard",
@@ -589,7 +762,7 @@
       "relationship": "demo",
       "relationshipSummary": "No issuer relationship exists in this demo. The profile is fictional; public sources do not establish STABLE acceptance, listing or partnership.",
       "relationshipEvidenceIds": [],
-      "publicContext": "The April 2025 release names work with Nuvei, Circle and Paxos. Those real participants remain distinct from the fictional profile.",
+      "publicContext": "The April 2025 release names work with Nuvei, Circle and Paxos, and Mastercard completed its acquisition of BVNK in August 2026. Those real participants remain distinct from the fictional profile.",
       "relevance": "Synthetic fit question: Which settlement leg and eligibility constraints should be researched before a proposal?",
       "uncertainty": "Current production scope, additional-token policy, customer demand and terms are unverified.",
       "nextQuestions": [
@@ -598,12 +771,13 @@
       ],
       "evidenceIds": [
         "E-G05",
-        "E-G12"
+        "E-G12",
+        "E-G18"
       ],
       "priorityIds": [
         "P-G02"
       ],
-      "asOf": "2026-09-30"
+      "asOf": "2026-11-27"
     },
     {
       "id": "coinbase",
@@ -698,6 +872,94 @@
         "P-G03"
       ],
       "asOf": "2026-09-30"
+    },
+    {
+      "id": "occ",
+      "name": "Office of the Comptroller of the Currency",
+      "shortName": "OCC",
+      "lane": "Regulation",
+      "markets": [
+        "United States"
+      ],
+      "products": [
+        "Payment stablecoin issuer rules (12 CFR part 15)"
+      ],
+      "relationship": "demo",
+      "relationshipSummary": "No issuer relationship exists in this demo. The profile is fictional; public sources do not establish STABLE acceptance, listing or partnership.",
+      "relationshipEvidenceIds": [],
+      "publicContext": "The final GENIUS Act rule for OCC-supervised entities was published on 23 October 2026 and takes effect on 18 January 2027.",
+      "relevance": "Synthetic fit question: Which licensing route and reserve rules would a real US issuer have to meet?",
+      "uncertainty": "Which agency would supervise a real issuer, and how other agencies finalize their rules, are unknown.",
+      "nextQuestions": [
+        "Which charter or licence route fits the issuer?",
+        "What do reserve, redemption and reporting rules require in practice?"
+      ],
+      "evidenceIds": [
+        "E-G14"
+      ],
+      "priorityIds": [
+        "P-G02"
+      ],
+      "asOf": "2026-11-27"
+    },
+    {
+      "id": "mas",
+      "name": "Monetary Authority of Singapore",
+      "shortName": "MAS",
+      "lane": "Regulation",
+      "markets": [
+        "Singapore"
+      ],
+      "products": [
+        "Proposed stablecoin framework under the Payment Services Act"
+      ],
+      "relationship": "demo",
+      "relationshipSummary": "No issuer relationship exists in this demo. The profile is fictional; public sources do not establish STABLE acceptance, listing or partnership.",
+      "relationshipEvidenceIds": [],
+      "publicContext": "MAS consulted on legislative amendments for single-currency stablecoins until 16 October 2026.",
+      "relevance": "Synthetic fit question: Would a Singapore dollar or G10 profile qualify as MAS-regulated, and what would that require?",
+      "uncertainty": "The consultation is not law; final requirements, timing and treatment of foreign-issued tokens are unknown.",
+      "nextQuestions": [
+        "When will the amendments be enacted?",
+        "How would a foreign-issued token be recognized?"
+      ],
+      "evidenceIds": [
+        "E-G15"
+      ],
+      "priorityIds": [
+        "P-G02"
+      ],
+      "asOf": "2026-11-27"
+    },
+    {
+      "id": "tempo",
+      "name": "Tempo",
+      "shortName": "T",
+      "lane": "Distribution",
+      "markets": [
+        "Global network context"
+      ],
+      "products": [
+        "Payments blockchain",
+        "Machine Payments Protocol"
+      ],
+      "relationship": "demo",
+      "relationshipSummary": "No issuer relationship exists in this demo. The profile is fictional; public sources do not establish STABLE acceptance, listing or partnership.",
+      "relationshipEvidenceIds": [],
+      "publicContext": "Tempo launched its mainnet in March 2026; Stripe documentation lists USDC on Tempo.",
+      "relevance": "Synthetic fit question: Does a payments network change what a merchant problem needs from a new token?",
+      "uncertainty": "Which tokens Tempo supports for a new issuer, and merchant demand on it, are unverified.",
+      "nextQuestions": [
+        "Which assets can settle on Tempo today?",
+        "What does a merchant gain over existing networks?"
+      ],
+      "evidenceIds": [
+        "E-G16"
+      ],
+      "priorityIds": [
+        "P-G01"
+      ],
+      "asOf": "2026-11-27"
     }
   ],
   "priorities": [
@@ -710,13 +972,15 @@
       "organizationIds": [
         "stripe",
         "paypal",
-        "worldpay"
+        "worldpay",
+        "tempo"
       ],
       "evidenceIds": [
         "E-G02",
         "E-G03",
         "E-G10",
-        "E-G11"
+        "E-G11",
+        "E-G16"
       ],
       "thesis": "Demo hypothesis: define one merchant settlement problem before considering a distribution route for a future issuer.",
       "whyNow": "Existing public products show how token and merchant eligibility constrain acceptance. This is an illustrative research sequence, not a launch signal.",
@@ -729,11 +993,11 @@
         "No specific buyer or unmet settlement need can be identified.",
         "Published token or regional policy excludes the proposed route, or existing products already solve the need."
       ],
-      "evidenceReviewedAt": "2026-09-30",
-      "reviewBy": "2026-10-30",
+      "evidenceReviewedAt": "2026-11-27",
+      "reviewBy": "2026-12-27",
       "confidence": "Illustrative only",
       "confidenceReason": "Public market context is documented. Fit for the fictional profile is synthetic; no acceptance, partnership, demand or commercial readiness is evidenced.",
-      "evidenceSnapshot": "d26e9585",
+      "evidenceSnapshot": "038965f1",
       "assumptionIds": [
         "A-P-G01-1",
         "A-P-G01-2"
@@ -749,34 +1013,44 @@
         "circle",
         "paxos",
         "visa",
-        "mastercard"
+        "mastercard",
+        "occ",
+        "mas"
       ],
       "evidenceIds": [
         "E-G01",
         "E-G04",
         "E-G05",
         "E-G06",
-        "E-G12"
+        "E-G12",
+        "E-G14",
+        "E-G15",
+        "E-G17",
+        "E-G18",
+        "E-G19"
       ],
       "thesis": "Demo hypothesis: map redemption, custody and supported-token rules before suggesting an issuer or settlement partnership.",
-      "whyNow": "Real issuer and network products provide design context, including beta restrictions and named existing partnerships. None establishes a relationship with the demo.",
+      "whyNow": "Real issuer and network products provide design context, including beta restrictions and named existing partnerships, and US and Singapore issuer rules moved in late 2026. None establishes a relationship with the demo.",
       "nextAction": "Draft a hypothetical responsibilities matrix covering issuance, reserve evidence, eligibility, redemption, settlement and exceptions; mark every unspecified input unknown.",
       "assumptions": [
         "A real profile would have a supportable issuance and redemption model.",
-        "A provider would permit the intended token and use case under documented conditions."
+        "A provider would permit the intended token and use case under documented conditions.",
+        "A real issuer could meet the licensing, reserve and redemption rules of its intended market."
       ],
       "disproves": [
         "Responsibilities or eligibility cannot be established from credible evidence.",
-        "The proposed model adds no benefit or the route is closed to additional assets."
+        "The proposed model adds no benefit or the route is closed to additional assets.",
+        "No licensing route is open to the intended issuer in the intended market, or its rules remove the benefit."
       ],
-      "evidenceReviewedAt": "2026-09-30",
-      "reviewBy": "2026-10-30",
+      "evidenceReviewedAt": "2026-11-27",
+      "reviewBy": "2026-12-27",
       "confidence": "Illustrative only",
       "confidenceReason": "Public market context is documented. Fit for the fictional profile is synthetic; no acceptance, partnership, demand or commercial readiness is evidenced.",
-      "evidenceSnapshot": "949d2db4",
+      "evidenceSnapshot": "0cc8c50c",
       "assumptionIds": [
         "A-P-G02-1",
-        "A-P-G02-2"
+        "A-P-G02-2",
+        "A-P-G02-3"
       ]
     },
     {
@@ -807,11 +1081,11 @@
         "There is no observable conversion or exit problem.",
         "Existing routes meet the need, or improvements require uneconomic subsidies."
       ],
-      "evidenceReviewedAt": "2026-09-30",
-      "reviewBy": "2026-10-30",
+      "evidenceReviewedAt": "2026-11-27",
+      "reviewBy": "2026-12-27",
       "confidence": "Illustrative only",
       "confidenceReason": "Public market context is documented. Fit for the fictional profile is synthetic; no acceptance, partnership, demand or commercial readiness is evidenced.",
-      "evidenceSnapshot": "6c2a2748",
+      "evidenceSnapshot": "de88bd3d",
       "assumptionIds": [
         "A-P-G03-1",
         "A-P-G03-2"
@@ -830,10 +1104,11 @@
         "E-G02",
         "E-G03",
         "E-G10",
-        "E-G11"
+        "E-G11",
+        "E-G16"
       ],
       "createdAt": "2026-09-30",
-      "reviewBy": "2026-10-30",
+      "reviewBy": "2026-12-27",
       "owner": "Unassigned",
       "notes": ""
     },
@@ -849,10 +1124,15 @@
         "E-G04",
         "E-G05",
         "E-G06",
-        "E-G12"
+        "E-G12",
+        "E-G14",
+        "E-G15",
+        "E-G17",
+        "E-G18",
+        "E-G19"
       ],
       "createdAt": "2026-09-30",
-      "reviewBy": "2026-10-30",
+      "reviewBy": "2026-12-27",
       "owner": "Unassigned",
       "notes": ""
     },
@@ -870,7 +1150,7 @@
         "E-G13"
       ],
       "createdAt": "2026-09-30",
-      "reviewBy": "2026-10-30",
+      "reviewBy": "2026-12-27",
       "owner": "Unassigned",
       "notes": ""
     }
@@ -917,6 +1197,27 @@
       ],
       "before": "2026-09-30.generic.1",
       "after": "2026-09-30.generic.2"
+    },
+    {
+      "id": "B-G03",
+      "kind": "manual_update",
+      "recordedAt": "2026-11-27",
+      "title": "Late 2026 public context refresh",
+      "summary": "Added a Regulation lane with the OCC's final GENIUS Act rule and MAS's stablecoin consultation, and dated primary sources for Tempo's mainnet, Visa's April 2026 settlement update, Mastercard's BVNK acquisition and Circle's Arc mainnet. Earlier sources were reopened on the access date and still support their claims, which keep their original as-of dates; PayPal's PYUSD page returned a security challenge, so it keeps its 30 September access date, and Paxos's PYUSD page, read the same day, still describes PayPal and Venmo access. Every assumption, including the new licensing assumption, was reviewed against that reading and given a new review date. The PayPal source check stays overdue until someone reads the page. No monitoring history is claimed.",
+      "evidenceIds": [
+        "E-G14",
+        "E-G15",
+        "E-G16",
+        "E-G17",
+        "E-G18",
+        "E-G19"
+      ],
+      "priorityIds": [
+        "P-G01",
+        "P-G02"
+      ],
+      "before": "2026-09-30.generic.2",
+      "after": "2026-11-27.generic.3"
     }
   ],
   "assumptions": [
@@ -927,9 +1228,9 @@
       "evidenceIds": [
         "E-G11"
       ],
-      "evidenceSnapshot": "d5d730a3",
-      "evidenceReviewedAt": "2026-09-30",
-      "reviewBy": "2026-10-30"
+      "evidenceSnapshot": "6238e3cd",
+      "evidenceReviewedAt": "2026-11-27",
+      "reviewBy": "2026-12-27"
     },
     {
       "id": "A-P-G01-2",
@@ -938,11 +1239,12 @@
       "evidenceIds": [
         "E-G02",
         "E-G03",
-        "E-G10"
+        "E-G10",
+        "E-G16"
       ],
-      "evidenceSnapshot": "2c156f2b",
-      "evidenceReviewedAt": "2026-09-30",
-      "reviewBy": "2026-10-30"
+      "evidenceSnapshot": "bef5b2cb",
+      "evidenceReviewedAt": "2026-11-27",
+      "reviewBy": "2026-12-27"
     },
     {
       "id": "A-P-G02-1",
@@ -951,9 +1253,9 @@
       "evidenceIds": [
         "E-G12"
       ],
-      "evidenceSnapshot": "ef22c88c",
-      "evidenceReviewedAt": "2026-09-30",
-      "reviewBy": "2026-10-30"
+      "evidenceSnapshot": "95ca55bf",
+      "evidenceReviewedAt": "2026-11-27",
+      "reviewBy": "2026-12-27"
     },
     {
       "id": "A-P-G02-2",
@@ -963,11 +1265,26 @@
         "E-G01",
         "E-G04",
         "E-G05",
-        "E-G06"
+        "E-G06",
+        "E-G17",
+        "E-G18",
+        "E-G19"
       ],
-      "evidenceSnapshot": "f453f7cf",
-      "evidenceReviewedAt": "2026-09-30",
-      "reviewBy": "2026-10-30"
+      "evidenceSnapshot": "929f5bae",
+      "evidenceReviewedAt": "2026-11-27",
+      "reviewBy": "2026-12-27"
+    },
+    {
+      "id": "A-P-G02-3",
+      "priorityId": "P-G02",
+      "statement": "A real issuer could meet the licensing, reserve and redemption rules of its intended market.",
+      "evidenceIds": [
+        "E-G14",
+        "E-G15"
+      ],
+      "evidenceSnapshot": "3269a1ce",
+      "evidenceReviewedAt": "2026-11-27",
+      "reviewBy": "2026-12-27"
     },
     {
       "id": "A-P-G03-1",
@@ -976,9 +1293,9 @@
       "evidenceIds": [
         "E-G13"
       ],
-      "evidenceSnapshot": "1a43c547",
-      "evidenceReviewedAt": "2026-09-30",
-      "reviewBy": "2026-10-30"
+      "evidenceSnapshot": "71b21ce2",
+      "evidenceReviewedAt": "2026-11-27",
+      "reviewBy": "2026-12-27"
     },
     {
       "id": "A-P-G03-2",
@@ -989,9 +1306,9 @@
         "E-G08",
         "E-G09"
       ],
-      "evidenceSnapshot": "a9de8a7e",
-      "evidenceReviewedAt": "2026-09-30",
-      "reviewBy": "2026-10-30"
+      "evidenceSnapshot": "481ee0ff",
+      "evidenceReviewedAt": "2026-11-27",
+      "reviewBy": "2026-12-27"
     }
   ]
 }

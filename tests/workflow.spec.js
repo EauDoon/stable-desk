@@ -710,15 +710,18 @@ test("a delayed import cannot replace a newer file, rejection or recovery choice
 });
 
 test("review queue separates due work and opens the exact manual review", async ({ page }, info) => {
-  await page.clock.setFixedTime(new Date("2026-10-30T12:00:00Z"));
+  await page.clock.setFixedTime(new Date("2026-12-27T12:00:00Z"));
   await evidence(page);
   const queue = page.locator(".review-queue");
   await expect(queue.getByRole("heading", { name: "Review queue", exact: true })).toBeVisible();
-  await expect(queue.locator('[data-queue-kind="source"]')).toHaveCount(10);
+  // Fifteen sources are due today; S-G03 (PayPal) has been overdue since
+  // 2026-10-30 because the baseline kept its earlier access date.
+  await expect(queue.locator('[data-queue-kind="source"]')).toHaveCount(16);
+  await expect(queue.locator('[data-queue-id="S-G03"]')).toContainText("Check overdue");
   const assumptions = await queue.locator('[data-queue-kind="assumption"]').count();
   expect(assumptions).toBeGreaterThan(0);
   await page.locator("#queue-filter").selectOption("source");
-  await expect(queue.locator(".queue-row")).toHaveCount(10);
+  await expect(queue.locator(".queue-row")).toHaveCount(16);
   await expect(queue).toContainText("Check due today");
   const sourceRow = queue.locator('[data-queue-id="S-G01"]');
   await sourceRow.getByRole("button", { name: "Record check" }).focus();
@@ -739,7 +742,7 @@ test("review queue separates due work and opens the exact manual review", async 
   await expect(checkbox).not.toBeChecked();
   await checkbox.check();
   await page.getByLabel("Research notes", { exact: true }).fill("Reviewed only this assumption against its current evidence; other work remains due.");
-  await page.getByLabel("Review by", { exact: true }).fill("2026-11-06");
+  await page.getByLabel("Review by", { exact: true }).fill("2027-01-03");
   await page.getByRole("button", { name: "Save local assessment", exact: true }).click();
   await expect(dialog(page)).not.toBeVisible();
   await expect(queue.locator(`[data-queue-id="${assumptionId}"]`)).toHaveCount(0);
@@ -812,7 +815,7 @@ test("local review choice cancels delayed files and clears earlier previews on e
 });
 
 test("review queue supports imported assumptions without a corresponding decision", async ({ page }) => {
-  await page.clock.setFixedTime(new Date("2026-10-30T12:00:00Z"));
+  await page.clock.setFixedTime(new Date("2026-12-27T12:00:00Z"));
   const partial = structuredClone(seed);
   partial.decisions = partial.decisions.filter(d => d.id !== "D-G03");
   await importText(page, partial);
@@ -1261,18 +1264,18 @@ test("browser data saved by v4.1 opens unchanged in the desk and source review",
 test("decision reviews still save after the seeded review dates pass", async ({
   page,
 }) => {
-  // The fixture froze the clock at TEST_NOW (2026-10-15). Move this page past
-  // every seeded review date (2026-10-30), as the live site is from 31-10-2026.
-  await page.clock.setFixedTime(new Date("2026-11-15T12:00:00.000Z"));
+  // The fixture froze the clock at TEST_NOW (2026-11-27). Move this page past
+  // every seeded review date (2026-12-27), as the live site is from 28-12-2026.
+  await page.clock.setFixedTime(new Date("2027-01-12T12:00:00.000Z"));
   await page.getByRole("link", { name: "Decisions", exact: true }).click();
   await page
     .getByRole("button", { name: "Review assessment", exact: false })
     .first()
     .click();
   const date = page.getByLabel("Review by", { exact: true });
-  await expect(date).toHaveValue("2026-12-15");
+  await expect(date).toHaveValue("2027-02-11");
   await expect(dialog(page)).toContainText(
-    "The saved review date 2026-10-30 has passed; a new date is suggested.",
+    "The saved review date 2026-12-27 has passed; a new date is suggested.",
   );
   await page
     .getByLabel("Research notes", { exact: true })
@@ -1285,12 +1288,12 @@ test("decision reviews still save after the seeded review dates pass", async ({
     .check();
   // A past date with an assumption review is refused in the form itself,
   // without the stale-basis rebase offer, and nothing is committed.
-  await date.fill("2026-10-30");
+  await date.fill("2026-12-27");
   await page
     .getByRole("button", { name: "Save local assessment", exact: true })
     .click();
   await expect(page.locator("#decision-error")).toHaveText(
-    "Assumption reviews need a Review by date on or after 2026-11-15 (UTC).",
+    "Assumption reviews need a Review by date on or after 2027-01-12 (UTC).",
   );
   await expect(
     page.getByRole("button", {
@@ -1301,7 +1304,7 @@ test("decision reviews still save after the seeded review dates pass", async ({
   expect((await stored(page))?.workspace.events.length ?? 0).toBe(0);
   await overflow(page);
   // The suggested date commits the review.
-  await date.fill("2026-12-15");
+  await date.fill("2027-02-11");
   await page
     .getByRole("button", { name: "Save local assessment", exact: true })
     .click();
@@ -1309,7 +1312,7 @@ test("decision reviews still save after the seeded review dates pass", async ({
   const events = (await stored(page)).workspace.events;
   const reviews = events.filter((e) => e.type === "assumption_review");
   expect(reviews.length).toBeGreaterThan(0);
-  expect(reviews.every((e) => e.after.reviewBy === "2026-12-15")).toBe(true);
+  expect(reviews.every((e) => e.after.reviewBy === "2027-02-11")).toBe(true);
   expect(events.at(-1).type).toBe("decision_saved");
 });
 
@@ -1322,32 +1325,32 @@ test("the desk shows whether its committed work has been exported from this brow
   await page.locator(".page-heading [data-export]").click();
   await download;
   await expect(status).toHaveText(
-    "Exported from this browser 2026-10-15 12:00 UTC; no committed changes since.",
+    "Exported from this browser 2026-11-27 12:00 UTC; no committed changes since.",
   );
   // A decision with its assumption reviews is one committed change.
   await saveDecision(page, "Assessment recorded after the export.");
   await expect(status).toHaveText(
-    "1 committed change since the export downloaded 2026-10-15 12:00 UTC.",
+    "1 committed change since the export downloaded 2026-11-27 12:00 UTC.",
   );
   await page.reload();
   await expect(status).toHaveText(
-    "1 committed change since the export downloaded 2026-10-15 12:00 UTC.",
+    "1 committed change since the export downloaded 2026-11-27 12:00 UTC.",
   );
   await page
     .getByRole("button", { name: "Workspace backup and import", exact: true })
     .click();
   const inDialog = page.locator("#utility-dialog [data-export-status]");
   await expect(inDialog).toHaveText(
-    "1 committed change since the export downloaded 2026-10-15 12:00 UTC.",
+    "1 committed change since the export downloaded 2026-11-27 12:00 UTC.",
   );
   const again = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export full workspace" }).click();
   await again;
   await expect(inDialog).toHaveText(
-    "Exported from this browser 2026-10-15 12:00 UTC; no committed changes since.",
+    "Exported from this browser 2026-11-27 12:00 UTC; no committed changes since.",
   );
   await expect(status).toHaveText(
-    "Exported from this browser 2026-10-15 12:00 UTC; no committed changes since.",
+    "Exported from this browser 2026-11-27 12:00 UTC; no committed changes since.",
   );
   await page.keyboard.press("Escape");
   await expect(dialog(page)).not.toBeVisible();
@@ -1385,7 +1388,7 @@ test("the Changes view downloads a Markdown change report of committed work", as
   const download = page.waitForEvent("download");
   await page.getByRole("button", { name: "Download change report" }).click();
   const file = await download;
-  expect(file.suggestedFilename()).toBe("stable-desk-change-report-generic-stable-2026-10-15.md");
+  expect(file.suggestedFilename()).toBe("stable-desk-change-report-generic-stable-2026-11-27.md");
   const report = await readFile(await file.path(), "utf8");
   expect(report).toContain("# Stable Desk change report");
   expect(report).toContain("## Committed changes (1)");
