@@ -17,6 +17,10 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
 
 ## [Unreleased]
 
+## [4.3.0] - 2026-11-27
+
+### Added
+
 - **Earlier baseline notice.** A saved workspace keeps the dataset it was
   created on, so after a baseline refresh it reopened labelled "Imported
   baseline", the same label as an unrelated file, with no word about the
@@ -41,13 +45,6 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
   keep the baseline they were created on.
 
 - An evidence atlas with a 3D architecture map, case-specific public source lineage, pairwise coverage comparisons, a cited Markdown brief with assumptions and disproof criteria, record search, shareable selections and local JSON downloads. With scripts disabled, the desk and source review now offer working skip links and a readable atlas.
-
-### Local maintenance
-
-- Change-report CLI reads at most the import byte limit plus one byte, rejects non-file inputs and invalid UTF-8, and closes its file on every exit.
-
-
-### Added
 
 - **Reviewed candidates** in Source review's Checks & review history. Once
   a candidate was accepted, rejected or superseded, the page could not show
@@ -102,6 +99,12 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
 
 ### Changed
 
+- The change report keeps local assessments out of the public-context
+  promotion checklist. Decisions that differ from the baseline, with their
+  current status and changed fields, now have their own section. Review that
+  section before handing off a workspace; a clean public-context checklist
+  does not mean decisions are unchanged.
+
 - The README opens with what Stable Desk is, who it is for and a quick start,
   under section headings. The per-release summary that used to open it lives
   in this file only.
@@ -124,6 +127,8 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
   `docs/VERIFICATION.md` are corrected to describe the orphan accurately.
 
 ### Fixed
+
+- Change-report CLI reads at most the import byte limit plus one byte, rejects non-file inputs and invalid UTF-8, and closes its file on every exit.
 
 - `npm run report:changes` reads an export that an editor saved with a UTF-8
   byte order mark. The browser import already dropped the mark, so the same
@@ -342,7 +347,8 @@ test suite to prove it.
 
 - Initial desk and genericized demo checkpoints ([0.1.0] and 0.1.1).
 
-[Unreleased]: https://github.com/EauDoon/stable-desk/compare/v4.2.0...HEAD
+[Unreleased]: https://github.com/EauDoon/stable-desk/compare/v4.3.0...HEAD
+[4.3.0]: https://github.com/EauDoon/stable-desk/compare/v4.2.0...v4.3.0
 [4.2.0]: https://github.com/EauDoon/stable-desk/compare/v4.1.0...v4.2.0
 [4.1.0]: https://github.com/EauDoon/stable-desk/releases/tag/v4.1.0
 [4.0.0]: https://github.com/EauDoon/stable-desk/commit/780d4070c331555ffc2718bb54d2d0508bd02f3f

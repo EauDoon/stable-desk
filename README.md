@@ -2,8 +2,6 @@
 
 # Stable Desk
 
-Next release: keep local assessments out of the public-context promotion checklist. The downloaded change report now lists decisions that differ from the baseline, their current status and changed fields in a separate section. Review that section before handing off a workspace; a clean public-context checklist does not mean decisions are unchanged.
-
 ## What it is
 
 Stable Desk is a stablecoin research desk that runs in your browser. It keeps public sources, the claims taken from them, the assumptions that depend on those claims and the decisions that depend on those assumptions, and it shows which of them need review when something changes. It is a static web app: no account, no database and no credentials to deploy or use. Research is stored in the browser and leaves it only when you export a file.
@@ -38,7 +36,7 @@ Then try the main loop:
 3. **Decisions:** save a local assessment against the current evidence revisions.
 4. **Workspace & data:** export the workspace. The export is your backup and the only way to move work to another device.
 
-The current release is 4.2.0. Release notes for every version are in the [changelog](CHANGELOG.md).
+The current release is 4.3.0. Release notes for every version are in the [changelog](CHANGELOG.md).
 
 ## Using the desk
 
@@ -79,9 +77,9 @@ A configured real research subject remains unverified. Intended markets, currenc
 
 ## Status and limits
 
-| Status on 30-10-2026 | Evidence |
+| Status on 27-11-2026 | Evidence |
 | --- | --- |
-| Hosted release | v4.2.0 (strict CSP and hardening headers, cross-site check guard, bounded recovery copies, tag-driven releases) was merged through PR #4 on 09-10-2026, published as the [v4.2.0 release](https://github.com/EauDoon/stable-desk/releases/tag/v4.2.0) and is served at [stable-desk.vercel.app](https://stable-desk.vercel.app); on 30-10-2026 its `/src/version.js` exported `4.2.0` and `curl -sI` showed the five security headers from `vercel.json`. A merge to `main` deploys production. Hosted interaction acceptance, every flow run on the live URL, remains unverified. See [deployment notes](docs/DEPLOYMENT.md) |
+| Hosted release | v4.3.0 (refreshed 27-11-2026 public baseline with a Regulation lane, earlier-baseline notice, evidence atlas, new review periods, reviewed candidates, export status and the change report) is tagged on `main` and published as the [v4.3.0 release](https://github.com/EauDoon/stable-desk/releases/tag/v4.3.0). A merge to `main` deploys production at [stable-desk.vercel.app](https://stable-desk.vercel.app). The last recorded hosted check is in the [deployment notes](docs/DEPLOYMENT.md). Hosted interaction acceptance, every flow run on the live URL, remains unverified |
 | Versions and releases | `package.json` holds the app version and `npm run check:version` keeps every copy in agreement. Changes are recorded in the [changelog](CHANGELOG.md). Pushing a `vX.Y.Z` tag on `main` publishes a GitHub Release with the static ZIP; the dataset and storage formats version separately |
 | Deterministic validation | Model/store/HTTP adapter and Chromium desktop/mobile checks, under the production security headers; see [verification](docs/VERIFICATION.md) |
 | Storage | Manual exports are backups. Recovery copies are bounded (the newest is always kept, then up to ten within 2 MB) and may be evicted. No cross-device synchronization. v2/v4 storage formats are retained |
