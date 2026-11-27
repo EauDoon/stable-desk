@@ -33,13 +33,13 @@ test("desk export status: none, current, changes since, other workspace, lost he
   assert.deepEqual(marker, { id: "WS-1", head: "EV-2", events: 2, at: TEST_NOW });
   const current = exportStatus(marker, deskIdentity(two));
   assert.deepEqual(current, { exported: true, at: TEST_NOW, position: 2, since: 0 });
-  assert.equal(deskExportLabel(current), "Exported from this browser 2026-10-15 12:00 UTC; no committed changes since.");
+  assert.equal(deskExportLabel(current), "Exported from this browser 2026-11-27 12:00 UTC; no committed changes since.");
   const one = exportStatus(marker, deskIdentity(ws(["EV-1", "EV-2", "EV-3"])));
   assert.equal(one.since, 1);
-  assert.equal(deskExportLabel(one), "1 committed change since the export downloaded 2026-10-15 12:00 UTC.");
+  assert.equal(deskExportLabel(one), "1 committed change since the export downloaded 2026-11-27 12:00 UTC.");
   assert.equal(
     deskExportLabel(exportStatus(marker, deskIdentity(ws(["EV-1", "EV-2", "EV-3", "EV-4"])))),
-    "2 committed changes since the export downloaded 2026-10-15 12:00 UTC.",
+    "2 committed changes since the export downloaded 2026-11-27 12:00 UTC.",
   );
   // Another workspace, or a history that no longer holds the exported head.
   assert.deepEqual(exportStatus(marker, deskIdentity(ws(["EV-1", "EV-2"], "WS-2"))), { exported: false });
@@ -134,12 +134,12 @@ test("review export status counts operations since and resets for a new period",
   assert.equal(marker.version, 2);
   assert.equal(
     reviewExportLabel(exportStatus(marker, reviewIdentity(review))),
-    "last exported at version 2 (2026-10-15 12:00 UTC)",
+    "last exported at version 2 (2026-11-27 12:00 UTC)",
   );
   review = check(review, 1);
   assert.equal(
     reviewExportLabel(exportStatus(marker, reviewIdentity(review))),
-    "last exported at version 2 (2026-10-15 12:00 UTC), 1 operation since",
+    "last exported at version 2 (2026-11-27 12:00 UTC), 1 operation since",
   );
   const period = rolloverReview(review, "local-reviewer", TEST_NOW);
   assert.deepEqual(exportStatus(marker, reviewIdentity(period)), { exported: false });

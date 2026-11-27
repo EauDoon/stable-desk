@@ -702,15 +702,15 @@ test("the review footer shows the version last exported from this browser", asyn
   const download = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export review backup" }).click();
   await download;
-  await expect(status).toHaveText("last exported at version 1 (2026-10-15 12:00 UTC)");
+  await expect(status).toHaveText("last exported at version 1 (2026-11-27 12:00 UTC)");
   await page.getByRole("button", { name: "Check source now" }).click();
   await expect(page.locator(".footer")).toContainText("Version 2");
   await expect(status).toHaveText(
-    "last exported at version 1 (2026-10-15 12:00 UTC), 1 operation since",
+    "last exported at version 1 (2026-11-27 12:00 UTC), 1 operation since",
   );
   await page.reload();
   await expect(status).toHaveText(
-    "last exported at version 1 (2026-10-15 12:00 UTC), 1 operation since",
+    "last exported at version 1 (2026-11-27 12:00 UTC), 1 operation since",
   );
   // A new review period has not been exported yet.
   const before = page.waitForEvent("download");

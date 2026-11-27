@@ -8,7 +8,7 @@ The application version lives in `package.json` and is mirrored in
 `src/version.js`; `npm run check:version` keeps them, the lockfile, this file
 and any release tag in agreement. The formats the app reads and writes are
 versioned separately and change only when the format itself changes: the
-public dataset carries `meta.version` (`2026-09-30.generic.2`), workspace
+public dataset carries `meta.version` (`2026-11-27.generic.3`), workspace
 exports carry `schemaVersion` 2 and source-review state carries
 `schemaVersion` 4.
 
@@ -16,6 +16,20 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
 `v3-pilot` branch.
 
 ## [Unreleased]
+
+- **Public baseline 2026-11-27.generic.3.** The context was frozen at
+  30 September 2026, before the OCC's final rule implementing the GENIUS Act
+  (published 23 October 2026, effective 18 January 2027) and with no
+  regulatory records at all. A fourth lane, Regulation, now holds that rule
+  and MAS's September 2026 consultation on its stablecoin law. Dated primary
+  releases add Tempo's mainnet, Visa's April 2026 settlement update,
+  Mastercard's completed BVNK acquisition and Circle's Arc mainnet, and the
+  new assumption A-P-G02-3 asks whether a real issuer could meet its market's
+  licensing, reserve and redemption rules. Every earlier source was reopened
+  on 27 November 2026 and still supports its claim, except PayPal's PYUSD
+  page, which returned a security challenge: it keeps its 30 September access
+  date and shows as an overdue check in the review queue. Saved workspaces
+  keep the baseline they were created on.
 
 - An evidence atlas with a 3D architecture map, case-specific public source lineage, pairwise coverage comparisons, a cited Markdown brief with assumptions and disproof criteria, record search, shareable selections and local JSON downloads. With scripts disabled, the desk and source review now offer working skip links and a readable atlas.
 

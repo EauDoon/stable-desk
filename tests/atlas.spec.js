@@ -159,7 +159,7 @@ test("readers compare public citations and export the synthetic case brief", asy
   const chunks = [];
   for await (const chunk of await file.createReadStream()) chunks.push(chunk);
   const brief = Buffer.concat(chunks).toString("utf8");
-  expect(brief).toContain("2026-09-30.generic.2");
+  expect(brief).toContain("2026-11-27.generic.3");
   expect(brief).toContain("## Disproof criteria");
   expect(brief).toContain("supports statement: Stripe");
   expect(brief).toContain(

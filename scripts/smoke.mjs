@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { writeFile, mkdir } from "node:fs/promises";
+import { readFile, writeFile, mkdir } from "node:fs/promises";
 import assert from "node:assert/strict";
 import { chromium } from "@playwright/test";
 import { TEST_NOW } from "../tests/clock.js";
@@ -9,6 +9,10 @@ const preview = spawn(
   { cwd: new URL("..", import.meta.url), stdio: ["ignore", "pipe", "pipe"] },
 );
 await mkdir("test-results/artifacts", { recursive: true });
+// The built dataset decides how many organizations the desk must list.
+const organizations = JSON.parse(
+  await readFile(new URL("../dist/data/baseline.json", import.meta.url), "utf8"),
+).organizations.length;
 let browser;
 const report = {
   checkedAt: new Date().toISOString(),
@@ -60,7 +64,7 @@ try {
     await page
       .getByRole("heading", { name: "Where could STABLE fit?", exact: true })
       .waitFor();
-    assert.equal(await page.locator(".org-table tbody tr").count(), 10);
+    assert.equal(await page.locator(".org-table tbody tr").count(), organizations);
     for (const view of ["Opportunities", "Evidence", "Changes", "Decisions"]) {
       await page.getByRole("link", { name: view, exact: true }).click();
       await page
