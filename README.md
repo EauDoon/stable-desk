@@ -2,7 +2,43 @@
 
 Next release: keep local assessments out of the public-context promotion checklist. The downloaded change report now lists decisions that differ from the baseline, their current status and changed fields in a separate section. Review that section before handing off a workspace; a clean public-context checklist does not mean decisions are unchanged.
 
-**v4.2** is a public, self-contained stablecoin research desk. v4.1 added an actionable review queue and a direct browser-local handoff from source review to the research desk; v4.2 hardens it with a strict Content-Security-Policy, a cross-site guard on the hosted source check, bounded and deletable recovery copies, clearer import errors, keyboard focus fixes and a tag-driven release with a [changelog](CHANGELOG.md). It needs **no account, no database and no credentials** to deploy or use. It starts with **Generic Stablecoin (STABLE)**, a fictional placeholder with no real issuer, deployed token, reserves, listings or partners. Ten organizations and ten primary public sources provide market context; three synthetic investigations demonstrate the workflow. They are not commercial leads for a real asset.
+## What it is
+
+Stable Desk is a stablecoin research desk that runs in your browser. It keeps public sources, the claims taken from them, the assumptions that depend on those claims and the decisions that depend on those assumptions, and it shows which of them need review when something changes. It is a static web app: no account, no database and no credentials to deploy or use. Research is stored in the browser and leaves it only when you export a file.
+
+It starts with **Generic Stablecoin (STABLE)**, a fictional placeholder with no real issuer, deployed token, reserves, listings or partners. Ten organizations and ten primary public sources provide market context; three synthetic investigations demonstrate the workflow. They are not commercial leads for a real asset.
+
+## Who it is for
+
+- Researchers and analysts who track stablecoin distribution, issuer partnerships or liquidity and want every conclusion tied to a dated public source.
+- Reviewers who need to see what changed, who changed it and why before they rely on a decision.
+- Developers who want a small, dependency-light example of an auditable, browser-local workflow with a strict Content-Security-Policy.
+
+It is not a data feed, a trading tool or a shared database. Nothing is collected automatically and nothing syncs between devices.
+
+## Quick start
+
+Use the hosted copy at [stable-desk.vercel.app](https://stable-desk.vercel.app), or run it locally with Node.js 22.13 or newer:
+
+```sh
+git clone https://github.com/EauDoon/stable-desk.git
+cd stable-desk
+npm ci --ignore-scripts
+npm run dev
+```
+
+Open **http://localhost:4173** for the research desk, **http://localhost:4173/review.html** for source review, or **http://localhost:4173/atlas.html** for the evidence atlas. If the port is busy, run `npm run dev -- --port 4174`. [Run options](#run-options) lists the other flags.
+
+Then try the main loop:
+
+1. **Opportunities:** open a synthetic investigation and follow its lineage from source to recommendation.
+2. **Evidence:** work the review queue. Record a manual source check or revise a claim, and see which assumptions and decisions it affects.
+3. **Decisions:** save a local assessment against the current evidence revisions.
+4. **Workspace & data:** export the workspace. The export is your backup and the only way to move work to another device.
+
+The current release is 4.2.0. Release notes for every version are in the [changelog](CHANGELOG.md).
+
+## Using the desk
 
 In **Evidence**, filter the review queue by sources, assumptions or decisions. Blocked evidence and unresolved coverage come first, followed by changed review bases and the oldest deadlines, including work due today (UTC). Each row opens the relevant editor. A source check never clears an assumption or decision review, and an empty queue does not establish commercial readiness.
 
@@ -10,7 +46,9 @@ After adopting evidence in **Source review**, open **Research desk > Workspace &
 
 The public baseline is dated **September 30, 2026**. Real product names, source titles, URLs and historical dates remain original. Sources about USDC, PYUSD or Open USD never prove STABLE acceptance. Token supply and aggregate transfers do not establish payment adoption.
 
-Run with Node.js 22.13 or newer; no runtime packages beyond the bounded HTML extractor, no credentials and no paid services:
+## Run options
+
+The local server needs Node.js 22.13 or newer: no runtime packages beyond the bounded HTML extractor, no credentials and no paid services:
 
 ```sh
 cd stable-desk
@@ -18,15 +56,15 @@ npm ci --ignore-scripts
 npm run dev
 ```
 
-Open **http://localhost:4173** for the research desk, or **http://localhost:4173/review.html** for source review. The default binds to `127.0.0.1` and accepts only local hosts on the listening port. `--host 0.0.0.0` explicitly opens a public cloud preview and accepts its public host; use the built `preview` surface when exposing it. Both modes refuse hidden paths, links outside the serving root and cross-origin source checks. Choose another port with `--port 4174`. `node scripts/server.mjs --help` lists the options and `--version` prints the app version; a missing or invalid value or an unknown flag exits 2 with the usage instead of starting. Serve over HTTP; `file://` cannot load the JSON dataset. System fonts keep the build self-contained.
+The default binds to `127.0.0.1` and accepts only local hosts on the listening port. `--host 0.0.0.0` explicitly opens a public cloud preview and accepts its public host; use the built `preview` surface when exposing it. Both modes refuse hidden paths, links outside the serving root and cross-origin source checks. Choose another port with `--port 4174`. `node scripts/server.mjs --help` lists the options and `--version` prints the app version; a missing or invalid value or an unknown flag exits 2 with the usage instead of starting. Serve over HTTP; `file://` cannot load the JSON dataset. System fonts keep the build self-contained.
 
-### Evidence atlas
+## Evidence atlas
 
 Open **Evidence atlas** from the research desk footer, or visit [the atlas page](atlas.html) in the static build. Select Desk architecture to trace modules, or pick one of the three synthetic investigations to follow its dated public sources, recorded claims and proposed decision. Search by record ID, publisher or claim text. Select a connection to read its scope or open its source. The link to selection restores the same record on another device. Download map JSON exports the displayed public map as `data.evidenceAtlas`. Compare any two investigations to identify shared sources, publishers unique to each case and claim counts. The case brief pairs the next research action with the baseline assumptions and disproof criteria. Its Markdown download includes the dated baseline identifier, exact claim text, source roles and original source links. The atlas reads the versioned baseline and never opens a saved workspace.
 
 Rotate the map with a horizontal drag or the two rotation buttons. Keyboard users can follow every connection in the record index. Without JavaScript the six-component reference, dataset and research brief remain available.
 
-The working release includes:
+## What the working release includes
 
 - **Opportunities:** synthetic investigation cards, source-to-recommendation lineage, real organization context, search/filters, details and comparisons of two or three organizations.
 - **Evidence:** manually recorded unchanged/revised/unreachable source checks, separate freshness dates, claim search, new source/evidence forms, active/unknown/withdrawn status, field-level before/after previews and exact affected assumptions/decisions.
@@ -36,6 +74,8 @@ The working release includes:
 - **Profiles and recovery:** independent profile states, explicit confirmation for real research mode, autosaved local drafts, conflict/rebase handling, full-history exports, validated v1/v2 imports and recovery copies before replacement/reset.
 
 A configured real research subject remains unverified. Intended markets, currency or networks establish no issuance, acceptance or commercial relationship. All seeded opportunity fit stays synthetic. New profiles start from shared public baseline context without inheriting another profile's notes, checks or local reviews.
+
+## Status and limits
 
 | Status on 30-10-2026 | Evidence |
 | --- | --- |
@@ -47,7 +87,9 @@ A configured real research subject remains unverified. Intended markets, currenc
 
 Read the [changelog](CHANGELOG.md), the [v4 review contract and its limits](docs/V4_REVIEW.md), [manual workflow guide](docs/UPDATING.md), [architecture and evidence coverage](docs/ARCHITECTURE.md), [synthetic priority brief](docs/PRIORITIES.md) and [verification record](docs/VERIFICATION.md). Versioned public context lives in [data/baseline.json](data/baseline.json); browser work is separate and is never written to GitHub.
 
-Build and verify:
+## Build and verify
+
+The checks CI runs:
 
 ```sh
 npm ci --ignore-scripts
