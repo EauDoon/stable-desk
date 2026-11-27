@@ -11,6 +11,7 @@ import {
   parseImport,
   exportPayload,
   validDate,
+  baselineRelation,
 } from "../src/model.js";
 const baseline = JSON.parse(
   await readFile(new URL("../data/baseline.json", import.meta.url), "utf8"),
@@ -214,4 +215,26 @@ test("malformed dataset shells return validation errors instead of throwing", ()
     assert.ok(errors.length > 0, JSON.stringify(value));
   }
   assert.deepEqual(validateDataset({ meta: [] }), ["Dataset meta must be an object."]);
+});
+test("a workspace dataset is an earlier repository step only through the change log", async () => {
+  const earlier = JSON.parse(
+    await readFile(new URL("./compat/v4.1-desk-workspace.json", import.meta.url), "utf8"),
+  ).dataset;
+  const relation = baselineRelation(earlier, baseline);
+  assert.equal(relation.kind, "earlier");
+  assert.deepEqual(relation.from, { version: "2026-09-30.generic.2", asOf: "2026-09-30" });
+  assert.deepEqual(relation.to, { version: baseline.meta.version, asOf: baseline.meta.asOf });
+  assert.equal(relation.newSources, baseline.sources.length - earlier.sources.length);
+  assert.deepEqual(relation.updates, [baseline.changes.at(-1).title]);
+  // The same version with other contents, another dataset, a version the
+  // change log never lists, and the latest version itself are imports.
+  const imported = (mutate) => {
+    const d = structuredClone(earlier);
+    mutate(d);
+    return baselineRelation(d, baseline).kind;
+  };
+  assert.equal(imported((d) => (d.meta.version = baseline.meta.version)), "imported");
+  assert.equal(imported((d) => (d.meta.datasetId = "another-dataset")), "imported");
+  assert.equal(imported((d) => (d.meta.version = "2026-10-01.generic.9")), "imported");
+  assert.equal(baselineRelation(earlier, { ...baseline, changes: [] }).kind, "imported");
 });

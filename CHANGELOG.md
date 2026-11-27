@@ -17,6 +17,15 @@ Version 3 was never released. Its hosted pilot is preserved, unmerged, on the
 
 ## [Unreleased]
 
+- **Earlier baseline notice.** A saved workspace keeps the dataset it was
+  created on, so after a baseline refresh it reopened labelled "Imported
+  baseline", the same label as an unrelated file, with no word about the
+  newer repository baseline. When the repository change log lists the
+  workspace's dataset as an earlier step, the desk now labels it "Earlier
+  baseline" and shows both versions and dates, how many sources were added,
+  the change titles since, and the export-then-reset path. The label is now
+  also recomputed when another tab's saved workspace is loaded.
+
 - **Public baseline 2026-11-27.generic.3.** The context was frozen at
   30 September 2026, before the OCC's final rule implementing the GENIUS Act
   (published 23 October 2026, effective 18 January 2027) and with no
